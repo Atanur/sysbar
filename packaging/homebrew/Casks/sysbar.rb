@@ -1,6 +1,6 @@
 cask "sysbar" do
-  version "0.1.0"
-  sha256 "5a6a2cfabf5c1458cd2c32344f04b51e24f84804c6952f2e08c2e75da915ff2a"
+  version "0.1.1"
+  sha256 "eaed1c02910b056c9aca3dd33566ccb9b01579a1fc9f90fef4e8d5f411cce7ab"
 
   url "https://github.com/atanur/sysbar/releases/download/v#{version}/Sysbar-#{version}.zip"
   name "Sysbar"
@@ -12,6 +12,7 @@ cask "sysbar" do
     strategy :github_latest
   end
 
+  auto_updates true
   depends_on arch: :arm64
   depends_on macos: :sonoma
 
