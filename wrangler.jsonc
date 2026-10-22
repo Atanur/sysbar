@@ -1,0 +1,12 @@
+// Cloudflare deployment of the landing page in docs/ (static assets only, no Worker code).
+// Deploy with: npx wrangler deploy
+{
+  "name": "sysbar-site",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./docs"
+  },
+  "routes": [
+    { "pattern": "sysbar.atanur.dev", "custom_domain": true }
+  ]
+}
