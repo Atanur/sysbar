@@ -6,6 +6,7 @@
 #
 # Optional, for a build that opens without Gatekeeper warnings:
 #   SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"   sign with your Developer ID
+#     (or its SHA-1 from `security find-identity -v -p codesigning`, if the name has non-ASCII letters)
 #   NOTARY_PROFILE="sysbar"   notarize with a profile saved by `xcrun notarytool store-credentials`
 # Optional: GITHUB_OWNER (defaults to the account `gh` is logged in to).
 set -euo pipefail
@@ -64,9 +65,9 @@ To publish:
        git commit -m "chore: release $VERSION" Resources/Info.plist packaging/homebrew/Casks/sysbar.rb && git tag v$VERSION && git push --follow-tags
   2. Create the GitHub release with the zip:
        gh release create v$VERSION "$ZIP" --title "Sysbar $VERSION" --generate-notes
-  3. Copy the cask into your tap (github.com/$OWNER/homebrew-tap, folder Casks/) and push it.
+  3. Copy the cask into your tap (github.com/$OWNER/homebrew-sysbar, folder Casks/) and push it.
   4. Users install with:
-       brew install --cask $OWNER/tap/sysbar
+       brew install --cask $OWNER/sysbar/sysbar
 EOF
 if [[ -z "${SIGN_IDENTITY:-}" ]]; then
   echo

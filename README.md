@@ -52,7 +52,7 @@
 With [Homebrew](https://brew.sh):
 
 ```bash
-brew install --cask atanur/tap/sysbar
+brew install --cask atanur/sysbar/sysbar
 ```
 
 Or build it from source:
@@ -72,7 +72,7 @@ Move `build/Sysbar.app` to `/Applications` to keep it, and turn on **Launch at l
 
 1. Commit the version bump, tag it `v<version>` and push.
 2. `gh release create v<version> build/Sysbar-<version>.zip` to attach the zip to a GitHub release.
-3. Copy the cask into the tap repository `atanur/homebrew-tap`, under `Casks/`, and push.
+3. Copy the cask into the tap repository `atanur/homebrew-sysbar`, under `Casks/`, and push.
 
 Set `SIGN_IDENTITY` (a Developer ID Application certificate) and `NOTARY_PROFILE` (from `xcrun notarytool store-credentials`) to sign and notarize the build. Without them it is ad-hoc signed and macOS blocks it on first launch, so a public release should be notarized.
 
