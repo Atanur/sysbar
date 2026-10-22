@@ -23,7 +23,7 @@ public enum PowerSummary {
 
     private static func batteryParts(_ battery: BatteryInfo) -> [String] {
         var parts: [String] = []
-        if let watts = battery.batteryWatts { parts.append(L("Battery draw %@ W", String(format: "%.1f", abs(watts)))) }
+        if let watts = battery.batteryWatts { parts.append(L("Battery draw %@ W", Format.decimal(abs(watts), digits: 1))) }
         if let cycles = battery.cycleCount { parts.append(L("%@ cycles", "\(cycles)")) }
         if let health = battery.health { parts.append(L("health %@", Format.percent(health))) }
         return parts

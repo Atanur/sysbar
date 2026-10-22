@@ -5,47 +5,61 @@ public enum Format {
     private static let mebibyte = 1_048_576.0
     private static let gibibyte = 1_073_741_824.0
 
+    /// The decimal mark of the language Sysbar is shown in: "10,9" in Turkish or German, "10.9" in
+    /// English or Japanese. Read once, since the language only changes on relaunch.
+    public static let decimalSeparator = decimalSeparator(forLanguage: Bundle.main.preferredLocalizations.first ?? "en")
+
+    public static func decimalSeparator(forLanguage code: String) -> String {
+        Locale(identifier: code).decimalSeparator ?? "."
+    }
+
+    /// `value` rounded to `digits` decimals, written with the language's decimal mark.
+    public static func decimal(_ value: Double, digits: Int, separator: String = decimalSeparator) -> String {
+        let text = String(format: "%.\(digits)f", value)
+        return separator == "." ? text : text.replacingOccurrences(of: ".", with: separator)
+    }
+
     public static func percent(_ fraction: Double) -> String {
         "\(Int((fraction * 100).rounded()))%"
     }
 
     public static func watts(_ value: Double) -> String {
-        String(format: "%.1f W", value)
+        decimal(value, digits: 1) + " W"
     }
 
     public static func gigabytes(_ bytes: UInt64) -> String {
-        String(format: "%.1f GB", Double(bytes) / gibibyte)
+        decimal(Double(bytes) / gibibyte, digits: 1) + " GB"
     }
 
     /// Menu bar memory text, e.g. "10.9G", dropping the decimal from 100 GB up so it stays five characters.
     public static func compactGigabytes(_ bytes: UInt64) -> String {
         let gigabytes = Double(bytes) / gibibyte
-        return gigabytes >= 100 ? String(format: "%.0fG", gigabytes) : String(format: "%.1fG", gigabytes)
+        return decimal(gigabytes, digits: gigabytes >= 100 ? 0 : 1) + "G"
     }
 
     /// Installed memory for a card's corner: "16GB", or "7.6GB" when it is not a whole number.
     public static func totalMemory(_ bytes: UInt64) -> String {
         let gigabytes = Double(bytes) / gibibyte
         let whole = abs(gigabytes - gigabytes.rounded()) < 0.05
-        return String(format: whole ? "%.0fGB" : "%.1fGB", gigabytes)
+        return decimal(gigabytes, digits: whole ? 0 : 1) + "GB"
     }
 
     /// Menu bar power text, e.g. "7.2W", dropping the decimal from 100 W up so it stays five characters.
     public static func compactWatts(_ value: Double) -> String {
-        value >= 100 ? String(format: "%.0fW", value) : String(format: "%.1fW", value)
+        decimal(value, digits: value >= 100 ? 0 : 1) + "W"
     }
 
     /// Throughput in at most four characters: "0K", "150K", "1.2M", "25M", "1.5G".
     public static func rate(_ bytesPerSecond: Double) -> String {
         if bytesPerSecond >= 1_000 * mebibyte { return scaled(bytesPerSecond / gibibyte, "G") }
         if bytesPerSecond >= 1_000 * kibibyte { return scaled(bytesPerSecond / mebibyte, "M") }
-        return String(format: "%.0fK", bytesPerSecond / kibibyte)
+        return decimal(bytesPerSecond / kibibyte, digits: 0) + "K"
     }
 
     /// Per-app memory: "340M" below one gigabyte, "1.5G" above.
     public static func memory(_ bytes: UInt64) -> String {
         let value = Double(bytes)
-        return value >= gibibyte ? scaled(value / gibibyte, "G") : String(format: "%.0fM", value / mebibyte)
+        return value >= gibibyte ? scaled(value / gibibyte, "G") : decimal(value / mebibyte, digits: 0) + "M"
     }
 
     /// Short duration for tight spaces: "4h 27m", "45m", "1h".
@@ -74,6 +88,6 @@ public enum Format {
     }
 
     private static func scaled(_ value: Double, _ suffix: String) -> String {
-        String(format: value < 10 ? "%.1f%@" : "%.0f%@", value, suffix)
+        decimal(value, digits: value < 10 ? 1 : 0) + suffix
     }
 }

@@ -31,7 +31,7 @@ public enum SamplingInterval {
         let seconds = windowSeconds(for: interval)
         if seconds < 120 { return L("%@ s", String(format: "%.0f", seconds)) }
         let minutes = seconds / 60
-        let text = minutes == minutes.rounded() ? String(format: "%.0f", minutes) : String(format: "%.1f", minutes)
+        let text = Format.decimal(minutes, digits: minutes == minutes.rounded() ? 0 : 1)
         return L("%@m", text)
     }
 
@@ -54,6 +54,6 @@ public enum SamplingInterval {
 
     /// "0.1", "2.0" below ten seconds, whole numbers above, for the "%@ s" label.
     public static func text(_ value: TimeInterval) -> String {
-        value < 10 ? String(format: "%.1f", value) : String(format: "%.0f", value)
+        Format.decimal(value, digits: value < 10 ? 1 : 0)
     }
 }

@@ -106,8 +106,8 @@ struct RemoteView: View {
         let average = latest.load
         return card(
             title: L("Load"), symbol: "gauge.with.dots.needle.33percent",
-            value: average.map { String(format: "%.2f", $0.one) } ?? "–",
-            note: average.map { String(format: "%.2f · %.2f", $0.five, $0.fifteen) } ?? "",
+            value: average.map { Format.decimal($0.one, digits: 2) } ?? "–",
+            note: average.map { "\(Format.decimal($0.five, digits: 2)) · \(Format.decimal($0.fifteen, digits: 2))" } ?? "",
             help: L("Load average: 1 min (large number), 5 min and 15 min"),
             series: samples.compactMap { $0.load?.one }, range: nil,
             load: latest.loadFraction.map { LoadLevel(fraction: $0) }

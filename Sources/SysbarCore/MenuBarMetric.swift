@@ -21,8 +21,8 @@ public enum MenuBarMetric: String, CaseIterable, Sendable {
     public var widestText: String {
         switch self {
         case .cpu, .gpu: "100%"
-        case .memory: "99.9G"
-        case .power: "99.9W"
+        case .memory: "99\(Format.decimalSeparator)9G"
+        case .power: "99\(Format.decimalSeparator)9W"
         case .disk, .network: "999M"
         }
     }

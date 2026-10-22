@@ -37,7 +37,7 @@ int64_t IOReportSimpleGetIntegerValue(CFDictionaryRef channel, int32_t index);
 bool smc_read_float(const char *key, float *value);
 
 // AppleSMC: key name (4 chars + NUL) at a given index; false once past the last key.
-bool smc_key_at_index(uint32_t index, char key[5]);
+bool smc_key_at_index(uint32_t index, char *key);
 
 CF_ASSUME_NONNULL_END
 

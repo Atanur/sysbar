@@ -18,6 +18,7 @@ if let flag = CommandLine.arguments.firstIndex(of: "--open-details"),
 // translations load. Combine with `-AppleLanguages '(tr)'` to try a language.
 if CommandLine.arguments.contains("--l10n-sample") {
     print(L("Top apps"), "|", L("Quit Sysbar"), "|", Format.uptime(93_784), "|", L("charging"))
+    print(Format.compactGigabytes(11_703_000_000), "|", Format.watts(7.24), "|", Format.rate(1_300_000), "|", MenuBarMetric.power.widestText)
     exit(0)
 }
 

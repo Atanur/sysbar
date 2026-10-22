@@ -169,4 +169,24 @@ import Testing
         #expect(Format.gigabytes(8 * 1_073_741_824) == "8.0 GB")
         #expect(Format.watts(4.123) == "4.1 W")
     }
+
+    @Test func decimalMarkFollowsTheLanguage() {
+        #expect(Format.decimalSeparator(forLanguage: "en") == ".")
+        #expect(Format.decimalSeparator(forLanguage: "ja") == ".")
+        #expect(Format.decimalSeparator(forLanguage: "tr") == ",")
+        #expect(Format.decimalSeparator(forLanguage: "de") == ",")
+        #expect(Format.decimalSeparator(forLanguage: "pt-BR") == ",")
+    }
+
+    @Test func writesDecimalsWithTheGivenMark() {
+        #expect(Format.decimal(10.94, digits: 1, separator: ",") == "10,9")
+        #expect(Format.decimal(0.06, digits: 2, separator: ",") == "0,06")
+        #expect(Format.decimal(150.4, digits: 0, separator: ",") == "150")
+        #expect(Format.decimal(10.94, digits: 1, separator: ".") == "10.9")
+    }
+
+    @Test func widestTextUsesTheSameMarkAsTheReadout() {
+        #expect(MenuBarMetric.memory.widestText == "99\(Format.decimalSeparator)9G")
+        #expect(Format.compactGigabytes(10 * 1_073_741_824).contains(Format.decimalSeparator))
+    }
 }
