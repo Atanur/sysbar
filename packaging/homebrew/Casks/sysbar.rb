@@ -5,7 +5,7 @@ cask "sysbar" do
   url "https://github.com/atanur/sysbar/releases/download/v#{version}/Sysbar-#{version}.zip"
   name "Sysbar"
   desc "Tiny system monitor for the menu bar"
-  homepage "https://sysbar.atanur.dev"
+  homepage "https://sysbar.atanur.dev/"
 
   livecheck do
     url :url
