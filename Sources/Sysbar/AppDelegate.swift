@@ -11,6 +11,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.statusController?.openPopoverForTesting()
             }
         }
+        if let flag = CommandLine.arguments.firstIndex(of: "--popover-cycles"),
+           flag + 1 < CommandLine.arguments.count, let cycles = Int(CommandLine.arguments[flag + 1]) {
+            statusController?.cyclePopoverForTesting(times: cycles)
+        }
+        if let flag = CommandLine.arguments.firstIndex(of: "--settings-cycles"),
+           flag + 1 < CommandLine.arguments.count, let cycles = Int(CommandLine.arguments[flag + 1]) {
+            statusController?.cycleSettingsForTesting(times: cycles)
+        }
         if CommandLine.arguments.contains("--update-now") {
             statusController?.updateNowForTesting()
         }

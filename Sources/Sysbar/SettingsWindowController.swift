@@ -18,6 +18,11 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 
     /// Shows the window, on `page` if one is given and otherwise on the page shown last.
+    /// For measuring memory: closes the window as the close button would.
+    func closeForTesting() {
+        window?.performClose(nil)
+    }
+
     func show(page: SettingsPage? = nil) {
         if let page { navigation.selection = page }
         NSApp.setActivationPolicy(.regular)

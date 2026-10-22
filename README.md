@@ -128,6 +128,8 @@ Diagnostic flags, handy when checking a new Mac or server:
 | `--smc-keys=PREFIX` | lists readable SMC keys, e.g. `Tp` for CPU temperatures |
 | `--l10n-sample` | prints a few strings and numbers in the current language |
 | `--open-popover` | opens the popover right after launch, for measuring its cost |
+| `--popover-cycles N` | opens and closes the popover N times and prints the memory footprint after each close |
+| `--settings-cycles N` | does the same with the settings window, showing every page |
 | `--render-menubar PATH` | writes the menu bar readout, battery included, as a PNG in light and dark |
 | `--update-now` | checks for a release at once and installs it, as the Update button does |
 

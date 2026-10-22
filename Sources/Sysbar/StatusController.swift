@@ -9,7 +9,9 @@ import SwiftUI
 final class StatusController: NSObject, NSPopoverDelegate {
     private let preferences = Preferences()
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    private let popover = NSPopover()
+    /// Created each time it opens and released once it has closed, so its window and SwiftUI graph
+    /// do not stay in memory between uses.
+    private var popover: NSPopover?
     private let remoteMonitor = RemoteMonitor()
     private let updater = UpdateChecker()
     private lazy var settingsWindow = SettingsWindowController(preferences: preferences, updater: updater)
@@ -33,8 +35,6 @@ final class StatusController: NSObject, NSPopoverDelegate {
         history = BoundedHistory(capacity: SamplingInterval.historyPoints)
         super.init()
         configureButton()
-        popover.behavior = .transient
-        popover.delegate = self
 
         processMonitor = ProcessMonitor { [weak self] usage in
             MainActor.assumeIsolated { self?.viewModel?.apps = usage }
@@ -125,13 +125,13 @@ final class StatusController: NSObject, NSPopoverDelegate {
     }
 
     private func openSettings(page: SettingsPage?) {
-        popover.performClose(nil)
+        popover?.performClose(nil)
         settingsWindow.show(page: page)
     }
 
     /// Opens Activity Monitor (or Battery settings) for the clicked card.
     private func openDetails(for metric: MenuBarMetric) {
-        popover.performClose(nil)
+        popover?.performClose(nil)
         let hasBattery = lastSnapshot?.battery != nil
         SystemLinks.open(SystemLinks.target(for: metric, hasBattery: hasBattery))
     }
@@ -193,7 +193,53 @@ final class StatusController: NSObject, NSPopoverDelegate {
 
     /// For measuring: `Sysbar --open-popover` opens the popover right after launch.
     func openPopoverForTesting() {
-        if !popover.isShown { togglePopover() }
+        if popover?.isShown != true { togglePopover() }
+    }
+
+    /// For measuring memory: `Sysbar --popover-cycles N` opens and closes the popover N times and
+    /// prints the footprint after each close, then quits.
+    func cyclePopoverForTesting(times: Int) {
+        Task {
+            try? await Task.sleep(for: .seconds(3))
+            print("start: \(Self.footprintMegabytes()) MB")
+            for cycle in 1...max(times, 1) {
+                togglePopover()
+                try? await Task.sleep(for: .seconds(3))
+                popover?.performClose(nil)
+                try? await Task.sleep(for: .seconds(2))
+                print("after close \(cycle): \(Self.footprintMegabytes()) MB")
+            }
+            NSApp.terminate(nil)
+        }
+    }
+
+    /// For measuring memory: `Sysbar --settings-cycles N` opens the settings window N times, shows
+    /// every page, closes it, and prints the footprint after each close, then quits.
+    func cycleSettingsForTesting(times: Int) {
+        Task {
+            try? await Task.sleep(for: .seconds(3))
+            print("start: \(Self.footprintMegabytes()) MB")
+            for cycle in 1...max(times, 1) {
+                for page in SettingsPage.allCases {
+                    settingsWindow.show(page: page)
+                    try? await Task.sleep(for: .milliseconds(700))
+                }
+                settingsWindow.closeForTesting()
+                try? await Task.sleep(for: .seconds(2))
+                print("after close \(cycle): \(Self.footprintMegabytes()) MB")
+            }
+            NSApp.terminate(nil)
+        }
+    }
+
+    private static func footprintMegabytes() -> String {
+        var info = task_vm_info_data_t()
+        var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<natural_t>.size)
+        let result = withUnsafeMutablePointer(to: &info) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count) }
+        }
+        guard result == KERN_SUCCESS else { return "?" }
+        return String(format: "%.1f", Double(info.phys_footprint) / 1_048_576)
     }
 
     /// For testing the updater: `Sysbar --update-now` checks at once and installs what it finds,
@@ -208,7 +254,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     }
 
     @objc private func togglePopover() {
-        if popover.isShown {
+        if let popover, popover.isShown {
             popover.performClose(nil)
             return
         }
@@ -220,6 +266,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
         if case .remote(let id) = lastSelection, preferences.device(id: id) == nil { lastSelection = .thisMac }
         model.selection = lastSelection
         viewModel = model
+        let popover = NSPopover()
+        popover.behavior = .transient
+        popover.delegate = self
+        self.popover = popover
         popover.contentViewController = NSHostingController(
             rootView: PopoverView(
                 model: model,
@@ -242,6 +292,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
         processMonitor?.stop()
         keepRemoteMonitoringAfterClose()
         viewModel = nil
-        popover.contentViewController = nil
+        popover?.contentViewController = nil
+        popover = nil
     }
 }
