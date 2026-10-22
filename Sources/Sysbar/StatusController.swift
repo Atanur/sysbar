@@ -11,7 +11,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
     private let remoteMonitor = RemoteMonitor()
-    private lazy var settingsWindow = SettingsWindowController(preferences: preferences)
+    private let updater = UpdateChecker()
+    private lazy var settingsWindow = SettingsWindowController(preferences: preferences, updater: updater)
     private var service: MonitorService?
     private var processMonitor: ProcessMonitor?
     private var history: BoundedHistory<Snapshot>
@@ -55,6 +56,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
             MainActor.assumeIsolated { self?.remoteMonitor.closeConnections() }
         }
 
+        updater.start()
+
         if !preferences.setupCompleted {
             settingsWindow.show()
         }
@@ -81,7 +84,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// once per animation frame.
     private func updateDescription(_ snapshot: Snapshot) {
         guard let button = statusItem.button else { return }
-        let description = Format.statusTitle(snapshot, metrics: preferences.menuBarMetrics)
+        let description = Format.statusTitle(
+            snapshot, metrics: preferences.menuBarMetrics, batteryThreshold: preferences.batteryMenuBarThreshold
+        )
         guard description != button.toolTip else { return }
         button.toolTip = description
         button.setAccessibilityLabel(description)
@@ -104,7 +109,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
         guard let button = statusItem.button else { return }
         let metrics = preferences.menuBarMetrics
         let colored = preferences.coloredMenuBar
-        let readouts = MenuBarReadouts.make(from: snapshot, metrics: metrics)
+        let readouts = MenuBarReadouts.make(
+            from: snapshot, metrics: metrics, batteryThreshold: preferences.batteryMenuBarThreshold
+        )
         let signature = MenuBarImage.signature(for: readouts, colored: colored)
         guard signature != lastSignature else { return }
         lastSignature = signature
@@ -189,6 +196,17 @@ final class StatusController: NSObject, NSPopoverDelegate {
         if !popover.isShown { togglePopover() }
     }
 
+    /// For testing the updater: `Sysbar --update-now` checks at once and installs what it finds,
+    /// as pressing Update would.
+    func updateNowForTesting() {
+        Task {
+            await updater.check(userInitiated: true)
+            print("update check:", updater.state)
+            if let release = updater.offered { await updater.install(release) }
+            print("update result:", updater.state)
+        }
+    }
+
     @objc private func togglePopover() {
         if popover.isShown {
             popover.performClose(nil)
@@ -207,6 +225,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
                 model: model,
                 preferences: preferences,
                 remote: remoteMonitor,
+                updater: updater,
                 onSelect: { [weak self] in self?.select($0) },
                 onRetry: { [weak self] in self?.retryRemote() },
                 onSettings: { [weak self] in self?.openSettings(page: $0) },

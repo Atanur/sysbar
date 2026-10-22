@@ -17,7 +17,7 @@
 - **Glanceable.** Each metric is a thin level bar and a fixed-width number, so the menu bar never shifts as values change. Bars can be tinted by load or follow the menu bar's own colour.
 - **Light.** Written in Swift against the system's own counters. With the popover closed it uses about 1% of a single core and around 14 MB of memory, and it stops sampling while the Mac or its screens sleep.
 - **Honest.** It shows what can be measured and hides what cannot. Values that are estimates are labelled as such.
-- **Private.** No accounts, no analytics, no network traffic except the SSH connections you set up yourself.
+- **Private.** No accounts, no analytics. Besides the SSH connections you set up, the only request is a once-a-day check for a new release on GitHub, which you can turn off; nothing about your Mac is sent.
 
 ## Features
 
@@ -25,12 +25,16 @@
 - Choose any of CPU, GPU, memory, power, disk and network.
 - Fixed-width slots: no jitter between `3%` and `100%`.
 - Optional load colours (muted green → amber → red), adapted for light and dark menu bars.
+- On battery, the charge can join the menu bar once it drops to a level you choose (always, 80%, 50% or 20%), coloured from green to red.
 
 **Popover**
 - One card per metric with a graph of the last 150 samples, so its span follows the refresh rate (15 seconds at 0.1 s, 5 minutes at 2 s). An even number of cards sits in two columns, an odd number in one.
 - Click a card to open the matching tab in Activity Monitor (or Battery settings).
 - Power reacts to how the Mac is powered: charge and time left on battery, adapter and wall draw when plugged in.
 - **Top apps** table with CPU, memory, GPU and estimated energy per app; helper processes fold into their app. Columns are configurable.
+
+**Updates**
+- Checks GitHub for a new release once a day and offers it in the popover. Updating downloads the release, installs it only if it is signed by the same developer, and relaunches.
 
 **Remote devices over SSH**
 - Watch a Linux server or another Mac: CPU, memory, load average, network, disk and NVIDIA GPU where available, plus the busiest processes.
@@ -110,8 +114,10 @@ Diagnostic flags, handy when checking a new Mac or server:
 | `--remote-test HOST [USER [PORT [KEY]]]` | samples a server twice over ssh, exactly as the app does |
 | `--remote-script` | prints the script sent to servers |
 | `--smc-keys=PREFIX` | lists readable SMC keys, e.g. `Tp` for CPU temperatures |
-| `--l10n-sample` | prints a few strings in the current language |
+| `--l10n-sample` | prints a few strings and numbers in the current language |
 | `--open-popover` | opens the popover right after launch, for measuring its cost |
+| `--render-menubar PATH` | writes the menu bar readout, battery included, as a PNG in light and dark |
+| `--update-now` | checks for a release at once and installs it, as the Update button does |
 
 ## Website
 

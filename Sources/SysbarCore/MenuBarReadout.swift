@@ -1,15 +1,46 @@
 import Foundation
 
-/// What one metric shows in the menu bar: a short label, fixed-width text, and a 0...1 bar level.
+/// What occupies one place in the menu bar: a pinned metric, or the battery charge.
+public enum MenuBarSlot: Hashable, Sendable {
+    case metric(MenuBarMetric)
+    case battery
+
+    /// Stable name, used to tell readouts apart when deciding whether to redraw.
+    public var id: String {
+        switch self {
+        case .metric(let metric): metric.rawValue
+        case .battery: "battery"
+        }
+    }
+
+    /// The widest text the slot shows, so it keeps its width as the digits change.
+    public var widestText: String {
+        switch self {
+        case .metric(let metric): metric.widestText
+        case .battery: "100%"
+        }
+    }
+}
+
+/// What one slot shows in the menu bar: a short label, fixed-width text, and a 0...1 level.
 public struct MenuBarReadout: Equatable, Sendable {
-    public let metric: MenuBarMetric
+    public let slot: MenuBarSlot
     public let label: String
     public let text: String
     public let level: Double
     /// How busy the resource is, for colour. Nil for throughput metrics, which have no "too much".
+    /// For the battery it reflects how little charge is left.
     public let load: LoadLevel?
     /// Characters reserved for `text`, so the slot keeps its width as digits change.
     public let slotCharacters: Int
+
+    public var metric: MenuBarMetric? {
+        if case .metric(let metric) = slot { return metric }
+        return nil
+    }
+
+    /// The battery keeps its charge colours even when the other bars are drawn in one colour.
+    public var isAlwaysColored: Bool { slot == .battery }
 }
 
 public enum MenuBarReadouts {
@@ -20,9 +51,16 @@ public enum MenuBarReadouts {
 
     /// Height of a menu bar level bar, in points.
     public static let barHeight = 13.0
-    /// One readout per selected metric, in display order. Metrics without a reading are skipped.
-    public static func make(from snapshot: Snapshot, metrics: [MenuBarMetric]) -> [MenuBarReadout] {
-        MenuBarMetric.allCases.filter(metrics.contains).compactMap { readout(for: $0, in: snapshot) }
+    /// One readout per selected metric, in display order, then the battery when `batteryThreshold`
+    /// says it should be shown. Metrics without a reading are skipped.
+    public static func make(
+        from snapshot: Snapshot, metrics: [MenuBarMetric], batteryThreshold: Int = BatteryMenuBar.off
+    ) -> [MenuBarReadout] {
+        let pinned = MenuBarMetric.allCases.filter(metrics.contains).compactMap { readout(for: $0, in: snapshot) }
+        guard BatteryMenuBar.isShown(snapshot.battery, threshold: batteryThreshold), let battery = snapshot.battery else {
+            return pinned
+        }
+        return pinned + [batteryReadout(battery)]
     }
 
     /// Maps bytes per second onto 0...1 on a log scale so both a trickle and a burst stay visible.
@@ -30,10 +68,18 @@ public enum MenuBarReadouts {
         min(max(log10(1 + bytesPerSecond / 1_024) / rateDecades, 0), 1)
     }
 
+    private static func batteryReadout(_ battery: BatteryInfo) -> MenuBarReadout {
+        MenuBarReadout(
+            slot: .battery, label: L("Battery"), text: Format.percent(battery.fraction),
+            level: min(max(battery.fraction, 0), 1), load: .battery(charge: battery.fraction),
+            slotCharacters: MenuBarSlot.battery.widestText.count
+        )
+    }
+
     private static func readout(for metric: MenuBarMetric, in snapshot: Snapshot) -> MenuBarReadout? {
         func make(_ text: String, level: Double, load: LoadLevel?) -> MenuBarReadout {
             MenuBarReadout(
-                metric: metric, label: metric.title, text: text,
+                slot: .metric(metric), label: metric.title, text: text,
                 level: min(max(level, 0), 1), load: load, slotCharacters: metric.widestText.count
             )
         }

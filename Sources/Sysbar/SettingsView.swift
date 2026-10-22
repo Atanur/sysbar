@@ -58,6 +58,7 @@ struct SettingsView: View {
     ]
 
     @ObservedObject var preferences: Preferences
+    let updater: UpdateChecker
     @ObservedObject var navigation: SettingsNavigation
 
     var body: some View {
@@ -116,7 +117,7 @@ struct SettingsView: View {
         case .popover: PopoverPage(preferences: preferences)
         case .devices: DevicesPage(preferences: preferences)
         case .preferences: PreferencesPage(preferences: preferences)
-        case .about: AboutPage()
+        case .about: AboutPage(updater: updater)
         }
     }
 }

@@ -82,8 +82,11 @@ public enum Format {
     }
 
     /// Tooltip and accessibility text for the pinned metrics, e.g. "CPU 23% · RAM 10.6G · Power 12.3W".
-    public static func statusTitle(_ snapshot: Snapshot, metrics: [MenuBarMetric]) -> String {
-        let parts = MenuBarReadouts.make(from: snapshot, metrics: metrics).map { "\($0.label) \($0.text)" }
+    public static func statusTitle(
+        _ snapshot: Snapshot, metrics: [MenuBarMetric], batteryThreshold: Int = BatteryMenuBar.off
+    ) -> String {
+        let readouts = MenuBarReadouts.make(from: snapshot, metrics: metrics, batteryThreshold: batteryThreshold)
+        let parts = readouts.map { "\($0.label) \($0.text)" }
         return parts.isEmpty ? "Sysbar" : parts.joined(separator: " · ")
     }
 

@@ -16,6 +16,21 @@ public struct BatteryInfo: Equatable, Sendable {
     public let adapterWatts: Int?
     /// Power flowing into (positive) or out of (negative) the battery.
     public let batteryWatts: Double?
+
+    public init(
+        fraction: Double, isPluggedIn: Bool, isCharging: Bool, isFull: Bool, minutesRemaining: Int?,
+        cycleCount: Int?, health: Double?, adapterWatts: Int?, batteryWatts: Double?
+    ) {
+        self.fraction = fraction
+        self.isPluggedIn = isPluggedIn
+        self.isCharging = isCharging
+        self.isFull = isFull
+        self.minutesRemaining = minutesRemaining
+        self.cycleCount = cycleCount
+        self.health = health
+        self.adapterWatts = adapterWatts
+        self.batteryWatts = batteryWatts
+    }
 }
 
 public enum BatteryProbe {

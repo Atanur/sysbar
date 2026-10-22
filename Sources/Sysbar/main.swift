@@ -22,6 +22,58 @@ if CommandLine.arguments.contains("--l10n-sample") {
     exit(0)
 }
 
+// `Sysbar --render-menubar PATH` draws the menu bar readout with the battery at several charges, in
+// light and dark and with and without colour, and writes it as a PNG, to check the drawing by eye.
+if let flag = CommandLine.arguments.firstIndex(of: "--render-menubar"), flag + 1 < CommandLine.arguments.count {
+    MainActor.assumeIsolated {
+        func image(charge: Double, colored: Bool) -> NSImage {
+            let battery = BatteryInfo(
+                fraction: charge, isPluggedIn: false, isCharging: false, isFull: false, minutesRemaining: nil,
+                cycleCount: nil, health: nil, adapterWatts: nil, batteryWatts: nil
+            )
+            let snapshot = Snapshot(
+                timestamp: Date(), cpuUsage: 0.23,
+                memory: MemoryReading(usedBytes: 10_900_000_000, totalBytes: 17_179_869_184, pressure: .normal),
+                power: nil, systemPower: 7.2, battery: battery
+            )
+            let readouts = MenuBarReadouts.make(from: snapshot, metrics: [.cpu, .memory], batteryThreshold: 100)
+            return MenuBarImage.make(readouts, colored: colored)
+        }
+        let charges = [0.92, 0.45, 0.3, 0.12]
+        let rows: [(NSAppearance.Name, Bool)] = [(.aqua, false), (.aqua, true), (.darkAqua, false), (.darkAqua, true)]
+        let rowHeight: CGFloat = 26
+        let gap: CGFloat = 24
+        let width = charges.map { image(charge: $0, colored: false).size.width + gap }.reduce(gap, +)
+        let height = rowHeight * CGFloat(rows.count)
+        guard let canvas = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: Int(width * 2), pixelsHigh: Int(height * 2),
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
+            bytesPerRow: 0, bitsPerPixel: 0
+        ) else { exit(1) }
+        canvas.size = NSSize(width: width, height: height)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: canvas)
+        for (index, (name, colored)) in rows.enumerated() {
+            NSAppearance(named: name)?.performAsCurrentDrawingAppearance {
+                let y = rowHeight * CGFloat(rows.count - 1 - index)
+                NSColor(white: name == .darkAqua ? 0.16 : 0.93, alpha: 1).setFill()
+                NSRect(x: 0, y: y, width: width, height: rowHeight).fill()
+                var x = gap
+                for charge in charges {
+                    let picture = image(charge: charge, colored: colored)
+                    picture.draw(in: NSRect(x: x, y: y + 2, width: picture.size.width, height: picture.size.height))
+                    x += picture.size.width + gap
+                }
+            }
+        }
+        NSGraphicsContext.restoreGraphicsState()
+        let url = URL(fileURLWithPath: CommandLine.arguments[flag + 1])
+        try? canvas.representation(using: .png, properties: [:])?.write(to: url)
+        print("wrote", url.path)
+    }
+    exit(0)
+}
+
 // `Sysbar --remote-script` prints the script sent to remote machines; `Sysbar --parse-remote`
 // reads that script's output from standard input and prints what the parser makes of it.
 if CommandLine.arguments.contains("--remote-script") {

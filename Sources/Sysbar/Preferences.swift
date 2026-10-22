@@ -15,6 +15,7 @@ final class Preferences: ObservableObject {
         static let showsApps = "showsApps"
         static let appRows = "appRows"
         static let coloredMenuBar = "coloredMenuBar"
+        static let batteryMenuBarThreshold = "batteryMenuBarThreshold"
         static let samplingInterval = "samplingInterval"
         static let temperatureUnit = "temperatureUnit"
         static let setupCompleted = "setupCompleted"
@@ -48,6 +49,11 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(coloredMenuBar, forKey: Key.coloredMenuBar) }
     }
 
+    /// Charge, in percent, at or below which the battery joins the menu bar while unplugged; zero is off.
+    @Published var batteryMenuBarThreshold: Int {
+        didSet { defaults.set(batteryMenuBarThreshold, forKey: Key.batteryMenuBarThreshold) }
+    }
+
     @Published var samplingInterval: TimeInterval {
         didSet { defaults.set(samplingInterval, forKey: Key.samplingInterval) }
     }
@@ -71,6 +77,7 @@ final class Preferences: ObservableObject {
         showsApps = defaults.object(forKey: Key.showsApps) as? Bool ?? true
         appRows = defaults.object(forKey: Key.appRows) as? Int ?? Self.defaultAppRows
         coloredMenuBar = defaults.object(forKey: Key.coloredMenuBar) as? Bool ?? true
+        batteryMenuBarThreshold = BatteryMenuBar.normalized(defaults.object(forKey: Key.batteryMenuBarThreshold) as? Int)
         samplingInterval = SamplingInterval.normalized(defaults.double(forKey: Key.samplingInterval))
         temperatureUnit = defaults.string(forKey: Key.temperatureUnit).flatMap(TemperatureUnit.init(rawValue:))
             ?? .regionDefault

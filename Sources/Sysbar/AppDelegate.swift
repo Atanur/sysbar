@@ -11,5 +11,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.statusController?.openPopoverForTesting()
             }
         }
+        if CommandLine.arguments.contains("--update-now") {
+            statusController?.updateNowForTesting()
+        }
     }
 }

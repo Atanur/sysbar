@@ -178,7 +178,9 @@ import Testing
         )
 
         let loads = Dictionary(
-            uniqueKeysWithValues: MenuBarReadouts.make(from: busy, metrics: MenuBarMetric.allCases).map { ($0.metric, $0.load) }
+            uniqueKeysWithValues: MenuBarReadouts.make(from: busy, metrics: MenuBarMetric.allCases).compactMap { readout in
+                readout.metric.map { ($0, readout.load) }
+            }
         )
 
         #expect(loads[.cpu] == .critical)

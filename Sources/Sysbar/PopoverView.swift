@@ -49,6 +49,7 @@ struct PopoverView: View {
     @ObservedObject var model: PopoverViewModel
     @ObservedObject var preferences: Preferences
     @ObservedObject var remote: RemoteMonitor
+    @ObservedObject var updater: UpdateChecker
     let onSelect: (DeviceSelection) -> Void
     let onRetry: () -> Void
     /// Opens the settings window, on a given page or on whichever was shown last.
@@ -58,6 +59,9 @@ struct PopoverView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             topBar
+            if let release = updater.offered {
+                UpdateBanner(updater: updater, release: release)
+            }
             content
         }
         .padding(12)

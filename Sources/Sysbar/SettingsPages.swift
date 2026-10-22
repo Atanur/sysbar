@@ -72,14 +72,25 @@ struct GeneralPage: View {
 struct MenuBarPage: View {
     @ObservedObject var preferences: Preferences
 
-    /// Fixed sample values, so the preview shows every metric the way it will look.
-    private static let sample = Snapshot(
-        timestamp: Date(), cpuUsage: 0.23,
-        memory: MemoryReading(usedBytes: 10_900_000_000, totalBytes: 17_179_869_184, pressure: .normal),
-        power: nil, systemPower: 7.2, gpuUsage: 0.62,
-        disk: IOThroughput(inbound: 1_200_000, outbound: 300_000),
-        network: IOThroughput(inbound: 48_000, outbound: 9_000)
-    )
+    /// Only Macs with a battery offer the battery readout.
+    private static let hasBattery = BatteryProbe.read() != nil
+
+    /// Fixed sample values, so the preview shows every metric the way it will look. The battery
+    /// sample sits under the chosen threshold, so the preview shows it whenever it is turned on.
+    private static func sample(batteryThreshold: Int) -> Snapshot {
+        let charge = batteryThreshold >= 50 ? 0.42 : 0.15
+        return Snapshot(
+            timestamp: Date(), cpuUsage: 0.23,
+            memory: MemoryReading(usedBytes: 10_900_000_000, totalBytes: 17_179_869_184, pressure: .normal),
+            power: nil, systemPower: 7.2, gpuUsage: 0.62,
+            disk: IOThroughput(inbound: 1_200_000, outbound: 300_000),
+            network: IOThroughput(inbound: 48_000, outbound: 9_000),
+            battery: BatteryInfo(
+                fraction: charge, isPluggedIn: false, isCharging: false, isFull: false, minutesRemaining: nil,
+                cycleCount: nil, health: nil, adapterWatts: nil, batteryWatts: nil
+            )
+        )
+    }
 
     var body: some View {
         SettingsPageScaffold(page: .menuBar) {
@@ -98,6 +109,22 @@ struct MenuBarPage: View {
                 }
             }
 
+            if Self.hasBattery {
+                SettingsGroup(
+                    title: L("Battery"),
+                    footer: L("Shown only while running on battery. It turns from green to red as the charge runs low.")
+                ) {
+                    SettingsRow(symbol: "battery.50", title: L("Battery charge")) {
+                        Picker("", selection: $preferences.batteryMenuBarThreshold) {
+                            ForEach(BatteryMenuBar.thresholds, id: \.self) { Text(Self.thresholdTitle($0)).tag($0) }
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                        .fixedSize()
+                    }
+                }
+            }
+
             SettingsGroup(title: L("Appearance")) {
                 SettingsRow(
                     symbol: "paintpalette.fill", title: L("Colored bars"),
@@ -109,14 +136,26 @@ struct MenuBarPage: View {
         }
     }
 
+    private static func thresholdTitle(_ threshold: Int) -> String {
+        switch threshold {
+        case BatteryMenuBar.off: L("Off")
+        case 100: L("Always on battery")
+        default: L("At %@ or less", Format.percent(Double(threshold) / 100))
+        }
+    }
+
     private var preview: some View {
-        let readouts = MenuBarReadouts.make(from: Self.sample, metrics: preferences.menuBarMetrics)
+        let threshold = Self.hasBattery ? preferences.batteryMenuBarThreshold : BatteryMenuBar.off
+        let readouts = MenuBarReadouts.make(
+            from: Self.sample(batteryThreshold: threshold), metrics: preferences.menuBarMetrics, batteryThreshold: threshold
+        )
         let image = MenuBarImage.make(readouts, colored: preferences.coloredMenuBar)
+        let keepsColors = MenuBarImage.keepsColors(readouts, colored: preferences.coloredMenuBar)
         return HStack {
             Spacer()
             HStack(spacing: 14) {
                 Image(nsImage: image)
-                    .renderingMode(preferences.coloredMenuBar ? .original : .template)
+                    .renderingMode(keepsColors ? .original : .template)
                     .foregroundStyle(.primary)
                 Image(systemName: "wifi").foregroundStyle(.secondary)
                 Text("12:01").font(.callout).foregroundStyle(.secondary)
@@ -259,6 +298,8 @@ struct PreferencesPage: View {
 
 /// Version, data sources, and the limits of what can be measured.
 struct AboutPage: View {
+    let updater: UpdateChecker
+
     private var version: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? L("development")
     }
@@ -277,6 +318,8 @@ struct AboutPage: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 22)
             .settingsCard()
+
+            UpdateSettingsGroup(updater: updater)
 
             SettingsGroup(title: L("Data sources")) {
                 infoRow("cpu", L("CPU, memory, disk and network"), L("macOS kernel counters"))
