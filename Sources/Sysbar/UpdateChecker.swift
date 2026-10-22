@@ -114,6 +114,12 @@ final class UpdateChecker: ObservableObject {
         }
     }
 
+    /// Back to checking automatically, with no version skipped.
+    func resetToDefaults() {
+        defaults.removeObject(forKey: Key.skipped)
+        isAutomatic = true
+    }
+
     /// Hides the suggestion until a newer release than this one appears.
     func skip(_ release: ReleaseInfo) {
         defaults.set(release.version.description, forKey: Key.skipped)

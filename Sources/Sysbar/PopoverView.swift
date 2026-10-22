@@ -71,7 +71,10 @@ struct PopoverView: View {
     @ViewBuilder
     private var content: some View {
         if case .remote(let id) = model.selection, let device = preferences.device(id: id) {
-            RemoteView(monitor: remote, cards: device.cards, temperatureUnit: preferences.temperatureUnit, rowLimit: preferences.appRows, onRetry: onRetry)
+            RemoteView(
+                monitor: remote, cards: device.cards, layout: preferences.cardLayout,
+                temperatureUnit: preferences.temperatureUnit, rowLimit: preferences.appRows, onRetry: onRetry
+            )
         } else {
             localContent
         }
@@ -159,7 +162,10 @@ struct PopoverView: View {
     }
 
     private func gridColumns(count: Int) -> [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: 8), count: CardLayout.columns(forCount: count))
+        Array(
+            repeating: GridItem(.flexible(), spacing: 8),
+            count: CardLayout.columns(forCount: count, mode: preferences.cardLayout)
+        )
     }
 
     @ViewBuilder

@@ -10,7 +10,10 @@ final class Preferences: ObservableObject {
 
     private enum Key {
         static let menuBarMetrics = "menuBarMetrics"
+        static let menuBarOrder = "menuBarOrder"
         static let visibleCards = "visibleCards"
+        static let cardOrder = "cardOrder"
+        static let cardLayout = "cardLayout"
         static let appColumns = "appColumns"
         static let showsApps = "showsApps"
         static let appRows = "appRows"
@@ -24,14 +27,18 @@ final class Preferences: ObservableObject {
 
     private let defaults: UserDefaults
 
-    /// Metrics pinned to the menu bar. Never empty.
-    @Published private(set) var menuBarMetrics: [MenuBarMetric]
-    /// Cards shown in the popover. May be empty.
-    @Published private(set) var visibleCards: [MenuBarMetric]
+    /// Every metric in the menu bar's order; the pinned ones are shown. At least one stays pinned.
+    @Published private(set) var menuBarArrangement: Arrangement<MenuBarMetric>
+    /// Every metric in the popover's order; the visible ones become cards. May have none visible.
+    @Published private(set) var cardArrangement: Arrangement<MenuBarMetric>
     /// Columns of the apps table. Never empty.
     @Published private(set) var appColumns: [AppSortKey]
     /// Machines that can be monitored over SSH. Always valid: see `init`.
     @Published private(set) var devices: [RemoteDevice]
+
+    @Published var cardLayout: CardLayoutMode {
+        didSet { defaults.set(cardLayout.rawValue, forKey: Key.cardLayout) }
+    }
 
     @Published var showsApps: Bool {
         didSet { defaults.set(showsApps, forKey: Key.showsApps) }
@@ -69,9 +76,17 @@ final class Preferences: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        menuBarMetrics = MenuBarMetric.metrics(fromStored: defaults.stringArray(forKey: Key.menuBarMetrics))
-        visibleCards = MenuBarMetric.ordered(fromStored: defaults.stringArray(forKey: Key.visibleCards))
-            ?? MenuBarMetric.allCases
+        menuBarArrangement = Arrangement(
+            storedOrder: defaults.stringArray(forKey: Key.menuBarOrder),
+            storedSelection: defaults.stringArray(forKey: Key.menuBarMetrics),
+            defaultSelection: MenuBarMetric.defaults, emptyMeansDefault: true
+        )
+        cardArrangement = Arrangement(
+            storedOrder: defaults.stringArray(forKey: Key.cardOrder),
+            storedSelection: defaults.stringArray(forKey: Key.visibleCards),
+            defaultSelection: MenuBarMetric.allCases, emptyMeansDefault: false
+        )
+        cardLayout = defaults.string(forKey: Key.cardLayout).flatMap(CardLayoutMode.init(rawValue:)) ?? .automatic
         let storedColumns: [AppSortKey]? = OrderedSelection.ordered(fromStored: defaults.stringArray(forKey: Key.appColumns))
         appColumns = (storedColumns?.isEmpty == false ? storedColumns : nil) ?? AppSortKey.allCases
         showsApps = defaults.object(forKey: Key.showsApps) as? Bool ?? true
@@ -89,8 +104,13 @@ final class Preferences: ObservableObject {
 
     // MARK: Menu bar and cards
 
+    /// Metrics pinned to the menu bar, in their order. Never empty.
+    var menuBarMetrics: [MenuBarMetric] { menuBarArrangement.selected }
+    /// Cards shown in the popover, in their order. May be empty.
+    var visibleCards: [MenuBarMetric] { cardArrangement.selected }
+
     func isPinned(_ metric: MenuBarMetric) -> Bool {
-        menuBarMetrics.contains(metric)
+        menuBarArrangement.contains(metric)
     }
 
     /// The last pinned metric cannot be removed.
@@ -99,17 +119,65 @@ final class Preferences: ObservableObject {
     }
 
     func togglePin(_ metric: MenuBarMetric) {
-        menuBarMetrics = MenuBarMetric.toggling(metric, in: menuBarMetrics)
-        defaults.set(MenuBarMetric.storedValue(of: menuBarMetrics), forKey: Key.menuBarMetrics)
+        setMenuBar(menuBarArrangement.toggling(metric, minimum: 1))
+    }
+
+    func movePin(_ metric: MenuBarMetric, to target: MenuBarMetric) {
+        setMenuBar(menuBarArrangement.moving(metric, to: target))
+    }
+
+    func movePin(_ metric: MenuBarMetric, by offset: Int) {
+        setMenuBar(menuBarArrangement.moving(metric, by: offset))
     }
 
     func isCardVisible(_ metric: MenuBarMetric) -> Bool {
-        visibleCards.contains(metric)
+        cardArrangement.contains(metric)
     }
 
     func toggleCard(_ metric: MenuBarMetric) {
-        visibleCards = MenuBarMetric.toggling(metric, in: visibleCards, minimum: 0)
-        defaults.set(MenuBarMetric.storedValue(of: visibleCards), forKey: Key.visibleCards)
+        setCards(cardArrangement.toggling(metric, minimum: 0))
+    }
+
+    func moveCard(_ metric: MenuBarMetric, to target: MenuBarMetric) {
+        setCards(cardArrangement.moving(metric, to: target))
+    }
+
+    func moveCard(_ metric: MenuBarMetric, by offset: Int) {
+        setCards(cardArrangement.moving(metric, by: offset))
+    }
+
+    private func setMenuBar(_ arrangement: Arrangement<MenuBarMetric>) {
+        menuBarArrangement = arrangement
+        defaults.set(arrangement.storedSelection, forKey: Key.menuBarMetrics)
+        defaults.set(arrangement.storedOrder, forKey: Key.menuBarOrder)
+    }
+
+    private func setCards(_ arrangement: Arrangement<MenuBarMetric>) {
+        cardArrangement = arrangement
+        defaults.set(arrangement.storedSelection, forKey: Key.visibleCards)
+        defaults.set(arrangement.storedOrder, forKey: Key.cardOrder)
+    }
+
+    // MARK: Reset
+
+    /// Puts every setting on this object back to its default. Remote devices stay unless
+    /// `keepingDevices` is false; the first-run welcome is not shown again.
+    func resetToDefaults(keepingDevices: Bool) {
+        setMenuBar(Arrangement(order: MenuBarMetric.allCases, selected: MenuBarMetric.defaults))
+        setCards(Arrangement(order: MenuBarMetric.allCases, selected: MenuBarMetric.allCases))
+        cardLayout = .automatic
+        appColumns = AppSortKey.allCases
+        defaults.set(OrderedSelection.storedValue(of: appColumns), forKey: Key.appColumns)
+        showsApps = true
+        appRows = Self.defaultAppRows
+        coloredMenuBar = true
+        batteryMenuBarThreshold = BatteryMenuBar.defaultThreshold
+        samplingInterval = SamplingInterval.defaultSeconds
+        temperatureUnit = .regionDefault
+        if !keepingDevices {
+            devices = []
+            persistDevices()
+        }
     }
 
     // MARK: Apps table columns

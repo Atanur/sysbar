@@ -6,6 +6,7 @@ struct RemoteView: View {
     @ObservedObject var monitor: RemoteMonitor
     /// The cards this device is set to show; the ones its machine cannot report are skipped.
     let cards: [RemoteCard]
+    let layout: CardLayoutMode
     let temperatureUnit: TemperatureUnit
     let rowLimit: Int
     let onRetry: () -> Void
@@ -24,7 +25,7 @@ struct RemoteView: View {
                     LazyVGrid(
                         columns: Array(
                             repeating: GridItem(.flexible(), spacing: 8),
-                            count: CardLayout.columns(forCount: visible.count)
+                            count: CardLayout.columns(forCount: visible.count, mode: layout)
                         ),
                         spacing: 8
                     ) {

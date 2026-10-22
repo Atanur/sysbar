@@ -123,11 +123,11 @@ private let gib = 1_073_741_824.0
         network: IOThroughput(inbound: 500 * kib, outbound: 100 * kib)
     )
 
-    @Test func buildsOneReadoutPerSelectedMetricInDisplayOrder() {
+    @Test func buildsOneReadoutPerSelectedMetricInTheGivenOrder() {
         let readouts = MenuBarReadouts.make(from: snapshot, metrics: MenuBarMetric.allCases.reversed())
 
-        #expect(readouts.map(\.label) == ["CPU", "GPU", "RAM", "Power", "Disk", "Network"])
-        #expect(readouts.map(\.text) == ["23%", "7%", "8.0G", "12.3W", "3.0M", "600K"])
+        #expect(readouts.map(\.label) == ["Network", "Disk", "Power", "RAM", "GPU", "CPU"])
+        #expect(readouts.map(\.text) == ["600K", "3.0M", "12.3W", "8.0G", "7%", "23%"])
     }
 
     @Test func levelsAreNormalisedToZeroThroughOne() {

@@ -132,8 +132,13 @@ private let chargingProperties: [String: Any] = [
         #expect(Format.compactDuration(minutes: 61) == "1h 1m")
     }
 
-    @Test func cardsUseTwoColumnsOnlyForAnEvenCount() {
-        #expect([0, 1, 3, 5, 7].map(CardLayout.columns(forCount:)) == [1, 1, 1, 1, 1])
-        #expect([2, 4, 6].map(CardLayout.columns(forCount:)) == [2, 2, 2])
+    @Test func automaticLayoutUsesTwoColumnsOnlyForAnEvenCount() {
+        #expect([0, 1, 3, 5, 7].map { CardLayout.columns(forCount: $0) } == [1, 1, 1, 1, 1])
+        #expect([2, 4, 6].map { CardLayout.columns(forCount: $0) } == [2, 2, 2])
+    }
+
+    @Test func chosenLayoutsOverrideTheCount() {
+        #expect([1, 2, 5].map { CardLayout.columns(forCount: $0, mode: .oneColumn) } == [1, 1, 1])
+        #expect([1, 2, 5].map { CardLayout.columns(forCount: $0, mode: .twoColumns) } == [1, 2, 2])
     }
 }

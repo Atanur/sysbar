@@ -1,0 +1,15 @@
+name: Feature suggestion
+description: An idea that would make Sysbar more useful.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like Sysbar to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help you?
+      description: The situation where you would use it.

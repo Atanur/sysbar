@@ -51,12 +51,13 @@ public enum MenuBarReadouts {
 
     /// Height of a menu bar level bar, in points.
     public static let barHeight = 13.0
-    /// One readout per selected metric, in display order, then the battery when `batteryThreshold`
-    /// says it should be shown. Metrics without a reading are skipped.
+    /// One readout per selected metric, in the order given, then the battery when `batteryThreshold`
+    /// says it should be shown. Metrics without a reading, and repeats, are skipped.
     public static func make(
         from snapshot: Snapshot, metrics: [MenuBarMetric], batteryThreshold: Int = BatteryMenuBar.off
     ) -> [MenuBarReadout] {
-        let pinned = MenuBarMetric.allCases.filter(metrics.contains).compactMap { readout(for: $0, in: snapshot) }
+        let unique = metrics.enumerated().filter { metrics.firstIndex(of: $0.element) == $0.offset }.map(\.element)
+        let pinned = unique.compactMap { readout(for: $0, in: snapshot) }
         guard BatteryMenuBar.isShown(snapshot.battery, threshold: batteryThreshold), let battery = snapshot.battery else {
             return pinned
         }

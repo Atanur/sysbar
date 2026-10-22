@@ -5,6 +5,8 @@ import SwiftUI
 struct GeneralPage: View {
     @ObservedObject var preferences: Preferences
     @State private var info = SystemInfoProbe.read()
+    @State private var battery = BatteryProbe.read()
+    @State private var copied = false
 
     var body: some View {
         SettingsPageScaffold(page: .general) {
@@ -30,7 +32,57 @@ struct GeneralPage: View {
                 RowDivider()
                 infoRow("clock", L("Uptime"), Format.uptime(info.uptime))
             }
+
+            if let battery {
+                SettingsGroup(title: L("Battery")) {
+                    infoRow("battery.75", L("Charge"), PowerSummary.headline(battery: battery) ?? Format.percent(battery.fraction))
+                    if let health = battery.health {
+                        RowDivider()
+                        infoRow("heart", L("Health"), Format.percent(health))
+                    }
+                    if let cycles = battery.cycleCount {
+                        RowDivider()
+                        infoRow("arrow.triangle.2.circlepath", L("Cycle count"), "\(cycles)")
+                    }
+                }
+            }
+
+            SettingsGroup {
+                SettingsRow(symbol: "doc.on.doc", title: L("Copy as text"), subtitle: L("Everything on this page")) {
+                    Button(copied ? L("Copied") : L("Copy"), action: copySummary)
+                }
+            }
         }
+    }
+
+    private func copySummary() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(summary, forType: .string)
+        copied = true
+        Task {
+            try? await Task.sleep(for: .seconds(2))
+            copied = false
+        }
+    }
+
+    private var summary: String {
+        var lines = [
+            "\(L("Chip")): \(info.chip)",
+            "\(L("Model")): \(info.modelName ?? info.modelIdentifier) (\(info.modelIdentifier))",
+            "\(L("System")): \(info.osVersion)",
+            "\(L("Memory")): \(Format.gigabytes(info.memoryBytes))",
+            "\(L("Cores")): \(coresText)",
+        ]
+        if let total = info.diskTotalBytes, let free = info.diskFreeBytes {
+            lines.append("\(L("Disk")): \(L("%1$@ free / %2$@", Format.gigabytes(free), Format.gigabytes(total)))")
+        }
+        lines.append("\(L("Uptime")): \(Format.uptime(info.uptime))")
+        if let battery {
+            lines.append("\(L("Battery")): \(PowerSummary.headline(battery: battery) ?? Format.percent(battery.fraction))")
+            if let health = battery.health { lines.append("\(L("Health")): \(Format.percent(health))") }
+            if let cycles = battery.cycleCount { lines.append("\(L("Cycle count")): \(cycles)") }
+        }
+        return lines.joined(separator: "\n")
     }
 
     /// "8 · 6 performance + 2 efficiency" on Apple silicon, the plain count elsewhere.
@@ -96,16 +148,19 @@ struct MenuBarPage: View {
         SettingsPageScaffold(page: .menuBar) {
             SettingsGroup(title: L("Preview")) { preview }
 
-            SettingsGroup(title: L("Shown readouts"), footer: L("At least one readout must stay selected.")) {
-                ForEach(Array(MenuBarMetric.allCases.enumerated()), id: \.element) { index, metric in
-                    if index > 0 { RowDivider() }
-                    SettingsRow(symbol: metric.symbol, title: metric.displayName) {
-                        RowToggle(isOn: Binding(
-                            get: { preferences.isPinned(metric) },
-                            set: { _ in preferences.togglePin(metric) }
-                        ))
-                        .disabled(preferences.isPinLocked(metric))
-                    }
+            SettingsGroup(
+                title: L("Shown readouts"),
+                footer: L("At least one readout must stay selected. Drag a row to change the order.")
+            ) {
+                ArrangedMetricRows(
+                    order: preferences.menuBarArrangement.order,
+                    move: preferences.movePin(_:to:), step: preferences.movePin(_:by:)
+                ) { metric in
+                    RowToggle(isOn: Binding(
+                        get: { preferences.isPinned(metric) },
+                        set: { _ in preferences.togglePin(metric) }
+                    ))
+                    .disabled(preferences.isPinLocked(metric))
                 }
             }
 
@@ -176,18 +231,29 @@ struct PopoverPage: View {
 
     var body: some View {
         SettingsPageScaffold(page: .popover) {
+            SettingsGroup(title: L("Layout")) {
+                SettingsRow(symbol: "square.grid.2x2", title: L("Card layout"), subtitle: layoutDetail) {
+                    Picker("", selection: $preferences.cardLayout) {
+                        ForEach(CardLayoutMode.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .fixedSize()
+                }
+            }
+
             SettingsGroup(
                 title: L("Cards"),
-                footer: L("An odd number of cards shows in one column, an even number in two. Clicking a card opens Activity Monitor, or Battery settings for power.")
+                footer: L("Drag a row to change the order. Clicking a card opens Activity Monitor, or Battery settings for power.")
             ) {
-                ForEach(Array(MenuBarMetric.allCases.enumerated()), id: \.element) { index, metric in
-                    if index > 0 { RowDivider() }
-                    SettingsRow(symbol: metric.symbol, title: metric.displayName) {
-                        RowToggle(isOn: Binding(
-                            get: { preferences.isCardVisible(metric) },
-                            set: { _ in preferences.toggleCard(metric) }
-                        ))
-                    }
+                ArrangedMetricRows(
+                    order: preferences.cardArrangement.order,
+                    move: preferences.moveCard(_:to:), step: preferences.moveCard(_:by:)
+                ) { metric in
+                    RowToggle(isOn: Binding(
+                        get: { preferences.isCardVisible(metric) },
+                        set: { _ in preferences.toggleCard(metric) }
+                    ))
                 }
             }
 
@@ -218,11 +284,31 @@ struct PopoverPage: View {
             }
         }
     }
+
+    private var layoutDetail: String {
+        switch preferences.cardLayout {
+        case .automatic: L("Two columns for an even number of cards, one for an odd number")
+        case .oneColumn: L("Cards stack in a single list")
+        case .twoColumns: L("Always side by side")
+        }
+    }
+}
+
+extension CardLayoutMode {
+    var title: String {
+        switch self {
+        case .automatic: L("Automatic")
+        case .oneColumn: L("One column")
+        case .twoColumns: L("Two columns")
+        }
+    }
 }
 
 /// Sampling and start-up behaviour.
 struct PreferencesPage: View {
     @ObservedObject var preferences: Preferences
+    let updater: UpdateChecker
+    @State private var confirmsReset = false
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var launchError: String?
     @State private var language = AppLanguage.current
@@ -282,7 +368,28 @@ struct PreferencesPage: View {
                     RowToggle(isOn: Binding(get: { launchAtLogin }, set: setLaunchAtLogin))
                 }
             }
+
+            SettingsGroup(title: L("Reset")) {
+                SettingsRow(
+                    symbol: "arrow.counterclockwise", title: L("Reset all settings"),
+                    subtitle: L("Language and launch at login are kept")
+                ) {
+                    Button(L("Reset…")) { confirmsReset = true }
+                }
+            }
+            .confirmationDialog(L("Reset all settings?"), isPresented: $confirmsReset) {
+                Button(L("Reset, keep remote devices")) { reset(keepingDevices: true) }
+                Button(L("Reset and remove remote devices"), role: .destructive) { reset(keepingDevices: false) }
+                Button(L("Cancel"), role: .cancel) {}
+            } message: {
+                Text(L("Menu bar, window, sampling and update settings go back to their defaults."))
+            }
         }
+    }
+
+    private func reset(keepingDevices: Bool) {
+        preferences.resetToDefaults(keepingDevices: keepingDevices)
+        updater.resetToDefaults()
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {
@@ -293,57 +400,5 @@ struct PreferencesPage: View {
             launchError = L("Could not change the setting: %@", error.localizedDescription)
         }
         launchAtLogin = LaunchAtLogin.isEnabled
-    }
-}
-
-/// Version, data sources, and the limits of what can be measured.
-struct AboutPage: View {
-    let updater: UpdateChecker
-
-    private var version: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? L("development")
-    }
-
-    var body: some View {
-        SettingsPageScaffold(page: .about) {
-            VStack(spacing: 8) {
-                Image(nsImage: NSApp.applicationIconImage)
-                    .resizable()
-                    .frame(width: 88, height: 88)
-                    .accessibilityHidden(true)
-                Text("Sysbar").font(.title.weight(.semibold))
-                Text(L("Version %@", version)).foregroundStyle(.secondary)
-                Text(L("A lightweight system monitor for the menu bar.")).padding(.top, 2)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 22)
-            .settingsCard()
-
-            UpdateSettingsGroup(updater: updater)
-
-            SettingsGroup(title: L("Data sources")) {
-                infoRow("cpu", L("CPU, memory, disk and network"), L("macOS kernel counters"))
-                RowDivider()
-                infoRow("display", L("GPU usage"), L("Statistics from the graphics driver"))
-                RowDivider()
-                infoRow("bolt.fill", L("Power"), L("Total SMC power, energy counters and battery log"))
-                RowDivider()
-                infoRow("list.bullet", L("Per-app values"), L("Only processes from your own account"))
-                RowDivider()
-                infoRow("server.rack", L("Remote devices"), L("Using ssh, a key or ssh-agent on your system"))
-            }
-
-            SettingsGroup(title: L("Limits")) {
-                infoRow("exclamationmark.triangle.fill", L("CPU and RAM power"),
-                        L("On this macOS version it cannot be read without privileges, so it is not shown"))
-                RowDivider()
-                infoRow("exclamationmark.triangle.fill", L("Power per app"),
-                        L("An estimate from the system, lower than the total"))
-            }
-        }
-    }
-
-    private func infoRow(_ symbol: String, _ title: String, _ subtitle: String) -> some View {
-        SettingsRow(symbol: symbol, title: title, subtitle: subtitle) { EmptyView() }
     }
 }

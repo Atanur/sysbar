@@ -5,6 +5,14 @@
 <h1 align="center">Sysbar</h1>
 
 <p align="center">
+  <a href="https://github.com/Atanur/sysbar/releases"><img src="https://img.shields.io/github/downloads/atanur/sysbar/total?label=downloads&color=4c8f66" alt="Downloads"></a>
+  <a href="https://github.com/Atanur/sysbar/releases/latest"><img src="https://img.shields.io/github/v/release/atanur/sysbar?label=release&color=4c8f66" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B%20%C2%B7%20Apple%20silicon-555" alt="macOS 14+ on Apple silicon">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/atanur/sysbar?color=555" alt="MIT license"></a>
+  <a href="https://github.com/Atanur/sysbar/stargazers"><img src="https://img.shields.io/github/stars/atanur/sysbar?style=flat&color=555" alt="GitHub stars"></a>
+</p>
+
+<p align="center">
   A tiny, native system monitor for the macOS menu bar.<br>
   <a href="https://sysbar.atanur.dev">sysbar.atanur.dev</a><br>
   CPU, GPU, memory, power, disk and network at a glance — and your servers over SSH when you need them.
@@ -22,16 +30,20 @@
 ## Features
 
 **Menu bar**
-- Choose any of CPU, GPU, memory, power, disk and network.
+- Choose any of CPU, GPU, memory, power, disk and network, and drag them into the order you like.
 - Fixed-width slots: no jitter between `3%` and `100%`.
 - Optional load colours (muted green → amber → red), adapted for light and dark menu bars.
 - On battery, the charge can join the menu bar once it drops to a level you choose (always, 80%, 50% or 20%), coloured from green to red.
 
 **Popover**
-- One card per metric with a graph of the last 150 samples, so its span follows the refresh rate (15 seconds at 0.1 s, 5 minutes at 2 s). An even number of cards sits in two columns, an odd number in one.
+- One card per metric with a graph of the last 150 samples, so its span follows the refresh rate (15 seconds at 0.1 s, 5 minutes at 2 s). Cards can be reordered and laid out automatically (two columns for an even count, one for an odd), in one column, or in two.
 - Click a card to open the matching tab in Activity Monitor (or Battery settings).
 - Power reacts to how the Mac is powered: charge and time left on battery, adapter and wall draw when plugged in.
 - **Top apps** table with CPU, memory, GPU and estimated energy per app; helper processes fold into their app. Columns are configurable.
+
+**Settings**
+- About links to the website, the source, release notes, and GitHub forms for problems and ideas that come with your version and Mac filled in. **Copy diagnostic info** adds the rest, without any device names or addresses.
+- Reset all settings, keeping or removing remote devices.
 
 **Updates**
 - Checks GitHub for a new release once a day and offers it in the popover. Updating downloads the release, installs it only if it is signed by the same developer, and relaunches.

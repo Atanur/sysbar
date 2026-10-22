@@ -116,8 +116,8 @@ struct SettingsView: View {
         case .menuBar: MenuBarPage(preferences: preferences)
         case .popover: PopoverPage(preferences: preferences)
         case .devices: DevicesPage(preferences: preferences)
-        case .preferences: PreferencesPage(preferences: preferences)
-        case .about: AboutPage(updater: updater)
+        case .preferences: PreferencesPage(preferences: preferences, updater: updater)
+        case .about: AboutPage(updater: updater, preferences: preferences)
         }
     }
 }

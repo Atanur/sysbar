@@ -125,7 +125,8 @@ import Testing
     }
 
     @Test func statusTitleListsSelectedMetricsInFixedOrder() {
-        #expect(Format.statusTitle(snapshot, metrics: [.power, .memory, .cpu]) == "CPU 23% · RAM 8.0G · Power 12.3W")
+        #expect(Format.statusTitle(snapshot, metrics: [.power, .memory, .cpu]) == "Power 12.3W · RAM 8.0G · CPU 23%")
+        #expect(Format.statusTitle(snapshot, metrics: [.cpu, .cpu]) == "CPU 23%")
         #expect(Format.statusTitle(snapshot, metrics: [.memory]) == "RAM 8.0G")
     }
 

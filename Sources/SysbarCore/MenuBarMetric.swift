@@ -1,4 +1,5 @@
-/// A metric the user can pin to the menu bar. Declaration order is the display order.
+/// A metric the user can pin to the menu bar or show as a card. Declaration order is the default
+/// order; the user can rearrange both (see `Arrangement`).
 public enum MenuBarMetric: String, CaseIterable, Sendable {
     case cpu, gpu, memory, power, disk, network
 

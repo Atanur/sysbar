@@ -176,6 +176,45 @@ extension View {
     }
 }
 
+/// One row per metric in the given order. A row is dragged by its handle onto another to take its
+/// place; the context menu and the accessibility actions move it one step instead.
+struct ArrangedMetricRows<Accessory: View>: View {
+    let order: [MenuBarMetric]
+    let move: (MenuBarMetric, MenuBarMetric) -> Void
+    let step: (MenuBarMetric, Int) -> Void
+    @ViewBuilder let accessory: (MenuBarMetric) -> Accessory
+
+    var body: some View {
+        ForEach(Array(order.enumerated()), id: \.element) { index, metric in
+            if index > 0 { RowDivider() }
+            SettingsRow(symbol: metric.symbol, title: metric.displayName) {
+                accessory(metric)
+                Image(systemName: "line.3.horizontal")
+                    .foregroundStyle(.tertiary)
+                    .help(L("Drag to change the order"))
+                    .accessibilityHidden(true)
+            }
+            .contentShape(Rectangle())
+            .draggable(metric.rawValue) {
+                Text(metric.displayName).padding(.horizontal, 10).padding(.vertical, 6)
+            }
+            .dropDestination(for: String.self) { items, _ in
+                guard let dropped = items.first.flatMap(MenuBarMetric.init(rawValue:)) else { return false }
+                withAnimation(.snappy) { move(dropped, metric) }
+                return true
+            }
+            .contextMenu {
+                Button(L("Move up")) { withAnimation(.snappy) { step(metric, -1) } }
+                    .disabled(index == 0)
+                Button(L("Move down")) { withAnimation(.snappy) { step(metric, 1) } }
+                    .disabled(index == order.count - 1)
+            }
+            .accessibilityAction(named: L("Move up")) { step(metric, -1) }
+            .accessibilityAction(named: L("Move down")) { step(metric, 1) }
+        }
+    }
+}
+
 extension MenuBarMetric {
     var symbol: String {
         switch self {

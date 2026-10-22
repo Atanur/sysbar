@@ -1,0 +1,48 @@
+name: Problem report
+description: Something in Sysbar does not work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Settings → About → Report a problem fills in the first three fields.
+        **Copy diagnostic info** on the same page copies more details you can paste below.
+  - type: input
+    id: version
+    attributes:
+      label: Sysbar version
+      placeholder: 0.1.1 (6)
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 26.0
+    validations:
+      required: true
+  - type: input
+    id: mac
+    attributes:
+      label: Mac
+      placeholder: MacBook Pro (Mac15,6) · Apple M3 Pro
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what Sysbar did instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the popover
+        2. …
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic info
+      description: Paste from Settings → About → Copy diagnostic info. It contains no device names or addresses.
+      render: text
