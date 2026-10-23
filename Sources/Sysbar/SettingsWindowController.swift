@@ -9,12 +9,14 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     private let preferences: Preferences
     private let updater: UpdateChecker
+    private let fans: FanController
     private let navigation = SettingsNavigation()
     private var window: NSWindow?
 
-    init(preferences: Preferences, updater: UpdateChecker) {
+    init(preferences: Preferences, updater: UpdateChecker, fans: FanController) {
         self.preferences = preferences
         self.updater = updater
+        self.fans = fans
     }
 
     /// Shows the window, on `page` if one is given and otherwise on the page shown last.
@@ -32,7 +34,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
             return
         }
 
-        let controller = NSHostingController(rootView: SettingsView(preferences: preferences, updater: updater, navigation: navigation))
+        let controller = NSHostingController(rootView: SettingsView(preferences: preferences, updater: updater, fans: fans, navigation: navigation))
         let window = NSWindow(contentViewController: controller)
         window.title = "Sysbar"
         // Full-height sidebar with the traffic lights over it, like System Settings.

@@ -19,6 +19,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
            flag + 1 < CommandLine.arguments.count, let cycles = Int(CommandLine.arguments[flag + 1]) {
             statusController?.cycleSettingsForTesting(times: cycles)
         }
+        if CommandLine.arguments.contains("--thermal-panel-test") {
+            statusController?.toggleThermalPanelForTesting()
+        }
+        if CommandLine.arguments.contains("--fan-test") {
+            statusController?.fanTest()
+        }
         if CommandLine.arguments.contains("--update-now") {
             statusController?.updateNowForTesting()
         }

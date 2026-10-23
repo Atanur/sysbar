@@ -8,6 +8,16 @@ public enum SystemPower {
         return Double(value)
     }
 
+    /// Any SMC key's four-character type and raw bytes, read only (diagnostics for `--smc-raw`).
+    public static func rawValue(_ key: String) -> (type: String, bytes: [UInt8])? {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        var size: UInt32 = 0
+        var type: UInt32 = 0
+        guard smc_read_bytes(key, &bytes, UInt32(bytes.count), &size, &type) else { return nil }
+        let name = String(decoding: (0..<4).map { UInt8((type >> (8 * (3 - $0))) & 0xff) }, as: UTF8.self)
+        return (name, Array(bytes.prefix(Int(size))))
+    }
+
     /// Every readable float SMC key whose name starts with `prefix` (diagnostics for `--probe`).
     public static func floatKeys(prefix: String) -> [(key: String, value: Float)] {
         var keys: [(key: String, value: Float)] = []

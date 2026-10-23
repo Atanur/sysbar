@@ -74,17 +74,17 @@ public struct Snapshot: Equatable, Sendable {
     public let network: IOThroughput?
     /// Nil on machines without a battery.
     public let battery: BatteryInfo?
-    /// Average CPU die temperature in °C, when the sensors can be read.
-    public let cpuTemperature: Double?
+    /// Temperatures by source, fans and thermal state, when the sensors can be read.
+    public let thermal: ThermalReading?
 
     public init(
         timestamp: Date, cpuUsage: Double, memory: MemoryReading,
         power: PowerReading?, systemPower: Double?,
         gpuUsage: Double? = nil, disk: IOThroughput? = nil, network: IOThroughput? = nil,
-        battery: BatteryInfo? = nil, cpuTemperature: Double? = nil
+        battery: BatteryInfo? = nil, thermal: ThermalReading? = nil
     ) {
         self.battery = battery
-        self.cpuTemperature = cpuTemperature
+        self.thermal = thermal
         self.timestamp = timestamp
         self.cpuUsage = cpuUsage
         self.memory = memory
@@ -94,6 +94,9 @@ public struct Snapshot: Equatable, Sendable {
         self.disk = disk
         self.network = network
     }
+
+    /// CPU temperature in °C: the hotter half of the CPU core sensors.
+    public var cpuTemperature: Double? { thermal?.celsius(.cpu) }
 
     /// Best available headline power figure: whole system, else CPU+GPU+ANE+RAM.
     public var headlinePower: Double? {

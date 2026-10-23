@@ -22,7 +22,7 @@ extension Snapshot {
             disk: lerp(from.disk, to.disk, t),
             network: lerp(from.network, to.network, t),
             battery: to.battery,
-            cpuTemperature: lerp(from.cpuTemperature, to.cpuTemperature, t)
+            thermal: to.thermal
         )
     }
 

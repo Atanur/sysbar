@@ -39,6 +39,14 @@ bool smc_read_float(const char *key, float *value);
 // AppleSMC: key name (4 chars + NUL) at a given index; false once past the last key.
 bool smc_key_at_index(uint32_t index, char *key);
 
+// AppleSMC: raw value of any key with its size and four-character type; fails when the value
+// does not fit in `capacity` bytes.
+bool smc_read_bytes(const char *key, uint8_t *bytes, uint32_t capacity, uint32_t *size, uint32_t *type);
+
+// AppleSMC: writes a key of four-character `type` (e.g. "ui8 ", "flt ") and exactly `size` bytes;
+// refuses a key whose type or size differs. Only succeeds for root (the fan helper).
+bool smc_write_bytes(const char *key, const char *type, const uint8_t *bytes, uint32_t size);
+
 CF_ASSUME_NONNULL_END
 
 #endif

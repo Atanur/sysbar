@@ -8,10 +8,11 @@ public final class SystemSampler {
     /// refreshed every few seconds rather than on every sample.
     private static let batteryRefreshNanos: UInt64 = 10_000_000_000
     private var cachedBattery: (info: BatteryInfo?, nanos: UInt64)?
-    /// Temperature moves slowly and reading ~30 sensors costs more than any other probe here.
-    private static let temperatureRefreshNanos: UInt64 = 3_000_000_000
-    private let temperatureProbe = CPUTemperatureProbe()
-    private var cachedTemperature: (celsius: Double?, nanos: UInt64)?
+    /// Temperatures move slowly and reading ~60 sensors and the fans costs more than any other
+    /// probe here.
+    private static let thermalRefreshNanos: UInt64 = 3_000_000_000
+    private let thermalProbe = ThermalProbe()
+    private var cachedThermal: (reading: ThermalReading, nanos: UInt64)?
     private var previousDisk: (totals: DiskTotals, nanos: UInt64)?
     private var previousNetwork: (totals: NetworkTotals, nanos: UInt64)?
 
@@ -43,15 +44,15 @@ public final class SystemSampler {
             disk: diskThroughput(at: nanos),
             network: networkThroughput(at: nanos),
             battery: battery(at: nanos),
-            cpuTemperature: temperature(at: nanos)
+            thermal: thermal(at: nanos)
         )
     }
 
-    private func temperature(at nanos: UInt64) -> Double? {
-        if let cached = cachedTemperature, nanos - cached.nanos < Self.temperatureRefreshNanos { return cached.celsius }
-        let celsius = temperatureProbe.read()
-        cachedTemperature = (celsius, nanos)
-        return celsius
+    private func thermal(at nanos: UInt64) -> ThermalReading? {
+        if let cached = cachedThermal, nanos - cached.nanos < Self.thermalRefreshNanos { return cached.reading }
+        let reading = thermalProbe.read()
+        cachedThermal = (reading, nanos)
+        return reading.temperatures.isEmpty && reading.fans.isEmpty ? nil : reading
     }
 
     private func battery(at nanos: UInt64) -> BatteryInfo? {

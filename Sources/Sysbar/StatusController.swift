@@ -14,7 +14,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private var popover: NSPopover?
     private let remoteMonitor = RemoteMonitor()
     private let updater = UpdateChecker()
-    private lazy var settingsWindow = SettingsWindowController(preferences: preferences, updater: updater)
+    private let fans = FanController()
+    private lazy var settingsWindow = SettingsWindowController(preferences: preferences, updater: updater, fans: fans)
     private var service: MonitorService?
     private var processMonitor: ProcessMonitor?
     private var history: BoundedHistory<Snapshot>
@@ -57,6 +58,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
         }
 
         updater.start()
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(2))
+            self?.fans.askForApprovalIfNeeded()
+        }
 
         if !preferences.setupCompleted {
             settingsWindow.show()
@@ -68,6 +73,12 @@ final class StatusController: NSObject, NSPopoverDelegate {
         button.title = "Sysbar"
         button.target = self
         button.action = #selector(togglePopover)
+    }
+
+    /// The heat assessment when it needs attention; the menu bar then shows a warning that leads
+    /// to the fan panel.
+    private var heatAlert: ThermalAssessment? {
+        ThermalAssessment.assess(history.items).flatMap { $0.needsAttention ? $0 : nil }
     }
 
     private func receive(_ snapshot: Snapshot) {
@@ -84,9 +95,11 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// once per animation frame.
     private func updateDescription(_ snapshot: Snapshot) {
         guard let button = statusItem.button else { return }
-        let description = Format.statusTitle(
+        let readouts = Format.statusTitle(
             snapshot, metrics: preferences.menuBarMetrics, batteryThreshold: preferences.batteryMenuBarThreshold
         )
+        let heat = heatAlert.map { "\($0.cause.title) · \($0.source.title) \(preferences.temperatureUnit.format(celsius: $0.celsius))" }
+        let description = [readouts, heat].compactMap { $0 }.joined(separator: " · ")
         guard description != button.toolTip else { return }
         button.toolTip = description
         button.setAccessibilityLabel(description)
@@ -112,7 +125,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
         let readouts = MenuBarReadouts.make(
             from: snapshot, metrics: metrics, batteryThreshold: preferences.batteryMenuBarThreshold
         )
-        let signature = MenuBarImage.signature(for: readouts, colored: colored)
+        let alert = heatAlert?.level
+        let signature = MenuBarImage.signature(for: readouts, colored: colored, alert: alert)
         guard signature != lastSignature else { return }
         lastSignature = signature
 
@@ -121,7 +135,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
         if button.title != title { button.title = title }
         let position: NSControl.ImagePosition = readouts.isEmpty ? .noImage : .imageOnly
         if button.imagePosition != position { button.imagePosition = position }
-        button.image = readouts.isEmpty ? nil : MenuBarImage.make(readouts, colored: colored)
+        button.image = readouts.isEmpty ? nil : MenuBarImage.make(readouts, colored: colored, alert: alert)
     }
 
     private func openSettings(page: SettingsPage?) {
@@ -232,6 +246,50 @@ final class StatusController: NSObject, NSPopoverDelegate {
         }
     }
 
+    /// For checking the layout: `Sysbar --thermal-panel-test` opens the popover, shows and hides
+    /// the thermal panel twice, and prints the popover window's top edge and height each time.
+    func toggleThermalPanelForTesting() {
+        Task {
+            try? await Task.sleep(for: .seconds(3))
+            openPopoverForTesting()
+            for step in 0..<5 {
+                try? await Task.sleep(for: .seconds(1))
+                if let frame = popover?.contentViewController?.view.window?.frame {
+                    print("step \(step) panel \(viewModel?.showsThermal == true ? "open" : "closed"): top \(Int(frame.maxY)) height \(Int(frame.height))")
+                }
+                viewModel?.showsThermal.toggle()
+            }
+            NSApp.terminate(nil)
+        }
+    }
+
+    /// For checking fan control end to end: `Sysbar --fan-test` sets the fans to manual 60%,
+    /// prints what the SMC reports, hands them back to automatic, prints again, and quits.
+    func fanTest() {
+        Task {
+            @MainActor func report(_ label: String) {
+                let keys = ["F0Md", "F1Md", "F0Tg", "F1Tg", "F0Ac", "F1Ac"]
+                let values = keys.map { key in
+                    SystemPower.rawValue(key).map { value -> String in
+                        value.type == "flt " && value.bytes.count == 4
+                            ? "\(key)=\(Int(value.bytes.withUnsafeBytes { $0.load(as: Float.self) }))"
+                            : "\(key)=\(value.bytes.first.map(String.init) ?? "?")"
+                    } ?? "\(key)=?"
+                }
+                print(label, values.joined(separator: " "), "| state \(fans.helperState) mode \(fans.mode) error \(fans.lastError ?? "none")")
+            }
+            try? await Task.sleep(for: .seconds(2))
+            report("before:")
+            fans.setManual(0.6)
+            try? await Task.sleep(for: .seconds(6))
+            report("manual 60%:")
+            fans.setAutomatic()
+            try? await Task.sleep(for: .seconds(3))
+            report("automatic:")
+            NSApp.terminate(nil)
+        }
+    }
+
     private static func footprintMegabytes() -> String {
         var info = task_vm_info_data_t()
         var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<natural_t>.size)
@@ -260,11 +318,15 @@ final class StatusController: NSObject, NSPopoverDelegate {
         }
         guard let button = statusItem.button else { return }
 
+        // The user may have just approved the fan helper in System Settings.
+        fans.refreshHelperState()
         let model = PopoverViewModel(history: history)
         model.live.snapshot = lastSnapshot
         // Reopen on the tab shown last; a device that has since been deleted falls back to this Mac.
         if case .remote(let id) = lastSelection, preferences.device(id: id) == nil { lastSelection = .thisMac }
         model.selection = lastSelection
+        // Opened because of the heat warning: show the fan panel straight away.
+        model.showsThermal = heatAlert != nil && lastSelection == .thisMac
         viewModel = model
         let popover = NSPopover()
         popover.behavior = .transient
@@ -276,6 +338,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
                 preferences: preferences,
                 remote: remoteMonitor,
                 updater: updater,
+                fans: fans,
                 onSelect: { [weak self] in self?.select($0) },
                 onRetry: { [weak self] in self?.retryRemote() },
                 onSettings: { [weak self] in self?.openSettings(page: $0) },
@@ -283,6 +346,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
             )
         )
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        // After the opening animation, size changes (the thermal panel) apply in one step: an
+        // animated resize keeps the content centred while it runs, so the top bar would jump.
+        popover.animates = false
         popover.contentViewController?.view.window?.makeKey()
         // Starts this Mac's apps table, or resumes (or reconnects to) the remote device shown last.
         select(lastSelection)

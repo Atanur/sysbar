@@ -33,6 +33,9 @@ plutil -replace CFBundleVersion -string "$BUILD" Resources/Info.plist
 APP="build/Sysbar.app"
 
 if [[ -n "${SIGN_IDENTITY:-}" ]]; then
+  # The helper is signed first, as nested code, under the identifier the app requires of it.
+  codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" \
+    --identifier com.atanur.sysbar.fanhelper "$APP/Contents/MacOS/SysbarFanHelper"
   codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$APP"
   codesign --verify --strict --verbose=2 "$APP"
 fi

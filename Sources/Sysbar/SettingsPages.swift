@@ -308,7 +308,9 @@ extension CardLayoutMode {
 struct PreferencesPage: View {
     @ObservedObject var preferences: Preferences
     let updater: UpdateChecker
+    @ObservedObject var fans: FanController
     @State private var confirmsReset = false
+
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
     @State private var launchError: String?
     @State private var language = AppLanguage.current
@@ -369,6 +371,14 @@ struct PreferencesPage: View {
                 }
             }
 
+            if FanController.macHasFans {
+                SettingsGroup(title: L("Fan control"), footer: fans.lastError ?? fanFooter) {
+                    SettingsRow(symbol: "fan", title: L("Fan helper"), subtitle: fanStatus) {
+                        fanAction
+                    }
+                }
+            }
+
             SettingsGroup(title: L("Reset")) {
                 SettingsRow(
                     symbol: "arrow.counterclockwise", title: L("Reset all settings"),
@@ -384,6 +394,33 @@ struct PreferencesPage: View {
             } message: {
                 Text(L("Menu bar, window, sampling and update settings go back to their defaults."))
             }
+        }
+    }
+
+    private var fanStatus: String {
+        switch fans.helperState {
+        case .ready: L("Set up; fans are controlled from the popover")
+        case .needsApproval: L("Waiting for approval in System Settings")
+        case .notInstalled: L("Not set up")
+        case .unavailable: L("Needs a signed copy of Sysbar")
+        }
+    }
+
+    private var fanFooter: String {
+        L("The helper runs only while Sysbar uses it and can only set fan speeds. Fans return to automatic when Sysbar quits, crashes or the Mac sleeps.")
+    }
+
+    @ViewBuilder
+    private var fanAction: some View {
+        switch fans.helperState {
+        case .ready:
+            HStack {
+                if fans.isUnresponsive { Button(L("Set up again")) { Task { await fans.reinstall() } } }
+                Button(L("Remove")) { Task { await fans.uninstall() } }
+            }
+        case .needsApproval: Button(L("Open System Settings")) { fans.openApprovalSettings() }
+        case .notInstalled: Button(L("Set up…")) { fans.install() }
+        case .unavailable: EmptyView()
         }
     }
 

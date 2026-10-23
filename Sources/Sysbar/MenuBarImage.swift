@@ -17,22 +17,28 @@ enum MenuBarImage {
     private static let batteryBody = NSSize(width: 20, height: 10)
     private static let batteryCap = NSSize(width: 1.5, height: 4)
     private static let font = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .medium)
+    /// The heat warning drawn after the readouts when the temperature needs attention.
+    private static let alertSymbol = NSImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
+    private static let alertWidth: CGFloat = 12
 
     /// Changes only when something visible changes, so callers can skip redundant redraws.
-    static func signature(for readouts: [MenuBarReadout], colored: Bool) -> String {
+    static func signature(for readouts: [MenuBarReadout], colored: Bool, alert: LoadLevel? = nil) -> String {
         let parts = readouts.map { readout in
             let pixels = Int((readout.level * barHeight).rounded())
             let showsColor = colored || readout.isAlwaysColored
             return "\(readout.slot.id):\(readout.text):\(pixels):\(showsColor ? "\(String(describing: readout.load))" : "")"
         }
-        return parts.joined(separator: "|") + (colored ? "#c" : "")
+        return parts.joined(separator: "|") + (colored ? "#c" : "") + (alert.map { "!\($0)" } ?? "")
     }
 
-    static func make(_ readouts: [MenuBarReadout], colored: Bool) -> NSImage {
-        let isTemplate = !keepsColors(readouts, colored: colored)
+    /// `alert` adds a thermometer in that level's colour after the readouts.
+    static func make(_ readouts: [MenuBarReadout], colored: Bool, alert: LoadLevel? = nil) -> NSImage {
+        let isTemplate = !keepsColors(readouts, colored: colored) && alert == nil
         let slotTextWidths = readouts.map { max(width(of: $0.slot.widestText), width(of: $0.text)) }
         let slotWidths = zip(readouts, slotTextWidths).map { graphicWidth(for: $0.0) + barGap + $0.1 }
-        let totalWidth = slotWidths.reduce(0, +) + slotGap * CGFloat(max(readouts.count - 1, 0))
+        let readoutsWidth = slotWidths.reduce(0, +) + slotGap * CGFloat(max(readouts.count - 1, 0))
+        let alertSpace = alert == nil ? 0 : (readouts.isEmpty ? 0 : slotGap) + alertWidth
+        let totalWidth = readoutsWidth + alertSpace
 
         let image = NSImage(size: NSSize(width: max(totalWidth, 1), height: height), flipped: false) { _ in
             var x: CGFloat = 0
@@ -40,6 +46,7 @@ enum MenuBarImage {
                 draw(readout, slotWidth: slotWidth, originX: x, colored: colored, isTemplate: isTemplate)
                 x += slotWidth + slotGap
             }
+            if let alert { drawAlert(alert, maxX: totalWidth) }
             return true
         }
         image.isTemplate = isTemplate
@@ -91,6 +98,17 @@ enum MenuBarImage {
             roundedRect: NSRect(x: originX, y: barBottom, width: barWidth, height: fillHeight),
             xRadius: barWidth / 2, yRadius: barWidth / 2
         ).fill()
+    }
+
+    private static func drawAlert(_ level: LoadLevel, maxX: CGFloat) {
+        let configuration = alertSymbol.applying(NSImage.SymbolConfiguration(paletteColors: [level.nsColor]))
+        guard
+            let symbol = NSImage(systemSymbolName: "thermometer.high", accessibilityDescription: nil)?
+                .withSymbolConfiguration(configuration)
+        else { return }
+        let size = symbol.size
+        symbol.draw(in: NSRect(x: maxX - alertWidth + (alertWidth - size.width) / 2, y: (height - size.height) / 2,
+                               width: size.width, height: size.height))
     }
 
     /// An outlined body with a small cap on the right, filled from the left to the charge.

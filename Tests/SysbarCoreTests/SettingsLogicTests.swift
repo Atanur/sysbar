@@ -209,15 +209,23 @@ import Testing
         #expect(TemperatureUnit.fahrenheit.format(celsius: 0) == "32°")
     }
 
-    @Test func averageIgnoresSensorsThatAreOffOrNonsense() {
-        #expect(CPUTemperatureProbe.average([60, 70, 0, -5, 900, .nan]) == 65)
-        #expect(CPUTemperatureProbe.average([]) == nil)
-        #expect(CPUTemperatureProbe.average([0, 0]) == nil)
+    @Test func summaryIsTheHotterHalfAndIgnoresSensorsThatAreOffOrNonsense() {
+        #expect(ThermalProbe.summary([60, 70, 0, -5, 900, .nan]) == 70)
+        #expect(ThermalProbe.summary([50, 60, 70, 80]) == 75)
+        #expect(ThermalProbe.summary([50, 60, 70]) == 65)
+        #expect(ThermalProbe.summary([]) == nil)
+        #expect(ThermalProbe.summary([0, 0]) == nil)
     }
 
-    @Test func thisMacReportsAPlausibleTemperatureWhenItHasSensors() {
-        guard let celsius = CPUTemperatureProbe().read() else { return }
-        #expect((1.0...130.0).contains(celsius))
+    @Test func thisMacReportsPlausibleTemperaturesWhenItHasSensors() {
+        let reading = ThermalProbe().read()
+        for celsius in reading.temperatures.values {
+            #expect((1.0...130.0).contains(celsius))
+        }
+        for fan in reading.fans {
+            #expect(fan.maximum >= fan.minimum)
+            #expect((0...1).contains(fan.fraction))
+        }
     }
 }
 

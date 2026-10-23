@@ -37,7 +37,8 @@ if let flag = CommandLine.arguments.firstIndex(of: "--render-menubar"), flag + 1
                 power: nil, systemPower: 7.2, battery: battery
             )
             let readouts = MenuBarReadouts.make(from: snapshot, metrics: [.cpu, .memory], batteryThreshold: 100)
-            return MenuBarImage.make(readouts, colored: colored)
+            // The lowest charge also shows the heat warning, to check how it is drawn.
+            return MenuBarImage.make(readouts, colored: colored, alert: charge < 0.2 ? .critical : nil)
         }
         let charges = [0.92, 0.45, 0.3, 0.12]
         let rows: [(NSAppearance.Name, Bool)] = [(.aqua, false), (.aqua, true), (.darkAqua, false), (.darkAqua, true)]
@@ -142,6 +143,18 @@ if let flag = CommandLine.arguments.first(where: { $0.hasPrefix("--smc-keys=") }
     exit(0)
 }
 
+// `Sysbar --smc-raw=KEY,KEY` prints each key's four-character type and raw bytes (read only).
+if let flag = CommandLine.arguments.first(where: { $0.hasPrefix("--smc-raw=") }) {
+    for key in flag.dropFirst("--smc-raw=".count).split(separator: ",").map(String.init) {
+        guard let value = SystemPower.rawValue(key) else {
+            print(key, "unreadable")
+            continue
+        }
+        print(key, "'\(value.type)'", value.bytes.map { String(format: "%02x", $0) }.joined(separator: " "))
+    }
+    exit(0)
+}
+
 // `Sysbar --smc-log=N` prints one CSV row per second for N seconds: epoch, then every SMC "P*" float key.
 // Used to correlate SMC keys with `powermetrics` readings.
 if let flag = CommandLine.arguments.first(where: { $0.hasPrefix("--smc-log=") }) {
@@ -166,6 +179,14 @@ if let flag = CommandLine.arguments.first(where: { $0.hasPrefix("--probe") }) {
     sampler.describeEnergyChannels().forEach { print("  \($0)") }
     let snapshot = sampler.sample()
     print("cpu:", Format.percent(snapshot.cpuUsage))
+    if let thermal = snapshot.thermal {
+        let parts = ThermalSource.allCases.compactMap { source in thermal.celsius(source).map { "\(source.rawValue) \(Int($0.rounded()))°" } }
+        print("temperatures:", parts.joined(separator: " · "), "· pressure \(thermal.pressure)")
+        thermal.fans.forEach { print("  fan \($0.index): \(Int($0.rpm)) rpm of \(Int($0.minimum))–\(Int($0.maximum)) (\(Format.percent($0.fraction)))") }
+        if let assessment = ThermalAssessment.assess([snapshot]) {
+            print("assessment:", assessment.cause, "·", assessment.source, Int(assessment.celsius.rounded()), "·", assessment.level)
+        }
+    }
     print("memory:", Format.gigabytes(snapshot.memory.usedBytes), "/", Format.gigabytes(snapshot.memory.totalBytes), snapshot.memory.pressure)
     print("package power:", snapshot.power.map { "\($0)" } ?? "unavailable")
     print("system power (SMC PSTR):", snapshot.systemPower.map { Format.watts($0) } ?? "unavailable")

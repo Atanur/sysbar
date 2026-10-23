@@ -16,6 +16,8 @@ final class PopoverViewModel: ObservableObject {
     @Published var apps: [AppUsage] = []
     @Published var sort: AppSortKey = .cpu
     @Published var selection: DeviceSelection = .thisMac
+    /// The temperature and fan panel under the top bar.
+    @Published var showsThermal = false
 
     init(history: BoundedHistory<Snapshot>) {
         self.history = history
@@ -50,6 +52,7 @@ struct PopoverView: View {
     @ObservedObject var preferences: Preferences
     @ObservedObject var remote: RemoteMonitor
     @ObservedObject var updater: UpdateChecker
+    @ObservedObject var fans: FanController
     let onSelect: (DeviceSelection) -> Void
     let onRetry: () -> Void
     /// Opens the settings window, on a given page or on whichever was shown last.
@@ -59,6 +62,13 @@ struct PopoverView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             topBar
+            if model.showsThermal, model.selection == .thisMac {
+                ThermalPanel(
+                    assessment: assessment, reading: model.history.items.last?.thermal,
+                    unit: preferences.temperatureUnit, fans: fans
+                )
+                .transition(.opacity)
+            }
             if let release = updater.offered {
                 UpdateBanner(updater: updater, release: release)
             }
@@ -92,6 +102,14 @@ struct PopoverView: View {
                     ForEach(preferences.devices) { tab($0.name, selection: .remote($0.id), status: status(of: $0)) }
                 }
             }
+            if model.selection == .thisMac, model.history.items.last?.thermal != nil {
+                ThermalButton(
+                    assessment: assessment, unit: preferences.temperatureUnit,
+                    isManual: fans.mode.isManual, isOpen: model.showsThermal
+                ) {
+                    withAnimation(.easeOut(duration: 0.15)) { model.showsThermal.toggle() }
+                }
+            }
             Button { onSettings(nil) } label: {
                 Image(systemName: "gearshape").font(.body)
             }
@@ -100,6 +118,11 @@ struct PopoverView: View {
             .help(L("Settings"))
             .accessibilityLabel(L("Settings"))
         }
+    }
+
+    /// What is warming this Mac, read from the samples in the graphs.
+    private var assessment: ThermalAssessment? {
+        ThermalAssessment.assess(model.history.items)
     }
 
     /// The session state of a remote device, shown as a dot on its tab; nil when it has none.
