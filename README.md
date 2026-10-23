@@ -41,9 +41,10 @@
 - Power reacts to how the Mac is powered: charge and time left on battery, adapter and wall draw when plugged in.
 - **Top apps** table with CPU, memory, GPU and estimated energy per app; helper processes fold into their app. Columns are configurable.
 
-**Settings**
-- About links to the website, the source, release notes, and GitHub forms for problems and ideas that come with your version and Mac filled in. **Copy diagnostic info** adds the rest, without any device names or addresses.
-- Reset all settings, keeping or removing remote devices.
+**Temperature and fans**
+- The fan button above the cards opens a panel that names what is warming the Mac: processor work, graphics work (language models, rendering, games), heavy work, cooling down, warm at rest, cooling at its limit, or macOS slowing down to cool. It shows CPU, GPU, memory and battery temperatures, each the mean of the hotter half of that part's sensors.
+- A thermometer appears in the menu bar only when the heat is out of the ordinary; a busy chip in the 80s is not.
+- Fans: Automatic, or Manual with one slider from each fan's minimum to its maximum speed. Manual control uses a small helper that macOS asks you to approve once. It can only set fan speeds, accepts only Sysbar signed by the same developer, and returns the fans to automatic when Sysbar quits, crashes or hangs (a 15-second lease), or when the Mac sleeps.
 
 **Updates**
 - Checks GitHub for a new release once a day and offers it in the popover. Updating downloads the release, installs it only if it is signed by the same developer, and relaunches.
@@ -57,6 +58,8 @@
 **Settings**
 - A full settings window: menu bar preview, which cards and columns to show, separate refresh rates for this Mac and for remote devices, launch at login.
 - 13 languages: English, Türkçe, Deutsch, Français, Español, Italiano, Português (Brasil), Nederlands, Русский, 日本語, 한국어, 简体中文 and العربية. Follows the system language, or pick one in Settings.
+- About links to the website, the source, release notes, and GitHub forms for problems and ideas that come with your version and Mac filled in. **Copy diagnostic info** adds the rest, without any device names or addresses.
+- Reset all settings, keeping or removing remote devices.
 
 ## Requirements
 
@@ -131,6 +134,9 @@ Diagnostic flags, handy when checking a new Mac or server:
 | `--popover-cycles N` | opens and closes the popover N times and prints the memory footprint after each close |
 | `--settings-cycles N` | does the same with the settings window, showing every page |
 | `--render-menubar PATH` | writes the menu bar readout, battery included, as a PNG in light and dark |
+| `--fan-test` | sets the fans to manual 60 %, prints the SMC readings, then returns them to automatic |
+| `--thermal-panel-test` | opens the popover, shows and hides the thermal panel, and prints the window's top edge and height |
+| `--smc-raw=KEY,KEY` | prints SMC keys' types and raw bytes, read only |
 | `--update-now` | checks for a release at once and installs it, as the Update button does |
 
 ## Website
