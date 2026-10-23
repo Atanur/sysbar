@@ -36,8 +36,9 @@ enum FanState: Equatable {
 
 /// The fan symbol for each state: a dimmed, still outline when stopped; an outline that turns when
 /// automatic; a filled one in the accent colour that turns when manual. It turns faster the harder
-/// the fans work. Spinning is one repeating animation, which the system draws without further work
-/// from the app, and it exists only while the popover is open.
+/// the fans work. The angle is worked out from the clock at about 24 frames a second while it
+/// turns, in this view only, and not at all while it is still; it exists only while the popover is
+/// open. (A repeating SwiftUI animation here once leaked into the whole popover.)
 struct FanIcon: View {
     let state: FanState
     /// How hard the fans work, 0...1; sets the turning speed.
@@ -45,17 +46,34 @@ struct FanIcon: View {
     /// The colour of the automatic state, which turns to a warning while the heat needs attention.
     let automaticStyle: AnyShapeStyle
 
-    @State private var angle = 0.0
+    /// Where the fan was when it last changed speed, and when: the angle at any moment follows from
+    /// these and the clock. It is not an animation, so it cannot bleed into other views' changes.
+    private struct Turning {
+        var angle = 0.0
+        var since = Date()
+        var secondsPerTurn = 3.0
+        var isSpinning = false
+
+        func angle(at date: Date) -> Double {
+            guard isSpinning else { return angle }
+            return (angle + date.timeIntervalSince(since) / secondsPerTurn * 360).truncatingRemainder(dividingBy: 360)
+        }
+    }
+
+    @State private var turning = Turning()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        Image(systemName: state == .manual ? "fan.fill" : "fan")
-            .font(.body)
-            .foregroundStyle(style)
-            .opacity(state == .stopped ? 0.55 : 1)
-            .rotationEffect(.degrees(angle))
-            .onAppear(perform: spin)
-            .onChange(of: spinKey) { spin() }
+        // Redrawn about 24 times a second while turning, and not at all while still.
+        TimelineView(.animation(minimumInterval: 1.0 / 24, paused: !turning.isSpinning)) { timeline in
+            Image(systemName: state == .manual ? "fan.fill" : "fan")
+                .font(.body)
+                .foregroundStyle(style)
+                .opacity(state == .stopped ? 0.55 : 1)
+                .rotationEffect(.degrees(turning.angle(at: timeline.date)))
+        }
+        .onAppear(perform: retime)
+        .onChange(of: spinKey) { retime() }
     }
 
     private var style: AnyShapeStyle {
@@ -77,14 +95,12 @@ struct FanIcon: View {
     /// Changes when the animation has to start again.
     private var spinKey: String { "\(isSpinning)-\(secondsPerTurn)" }
 
-    private func spin() {
-        guard isSpinning else {
-            // Eases to rest from wherever it is.
-            withAnimation(.easeOut(duration: 0.5)) { angle = 0 }
-            return
-        }
-        angle = 0
-        withAnimation(.linear(duration: secondsPerTurn).repeatForever(autoreverses: false)) { angle = 360 }
+    /// Carries on from the angle it has now at the new speed, or stops where it is.
+    private func retime() {
+        let now = Date()
+        turning = Turning(
+            angle: turning.angle(at: now), since: now, secondsPerTurn: secondsPerTurn, isSpinning: isSpinning
+        )
     }
 }
 

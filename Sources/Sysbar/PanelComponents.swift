@@ -114,12 +114,13 @@ private struct RevealOnAppear: ViewModifier {
         content
             .mask(alignment: .leading) {
                 GeometryReader { geometry in
-                    Rectangle().frame(width: revealed || reduceMotion ? geometry.size.width : 0)
+                    Rectangle()
+                        .frame(width: revealed || reduceMotion ? geometry.size.width : 0)
+                        // Only the mask animates; a transaction started here would reach other views.
+                        .animation(.easeOut(duration: duration), value: revealed)
                 }
             }
-            .onAppear {
-                withAnimation(.easeOut(duration: duration)) { revealed = true }
-            }
+            .onAppear { revealed = true }
     }
 }
 
