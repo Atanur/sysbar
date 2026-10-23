@@ -18,6 +18,9 @@ struct IconTile: View {
 /// A settings page: a header with the page's tile, title and one line of description, then content.
 struct SettingsPageScaffold<Content: View>: View {
     let page: SettingsPage
+    /// Whatever, when it changes, reshapes the page (rows appearing, a group replaced), so that
+    /// change is animated.
+    var animating: AnyHashable = 0
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -32,6 +35,7 @@ struct SettingsPageScaffold<Content: View>: View {
                 }
                 content
             }
+            .motion(.snappy(duration: 0.25), value: animating)
             .padding(.horizontal, 28)
             .padding(.top, 20)
             .padding(.bottom, 28)

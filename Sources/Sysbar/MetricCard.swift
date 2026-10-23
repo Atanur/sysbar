@@ -52,6 +52,7 @@ struct MetricCard: View {
                 }
             }
             Sparkline(values: series, capacity: capacity, range: range, color: tint, height: 26)
+                .revealOnAppear()
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -9,7 +9,7 @@ struct GeneralPage: View {
     @State private var copied = false
 
     var body: some View {
-        SettingsPageScaffold(page: .general) {
+        SettingsPageScaffold(page: .general, animating: AnyHashable(preferences.setupCompleted)) {
             if !preferences.setupCompleted { welcome }
 
             SettingsGroup(title: L("This Mac")) {
@@ -181,6 +181,14 @@ struct MenuBarPage: View {
             }
 
             SettingsGroup(title: L("Appearance")) {
+                SettingsRow(symbol: "rectangle.split.3x1", title: L("Style")) {
+                    Picker("", selection: $preferences.menuBarStyle) {
+                        ForEach(MenuBarStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .fixedSize()
+                }
                 SettingsRow(
                     symbol: "paintpalette.fill", title: L("Colored bars"),
                     subtitle: L("Bars turn from green to red as load rises")
@@ -204,14 +212,23 @@ struct MenuBarPage: View {
         let readouts = MenuBarReadouts.make(
             from: Self.sample(batteryThreshold: threshold), metrics: preferences.menuBarMetrics, batteryThreshold: threshold
         )
-        let image = MenuBarImage.make(readouts, colored: preferences.coloredMenuBar)
+        let image = MenuBarImage.make(readouts, colored: preferences.coloredMenuBar, style: preferences.menuBarStyle)
         let keepsColors = MenuBarImage.keepsColors(readouts, colored: preferences.coloredMenuBar)
+        let previewKey = MenuBarImage.signature(
+            for: readouts, colored: preferences.coloredMenuBar, style: preferences.menuBarStyle
+        )
         return HStack {
             Spacer()
             HStack(spacing: 14) {
-                Image(nsImage: image)
-                    .renderingMode(keepsColors ? .original : .template)
-                    .foregroundStyle(.primary)
+                // A new look fades in over the old one.
+                ZStack {
+                    Image(nsImage: image)
+                        .renderingMode(keepsColors ? .original : .template)
+                        .foregroundStyle(.primary)
+                        .id(previewKey)
+                        .transition(.opacity)
+                }
+                .motion(.easeInOut(duration: 0.2), value: previewKey)
                 Image(systemName: "wifi").foregroundStyle(.secondary)
                 Text("12:01").font(.callout).foregroundStyle(.secondary)
             }
@@ -230,7 +247,7 @@ struct PopoverPage: View {
     @ObservedObject var preferences: Preferences
 
     var body: some View {
-        SettingsPageScaffold(page: .popover) {
+        SettingsPageScaffold(page: .popover, animating: AnyHashable(preferences.showsApps)) {
             SettingsGroup(title: L("Layout")) {
                 SettingsRow(symbol: "square.grid.2x2", title: L("Card layout"), subtitle: layoutDetail) {
                     Picker("", selection: $preferences.cardLayout) {
@@ -239,6 +256,22 @@ struct PopoverPage: View {
                     .labelsHidden()
                     .pickerStyle(.menu)
                     .fixedSize()
+                }
+            }
+
+            SettingsGroup(
+                title: L("Top bar buttons"),
+                footer: L("Hiding a button also ends what it started: manual fan speed, or keeping the Mac awake.")
+            ) {
+                // The temperature button shows on any Mac that can read its sensors, fans or not.
+                SettingsRow(symbol: "fan", title: L("Temperature and fans")) {
+                    RowToggle(isOn: $preferences.showsFanButton)
+                }
+                if KeepAwakeController.isAvailable {
+                    RowDivider()
+                    SettingsRow(symbol: "laptopcomputer", title: L("Keep awake with the lid closed")) {
+                        RowToggle(isOn: $preferences.showsKeepAwakeButton)
+                    }
                 }
             }
 
@@ -294,6 +327,16 @@ struct PopoverPage: View {
     }
 }
 
+extension MenuBarStyle {
+    var title: String {
+        switch self {
+        case .barsAndValues: L("Bars and values")
+        case .barsOnly: L("Bars only")
+        case .valuesOnly: L("Values only")
+        }
+    }
+}
+
 extension CardLayoutMode {
     var title: String {
         switch self {
@@ -308,7 +351,7 @@ extension CardLayoutMode {
 struct PreferencesPage: View {
     @ObservedObject var preferences: Preferences
     let updater: UpdateChecker
-    @ObservedObject var fans: FanController
+    @ObservedObject var helper: HelperConnection
     @State private var confirmsReset = false
 
     @State private var launchAtLogin = LaunchAtLogin.isEnabled
@@ -371,10 +414,10 @@ struct PreferencesPage: View {
                 }
             }
 
-            if FanController.macHasFans {
-                SettingsGroup(title: L("Fan control"), footer: fans.lastError ?? fanFooter) {
-                    SettingsRow(symbol: "fan", title: L("Fan helper"), subtitle: fanStatus) {
-                        fanAction
+            if helper.isNeeded {
+                SettingsGroup(title: L("Helper"), footer: helper.setupError ?? helperFooter) {
+                    SettingsRow(symbol: "lock.shield", title: L("Sysbar's helper"), subtitle: helperStatus) {
+                        helperAction
                     }
                 }
             }
@@ -397,29 +440,29 @@ struct PreferencesPage: View {
         }
     }
 
-    private var fanStatus: String {
-        switch fans.helperState {
-        case .ready: L("Set up; fans are controlled from the popover")
+    private var helperStatus: String {
+        switch helper.state {
+        case .ready: L("Set up; used from the popover")
         case .needsApproval: L("Waiting for approval in System Settings")
         case .notInstalled: L("Not set up")
         case .unavailable: L("Needs a signed copy of Sysbar")
         }
     }
 
-    private var fanFooter: String {
-        L("The helper runs only while Sysbar uses it and can only set fan speeds. Fans return to automatic when Sysbar quits, crashes or the Mac sleeps.")
+    private var helperFooter: String {
+        L("The helper runs only while Sysbar uses it and can only set fan speeds and keep the Mac awake with the lid closed. Both end when Sysbar quits or crashes.")
     }
 
     @ViewBuilder
-    private var fanAction: some View {
-        switch fans.helperState {
+    private var helperAction: some View {
+        switch helper.state {
         case .ready:
             HStack {
-                if fans.isUnresponsive { Button(L("Set up again")) { Task { await fans.reinstall() } } }
-                Button(L("Remove")) { Task { await fans.uninstall() } }
+                if helper.isUnresponsive { Button(L("Set up again")) { Task { await helper.reinstall() } } }
+                Button(L("Remove")) { Task { await helper.uninstall() } }
             }
-        case .needsApproval: Button(L("Open System Settings")) { fans.openApprovalSettings() }
-        case .notInstalled: Button(L("Set up…")) { fans.install() }
+        case .needsApproval: Button(L("Open System Settings")) { helper.openApprovalSettings() }
+        case .notInstalled: Button(L("Set up…")) { helper.install() }
         case .unavailable: EmptyView()
         }
     }

@@ -33,6 +33,7 @@
 - Choose any of CPU, GPU, memory, power, disk and network, and drag them into the order you like.
 - Fixed-width slots: no jitter between `3%` and `100%`.
 - Optional load colours (muted green → amber → red), adapted for light and dark menu bars.
+- Three styles: bars and values, bars only (the smallest), or values only. The bars glide to a new level, and on start the logo's bars wave until the first reading arrives.
 - On battery, the charge can join the menu bar once it drops to a level you choose (always, 80%, 50% or 20%), coloured from green to red.
 
 **Popover**
@@ -44,7 +45,13 @@
 **Temperature and fans**
 - The fan button above the cards opens a panel that names what is warming the Mac: processor work, graphics work (language models, rendering, games), heavy work, cooling down, warm at rest, cooling at its limit, or macOS slowing down to cool. It shows CPU, GPU, memory and battery temperatures, each the mean of the hotter half of that part's sensors.
 - A thermometer appears in the menu bar only when the heat is out of the ordinary; a busy chip in the 80s is not.
-- Fans: Automatic, or Manual with one slider from each fan's minimum to its maximum speed. Manual control uses a small helper that macOS asks you to approve once. It can only set fan speeds, accepts only Sysbar signed by the same developer, and returns the fans to automatic when Sysbar quits, crashes or hangs (a 15-second lease), or when the Mac sleeps.
+- Fans: Automatic, or Manual with one slider from each fan's minimum to its maximum speed. Manual control uses a small helper that macOS asks you to approve once. It can only set fan speeds and keep the Mac awake (below), accepts only Sysbar signed by the same developer, and returns the fans to automatic when Sysbar quits, crashes or hangs (a 15-second lease), or when the Mac sleeps.
+
+**Keep awake with the lid closed** (laptops)
+- The laptop button next to the fan button keeps the Mac awake with its lid closed for 1 hour, 4 hours, until you turn it off, or for as long as an app you pick from the open ones stays open. It sets `pmset disablesleep` through the same helper, so there is no password prompt.
+- It ends by itself when its time is up, or when the battery falls to 20 % while unplugged, and the panel says why. It also ends when Sysbar quits, crashes or hangs (the same 15-second lease). If it is switched off elsewhere (`pmset disablesleep 0`), Sysbar notices within seconds.
+- A setting you turned on yourself in Terminal is shown as on, and is only turned off if you choose Off.
+- A closed Mac in a bag can get warm; that is why it is never permanent.
 
 **Updates**
 - Checks GitHub for a new release once a day and offers it in the popover. Updating downloads the release, installs it only if it is signed by the same developer, and relaunches.
@@ -56,7 +63,7 @@
 - Uses your existing ssh keys or ssh-agent. Passwords are never asked for or stored; unknown host keys are never accepted automatically.
 
 **Settings**
-- A full settings window: menu bar preview, which cards and columns to show, separate refresh rates for this Mac and for remote devices, launch at login.
+- A full settings window: menu bar preview, which cards and columns to show, whether the fan and keep-awake buttons appear in the top bar, separate refresh rates for this Mac and for remote devices, launch at login.
 - 13 languages: English, Türkçe, Deutsch, Français, Español, Italiano, Português (Brasil), Nederlands, Русский, 日本語, 한국어, 简体中文 and العربية. Follows the system language, or pick one in Settings.
 - About links to the website, the source, release notes, and GitHub forms for problems and ideas that come with your version and Mac filled in. **Copy diagnostic info** adds the rest, without any device names or addresses.
 - Reset all settings, keeping or removing remote devices.

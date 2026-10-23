@@ -1,0 +1,210 @@
+import SysbarCore
+import SwiftUI
+
+/// The top bar's keep-awake button: a laptop that takes the accent colour while the Mac is kept
+/// awake with its lid closed.
+struct KeepAwakeButton: View {
+    let isActive: Bool
+    let isOpen: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            LaptopLidIcon(isKeptAwake: isActive)
+                .foregroundStyle(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                .frame(width: 22, height: 22)
+                .background(Circle().fill(Color.primary.opacity(isOpen ? 0.12 : 0)))
+                .contentShape(Circle())
+        }
+        .buttonStyle(PressScaleButtonStyle())
+        .help(L("Keep awake with the lid closed"))
+        .accessibilityLabel(L("Keep awake with the lid closed"))
+        .accessibilityValue(isActive ? L("Lid closed, Mac awake") : L("Lid open, Mac may sleep"))
+    }
+}
+
+/// Opens under the top bar: for how long, or while which app is open, to keep the Mac awake with
+/// its lid closed.
+struct KeepAwakePanel: View {
+    @ObservedObject var keepAwake: KeepAwakeController
+    @ObservedObject var helper: HelperConnection
+    /// Whether the list of open apps is shown, and the apps in it as of when it was opened.
+    @State private var choosingApp = false
+    @State private var openApps: [KeepAwakeController.WatchedApp] = []
+
+    private enum Choice: Hashable {
+        case off
+        case duration(KeepAwakeDuration)
+        case app
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(L("Keep awake with the lid closed")).font(.callout.weight(.medium))
+                .help(L("The Mac stays awake even when the lid is closed, so it can get warm in a bag. It sleeps again when Sysbar quits."))
+            CapsulePicker(options: options, selected: selection, onSelect: choose)
+                .disabled(helper.state != .ready)
+            if choosingApp { appList }
+            status
+            helperState
+            if let error = keepAwake.lastError ?? helper.setupError {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(error).font(.caption).foregroundStyle(LoadLevel.high.color)
+                    Spacer(minLength: 0)
+                    if helper.isUnresponsive {
+                        Button(L("Set up again")) { Task { await helper.reinstall() } }.controlSize(.small)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.05)))
+    }
+
+    private var options: [(title: String, value: Choice)] {
+        [
+            (L("Off"), .off),
+            (L("1 hour"), .duration(.oneHour)),
+            (L("4 hours"), .duration(.fourHours)),
+            (L("Until off"), .duration(.untilOff)),
+            (L("App"), .app),
+        ]
+    }
+
+    /// Nil, with no option chosen, while it was turned on outside Sysbar.
+    private var selection: Choice? {
+        if choosingApp { return .app }
+        switch keepAwake.state {
+        case .off: return .off
+        case .on(.duration(let duration), _): return .duration(duration)
+        case .on(.app, _): return .app
+        case .outside: return nil
+        }
+    }
+
+    private func choose(_ choice: Choice) {
+        switch choice {
+        case .off:
+            choosingApp = false
+            keepAwake.stop()
+        case .duration(let duration):
+            choosingApp = false
+            keepAwake.start(.duration(duration))
+        case .app:
+            openApps = KeepAwakeController.openApps()
+            choosingApp.toggle()
+        }
+    }
+
+    // MARK: Apps
+
+    private var appList: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(L("Choose an app")).font(.caption).foregroundStyle(.secondary)
+            if openApps.isEmpty {
+                Text(L("No other apps are open.")).font(.caption).foregroundStyle(.tertiary)
+            } else {
+                // A fixed height: the popover sizes itself to its content, and a scroll view alone would collapse.
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(openApps, id: \.bundleID) { app in appRow(app) }
+                    }
+                }
+                .frame(height: min(CGFloat(openApps.count) * Self.appRowHeight, Self.appListMaxHeight))
+            }
+        }
+    }
+
+    private func appRow(_ app: KeepAwakeController.WatchedApp) -> some View {
+        Button {
+            choosingApp = false
+            keepAwake.start(.app(app))
+        } label: {
+            HStack(spacing: 6) {
+                AppIcon(bundleID: app.bundleID)
+                Text(app.name).font(.caption).lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 4)
+            .frame(height: Self.appRowHeight)
+            .contentShape(Rectangle())
+            .hoverHighlight()
+        }
+        .buttonStyle(.plain)
+    }
+
+    private static let appRowHeight: CGFloat = 24
+    private static let appListMaxHeight: CGFloat = 144
+
+    // MARK: State
+
+    @ViewBuilder
+    private var status: some View {
+        switch keepAwake.state {
+        case .off:
+            if let reason = keepAwake.stopReason { note(text(for: reason)) }
+        case .on(let plan, let endsAt):
+            if let endsAt {
+                HStack(spacing: 4) {
+                    Text(L("Turns off in"))
+                    Text(endsAt, style: .timer).monospacedDigit()
+                }
+                .font(.caption).foregroundStyle(.secondary)
+            } else if case .app(let app) = plan, !choosingApp {
+                HStack(spacing: 6) {
+                    AppIcon(bundleID: app.bundleID)
+                    note(L("While %@ is open", app.name))
+                }
+            }
+        case .outside:
+            note(L("Turned on outside Sysbar."))
+        }
+    }
+
+    private func text(for reason: KeepAwakeStop) -> String {
+        switch reason {
+        case .timeUp: L("Turned off: the time was up.")
+        case .lowBattery: L("Turned off: the battery was low.")
+        case .appQuit: L("Turned off: the app was closed.")
+        }
+    }
+
+    private func note(_ text: String) -> some View {
+        Text(text).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+    }
+
+    @ViewBuilder
+    private var helperState: some View {
+        switch helper.state {
+        case .ready:
+            EmptyView()
+        case .needsApproval:
+            HelperNote(text: L("Allow Sysbar's helper in System Settings → General → Login Items to keep the Mac awake.")) {
+                Button(L("Open System Settings")) { helper.openApprovalSettings() }
+            }
+        case .notInstalled:
+            HelperNote(text: L("Keeping the Mac awake needs a small helper, set up once with your administrator approval.")) {
+                Button(L("Set up…")) { helper.install() }
+            }
+        case .unavailable:
+            HelperNote(text: L("Keeping the Mac awake needs a signed copy of Sysbar.")) { EmptyView() }
+        }
+    }
+}
+
+/// An app's icon, found by its bundle identifier.
+private struct AppIcon: View {
+    let bundleID: String
+
+    var body: some View {
+        Image(nsImage: icon).resizable().frame(width: 16, height: 16)
+    }
+
+    private var icon: NSImage {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
+            return NSWorkspace.shared.icon(for: .application)
+        }
+        return NSWorkspace.shared.icon(forFile: url.path)
+    }
+}

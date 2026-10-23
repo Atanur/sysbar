@@ -18,11 +18,14 @@ final class Preferences: ObservableObject {
         static let showsApps = "showsApps"
         static let appRows = "appRows"
         static let coloredMenuBar = "coloredMenuBar"
+        static let menuBarStyle = "menuBarStyle"
         static let batteryMenuBarThreshold = "batteryMenuBarThreshold"
         static let samplingInterval = "samplingInterval"
         static let temperatureUnit = "temperatureUnit"
         static let setupCompleted = "setupCompleted"
         static let remoteDevices = "remoteDevices"
+        static let showsFanButton = "showsFanButton"
+        static let showsKeepAwakeButton = "showsKeepAwakeButton"
     }
 
     private let defaults: UserDefaults
@@ -56,6 +59,10 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(coloredMenuBar, forKey: Key.coloredMenuBar) }
     }
 
+    @Published var menuBarStyle: MenuBarStyle {
+        didSet { defaults.set(menuBarStyle.rawValue, forKey: Key.menuBarStyle) }
+    }
+
     /// Charge, in percent, at or below which the battery joins the menu bar while unplugged; zero is off.
     @Published var batteryMenuBarThreshold: Int {
         didSet { defaults.set(batteryMenuBarThreshold, forKey: Key.batteryMenuBarThreshold) }
@@ -72,6 +79,16 @@ final class Preferences: ObservableObject {
     /// True once the user has seen the first-run welcome.
     @Published var setupCompleted: Bool {
         didSet { defaults.set(setupCompleted, forKey: Key.setupCompleted) }
+    }
+
+    /// The temperature and fan button in the popover's top bar.
+    @Published var showsFanButton: Bool {
+        didSet { defaults.set(showsFanButton, forKey: Key.showsFanButton) }
+    }
+
+    /// The keep-awake-with-the-lid-closed button in the popover's top bar.
+    @Published var showsKeepAwakeButton: Bool {
+        didSet { defaults.set(showsKeepAwakeButton, forKey: Key.showsKeepAwakeButton) }
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -92,11 +109,14 @@ final class Preferences: ObservableObject {
         showsApps = defaults.object(forKey: Key.showsApps) as? Bool ?? true
         appRows = defaults.object(forKey: Key.appRows) as? Int ?? Self.defaultAppRows
         coloredMenuBar = defaults.object(forKey: Key.coloredMenuBar) as? Bool ?? true
+        menuBarStyle = defaults.string(forKey: Key.menuBarStyle).flatMap(MenuBarStyle.init(rawValue:)) ?? .barsAndValues
         batteryMenuBarThreshold = BatteryMenuBar.normalized(defaults.object(forKey: Key.batteryMenuBarThreshold) as? Int)
         samplingInterval = SamplingInterval.normalized(defaults.double(forKey: Key.samplingInterval))
         temperatureUnit = defaults.string(forKey: Key.temperatureUnit).flatMap(TemperatureUnit.init(rawValue:))
             ?? .regionDefault
         setupCompleted = defaults.bool(forKey: Key.setupCompleted)
+        showsFanButton = defaults.object(forKey: Key.showsFanButton) as? Bool ?? true
+        showsKeepAwakeButton = defaults.object(forKey: Key.showsKeepAwakeButton) as? Bool ?? true
         // Anything that fails validation is dropped, so edited or corrupt stored data can never
         // put an option-like value into an ssh command line.
         devices = Self.decodeDevices(defaults.data(forKey: Key.remoteDevices)).filter { $0.problems.isEmpty }
@@ -171,9 +191,12 @@ final class Preferences: ObservableObject {
         showsApps = true
         appRows = Self.defaultAppRows
         coloredMenuBar = true
+        menuBarStyle = .barsAndValues
         batteryMenuBarThreshold = BatteryMenuBar.defaultThreshold
         samplingInterval = SamplingInterval.defaultSeconds
         temperatureUnit = .regionDefault
+        showsFanButton = true
+        showsKeepAwakeButton = true
         if !keepingDevices {
             devices = []
             persistDevices()

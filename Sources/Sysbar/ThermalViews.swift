@@ -2,32 +2,35 @@ import SysbarCore
 import SwiftUI
 
 /// The top bar's temperature and fan button: just a fan, since the panel it opens has the
-/// numbers. It takes the accent colour while the fans are under manual control, and the warning
-/// colour when the heat needs attention.
+/// numbers. The fan shows what the fans are doing (see `FanIcon`), and takes the warning colour
+/// while the heat needs attention.
 struct ThermalButton: View {
     let assessment: ThermalAssessment?
     let unit: TemperatureUnit
-    let isManual: Bool
+    let fanState: FanState
+    /// How hard the fans work, 0...1.
+    let fanLoad: Double
     let isOpen: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: "fan")
-                .font(.body)
-                .foregroundStyle(style)
+            FanIcon(state: fanState, load: fanLoad, automaticStyle: automaticStyle)
                 .frame(width: 22, height: 22)
                 .background(Circle().fill(Color.primary.opacity(isOpen ? 0.12 : 0)))
                 .contentShape(Circle())
         }
-        .buttonStyle(.plain)
-        .help(assessment.map { "\($0.cause.title) · \($0.source.title) \(unit.format(celsius: $0.celsius))" } ?? L("Temperature and fans"))
+        .buttonStyle(PressScaleButtonStyle())
+        .help([fanState.accessibilityText, heat].compactMap { $0 }.joined(separator: " · "))
         .accessibilityLabel(L("Temperature and fans"))
-        .accessibilityValue(assessment.map { "\($0.cause.title), \($0.source.title) \(unit.format(celsius: $0.celsius))" } ?? "")
+        .accessibilityValue([fanState.accessibilityText, heat].compactMap { $0 }.joined(separator: ", "))
     }
 
-    private var style: AnyShapeStyle {
-        if isManual { return AnyShapeStyle(.tint) }
+    private var heat: String? {
+        assessment.map { "\($0.cause.title) · \($0.source.title) \(unit.format(celsius: $0.celsius))" }
+    }
+
+    private var automaticStyle: AnyShapeStyle {
         if let assessment, assessment.needsAttention { return AnyShapeStyle(assessment.level.color) }
         return AnyShapeStyle(.secondary)
     }
@@ -40,6 +43,7 @@ struct ThermalPanel: View {
     let reading: ThermalReading?
     let unit: TemperatureUnit
     @ObservedObject var fans: FanController
+    @ObservedObject var helper: HelperConnection
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -81,6 +85,8 @@ struct ThermalPanel: View {
                     VStack(spacing: 1) {
                         Text(source.title).font(.caption2).foregroundStyle(.secondary)
                         Text(unit.format(celsius: celsius)).font(.callout.weight(isNamed ? .semibold : .regular)).monospacedDigit()
+                            .contentTransition(.numericText())
+                            .motion(value: unit.format(celsius: celsius))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 4)
@@ -98,31 +104,33 @@ struct ThermalPanel: View {
         HStack {
             Text(L("Fans")).font(.callout.weight(.medium))
             Text(rpmText(reading.fans)).font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                .contentTransition(.numericText())
+                .motion(value: rpmText(reading.fans))
                 .help(perFanText(reading.fans))
             Spacer()
             ModeSwitch(isManual: modeBinding(reading))
-                .disabled(fans.helperState != .ready)
+                .disabled(helper.state != .ready)
         }
-        switch fans.helperState {
+        switch helper.state {
         case .ready:
             if case .manual(let fraction) = fans.mode { slider(fraction) }
         case .needsApproval:
-            helperNote(L("Allow Sysbar in System Settings → General → Login Items to control the fans.")) {
-                Button(L("Open System Settings")) { fans.openApprovalSettings() }
+            HelperNote(text: L("Allow Sysbar in System Settings → General → Login Items to control the fans.")) {
+                Button(L("Open System Settings")) { helper.openApprovalSettings() }
             }
         case .notInstalled:
-            helperNote(L("Fan control needs a small helper, set up once with your administrator approval.")) {
-                Button(L("Set up…")) { fans.install() }
+            HelperNote(text: L("Fan control needs a small helper, set up once with your administrator approval.")) {
+                Button(L("Set up…")) { helper.install() }
             }
         case .unavailable:
-            helperNote(L("Fan control needs a signed copy of Sysbar.")) { EmptyView() }
+            HelperNote(text: L("Fan control needs a signed copy of Sysbar.")) { EmptyView() }
         }
-        if let error = fans.lastError {
+        if let error = fans.lastError ?? helper.setupError {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(error).font(.caption).foregroundStyle(LoadLevel.high.color)
                 Spacer(minLength: 0)
-                if fans.isUnresponsive {
-                    Button(L("Set up again")) { Task { await fans.reinstall() } }.controlSize(.small)
+                if helper.isUnresponsive {
+                    Button(L("Set up again")) { Task { await helper.reinstall() } }.controlSize(.small)
                 }
             }
         }
@@ -136,17 +144,11 @@ struct ThermalPanel: View {
                     .controlSize(.small)
                 Text(L("Max")).font(.caption2).foregroundStyle(.secondary)
                 Text(Format.percent(fraction)).font(.caption).monospacedDigit().frame(minWidth: 34, alignment: .trailing)
+                    .contentTransition(.numericText())
+                    .motion(value: Format.percent(fraction))
             }
             Text(L("Back to automatic when Sysbar quits or the Mac sleeps."))
                 .font(.caption2).foregroundStyle(.tertiary)
-        }
-    }
-
-    private func helperNote(_ text: String, @ViewBuilder action: () -> some View) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(text).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
-            action().controlSize(.small)
         }
     }
 
@@ -176,34 +178,16 @@ struct ThermalPanel: View {
     }
 }
 
-/// Automatic or Manual, drawn like the popover's tabs. A plain SwiftUI control, so it fades in
-/// with the panel without the flashes an AppKit segmented control shows while animating.
+/// Automatic or Manual.
 private struct ModeSwitch: View {
     @Binding var isManual: Bool
-    @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
-        HStack(spacing: 2) {
-            option(L("Automatic"), selected: !isManual) { isManual = false }
-            option(L("Manual"), selected: isManual) { isManual = true }
-        }
-        .padding(2)
-        .background(Capsule().fill(Color.primary.opacity(0.06)))
-        .opacity(isEnabled ? 1 : 0.5)
-    }
-
-    private func option(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.caption.weight(selected ? .semibold : .regular))
-                .padding(.horizontal, 9)
-                .padding(.vertical, 3)
-                .background(Capsule().fill(Color.primary.opacity(selected ? 0.12 : 0)))
-                .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(selected ? Color.primary : Color.secondary)
-        .accessibilityAddTraits(selected ? .isSelected : [])
+        CapsulePicker(
+            options: [(L("Automatic"), false), (L("Manual"), true)],
+            selected: isManual,
+            onSelect: { isManual = $0 }
+        )
     }
 }
 

@@ -14,12 +14,22 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private var popover: NSPopover?
     private let remoteMonitor = RemoteMonitor()
     private let updater = UpdateChecker()
-    private let fans = FanController()
-    private lazy var settingsWindow = SettingsWindowController(preferences: preferences, updater: updater, fans: fans)
+    /// The one link to the privileged helper, shared by fan control and keep-awake.
+    private let helper: HelperConnection
+    private let fans: FanController
+    private let keepAwake: KeepAwakeController
+    private lazy var settingsWindow = SettingsWindowController(preferences: preferences, updater: updater, helper: helper)
     private var service: MonitorService?
     private var processMonitor: ProcessMonitor?
     private var history: BoundedHistory<Snapshot>
-    private var lastSignature = ""
+    /// Plays in the menu bar until the first reading is there.
+    private let launchAnimation = LaunchAnimation()
+    /// Drives the menu bar's short animations: bars gliding to a new level, the heat warning pulsing.
+    private let menuBarFrames = FrameTimer()
+    private var shownReadouts: [MenuBarReadout] = []
+    private var shownAlert: LoadLevel?
+    /// Nil until the menu bar has been drawn, so even an empty one is drawn once.
+    private var lastSignature: String?
     private var lastSnapshot: Snapshot?
     private var viewModel: PopoverViewModel?
     private var preferencesSubscription: AnyCancellable?
@@ -34,6 +44,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
 
     override init() {
         history = BoundedHistory(capacity: SamplingInterval.historyPoints)
+        let helper = HelperConnection()
+        self.helper = helper
+        fans = FanController(helper: helper)
+        keepAwake = KeepAwakeController(helper: helper)
         super.init()
         configureButton()
 
@@ -54,13 +68,18 @@ final class StatusController: NSObject, NSPopoverDelegate {
         terminationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.remoteMonitor.closeConnections() }
+            MainActor.assumeIsolated {
+                self?.remoteMonitor.closeConnections()
+                self?.keepAwake.appWillTerminate()
+            }
         }
 
         updater.start()
+        // A setting an earlier run left behind is turned off, or shown if someone else set it.
+        keepAwake.refreshFromSystem()
         Task { [weak self] in
             try? await Task.sleep(for: .seconds(2))
-            self?.fans.askForApprovalIfNeeded()
+            self?.helper.askForApprovalIfNeeded()
         }
 
         if !preferences.setupCompleted {
@@ -70,9 +89,12 @@ final class StatusController: NSObject, NSPopoverDelegate {
 
     private func configureButton() {
         guard let button = statusItem.button else { return }
-        button.title = "Sysbar"
+        // No text: the logo, then the readings. The name is for VoiceOver and the tooltip.
+        button.setAccessibilityLabel("Sysbar")
+        button.toolTip = "Sysbar"
         button.target = self
         button.action = #selector(togglePopover)
+        launchAnimation.start(on: button)
     }
 
     /// The heat assessment when it needs attention; the menu bar then shows a warning that leads
@@ -84,6 +106,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private func receive(_ snapshot: Snapshot) {
         history = history.appending(snapshot)
         lastSnapshot = snapshot
+        keepAwake.evaluate(battery: snapshot.battery)
         viewModel?.history = history
         refreshMenuBar(snapshot)
         updateDescription(snapshot)
@@ -110,7 +133,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
             service.restart(interval: preferences.samplingInterval)
             history = BoundedHistory(capacity: SamplingInterval.historyPoints)
         }
-        lastSignature = ""
+        // A hidden button leaves no way to see or end what it started, so that ends with it.
+        if !preferences.showsFanButton, fans.mode.isManual { fans.setAutomatic() }
+        if !preferences.showsKeepAwakeButton, case .on = keepAwake.state { keepAwake.stop() }
+        lastSignature = nil
         if let lastSnapshot {
             refreshMenuBar(lastSnapshot)
             updateDescription(lastSnapshot)
@@ -120,23 +146,58 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// Redraws the status item only when something visible changed.
     private func refreshMenuBar(_ snapshot: Snapshot) {
         guard let button = statusItem.button else { return }
+        // The first reading waits for the start-up animation to have played; it then draws it.
+        if launchAnimation.isPlaying {
+            launchAnimation.finish { [weak self] in
+                guard let self, let latest = self.lastSnapshot else { return }
+                self.lastSignature = nil
+                self.refreshMenuBar(latest)
+            }
+            return
+        }
         let metrics = preferences.menuBarMetrics
         let colored = preferences.coloredMenuBar
         let readouts = MenuBarReadouts.make(
             from: snapshot, metrics: metrics, batteryThreshold: preferences.batteryMenuBarThreshold
         )
         let alert = heatAlert?.level
-        let signature = MenuBarImage.signature(for: readouts, colored: colored, alert: alert)
+        let style = preferences.menuBarStyle
+        let signature = MenuBarImage.signature(for: readouts, colored: colored, style: style, alert: alert)
         guard signature != lastSignature else { return }
         lastSignature = signature
+        let previous = shownReadouts
+        let previousAlert = shownAlert
+        shownReadouts = readouts
+        shownAlert = alert
 
-        // Only the image changes from frame to frame; the rest is set when it actually differs.
-        let title = readouts.isEmpty ? "Sysbar" : ""
-        if button.title != title { button.title = title }
-        let position: NSControl.ImagePosition = readouts.isEmpty ? .noImage : .imageOnly
-        if button.imagePosition != position { button.imagePosition = position }
-        button.image = readouts.isEmpty ? nil : MenuBarImage.make(readouts, colored: colored, alert: alert)
+        func draw(_ readouts: [MenuBarReadout], alertOpacity: CGFloat = 1) {
+            // With nothing to show, the logo stands in for it.
+            button.image = readouts.isEmpty
+                ? MenuBarLogo.image()
+                : MenuBarImage.make(readouts, colored: colored, style: style, alert: alert, alertOpacity: alertOpacity)
+        }
+        menuBarFrames.cancel()
+        draw(readouts)
+
+        // Small touches, each a short burst of frames after a change and nothing in between.
+        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { return }
+        if alert != nil, alert != previousAlert {
+            // The heat warning pulses a few times when it appears or changes.
+            menuBarFrames.run(duration: Self.pulseSeconds) { progress in
+                draw(readouts, alertOpacity: 0.65 + 0.35 * cos(2 * .pi * Self.pulseCount * progress))
+            }
+        } else if !previous.isEmpty, MenuBarReadouts.blend(from: previous, to: readouts, fraction: 0.5) != readouts {
+            // The bars glide to their new level instead of jumping.
+            menuBarFrames.run(duration: Self.glideSeconds) { progress in
+                let eased = 1 - pow(1 - progress, 3)
+                draw(MenuBarReadouts.blend(from: previous, to: readouts, fraction: eased))
+            }
+        }
     }
+
+    private static let glideSeconds = 0.3
+    private static let pulseSeconds = 1.8
+    private static let pulseCount = 3.0
 
     private func openSettings(page: SettingsPage?) {
         popover?.performClose(nil)
@@ -276,7 +337,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
                             : "\(key)=\(value.bytes.first.map(String.init) ?? "?")"
                     } ?? "\(key)=?"
                 }
-                print(label, values.joined(separator: " "), "| state \(fans.helperState) mode \(fans.mode) error \(fans.lastError ?? "none")")
+                print(label, values.joined(separator: " "), "| state \(helper.state) mode \(fans.mode) error \(fans.lastError ?? "none")")
             }
             try? await Task.sleep(for: .seconds(2))
             report("before:")
@@ -318,15 +379,16 @@ final class StatusController: NSObject, NSPopoverDelegate {
         }
         guard let button = statusItem.button else { return }
 
-        // The user may have just approved the fan helper in System Settings.
-        fans.refreshHelperState()
+        // The user may have just approved the helper in System Settings.
+        helper.refreshState()
+        keepAwake.refreshFromSystem()
         let model = PopoverViewModel(history: history)
         model.live.snapshot = lastSnapshot
         // Reopen on the tab shown last; a device that has since been deleted falls back to this Mac.
         if case .remote(let id) = lastSelection, preferences.device(id: id) == nil { lastSelection = .thisMac }
         model.selection = lastSelection
         // Opened because of the heat warning: show the fan panel straight away.
-        model.showsThermal = heatAlert != nil && lastSelection == .thisMac
+        model.showsThermal = heatAlert != nil && lastSelection == .thisMac && preferences.showsFanButton
         viewModel = model
         let popover = NSPopover()
         popover.behavior = .transient
@@ -339,6 +401,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
                 remote: remoteMonitor,
                 updater: updater,
                 fans: fans,
+                keepAwake: keepAwake,
+                helper: helper,
                 onSelect: { [weak self] in self?.select($0) },
                 onRetry: { [weak self] in self?.retryRemote() },
                 onSettings: { [weak self] in self?.openSettings(page: $0) },

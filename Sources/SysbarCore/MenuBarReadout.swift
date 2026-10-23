@@ -64,6 +64,21 @@ public enum MenuBarReadouts {
         return pinned + [batteryReadout(battery)]
     }
 
+    /// The readouts part-way from `old` to `new`, so the bars can glide to a new level: each level
+    /// moves `fraction` of the way (0 is `old`, 1 is `new`); everything else is already `new`'s.
+    /// If the two do not show the same slots, there is nothing to glide between and `new` is returned.
+    public static func blend(from old: [MenuBarReadout], to new: [MenuBarReadout], fraction: Double) -> [MenuBarReadout] {
+        guard old.map(\.slot) == new.map(\.slot) else { return new }
+        let progress = min(max(fraction, 0), 1)
+        return zip(old, new).map { before, after in
+            MenuBarReadout(
+                slot: after.slot, label: after.label, text: after.text,
+                level: before.level + (after.level - before.level) * progress,
+                load: after.load, slotCharacters: after.slotCharacters
+            )
+        }
+    }
+
     /// Maps bytes per second onto 0...1 on a log scale so both a trickle and a burst stay visible.
     static func rateLevel(_ bytesPerSecond: Double) -> Double {
         min(max(log10(1 + bytesPerSecond / 1_024) / rateDecades, 0), 1)

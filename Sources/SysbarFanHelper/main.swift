@@ -3,10 +3,12 @@ import Foundation
 import IOKit.pwr_mgt
 import SysbarCore
 
-// Sysbar's fan helper. launchd runs it as root when Sysbar connects (Sysbar registers it once
-// with SMAppService), because only root may write the SMC. It does two things: run every fan at
-// a chosen speed, or hand them back to macOS. It accepts connections only from Sysbar signed by
-// the same team. The fans go back to automatic whenever:
+// Sysbar's helper. launchd runs it as root when Sysbar connects (Sysbar registers it once with
+// SMAppService), because only root may write the SMC or change system power settings. It does
+// two things: run every fan at a chosen speed (or hand them back to macOS), and keep the Mac
+// awake with its lid closed (LidAwakeService, which has its own lease and is undone separately).
+// It accepts connections only from Sysbar signed by the same team. The fans go back to
+// automatic whenever:
 // - setting them fails part way,
 // - Sysbar stops renewing manual mode (FanControlLimits.leaseSeconds), e.g. it hangs,
 // - Sysbar disconnects (quits or crashes),
@@ -173,6 +175,13 @@ final class ClientSession: NSObject, FanControlProtocol, @unchecked Sendable {
         }
     }
 
+    func setLidAwake(enabled: Bool, reply: @escaping (String?) -> Void) {
+        FanService.shared.queue.async {
+            self.countOnce()
+            reply(LidAwakeService.shared.set(enabled: enabled))
+        }
+    }
+
     /// Must run on the fan queue.
     func ended() {
         guard counted else { return }
@@ -234,6 +243,7 @@ final class Listener: NSObject, NSXPCListenerDelegate, @unchecked Sendable {
     /// Must run on the fan queue.
     private func restoreAndExit() {
         FanService.shared.applyAutomatic()
+        LidAwakeService.shared.restore()
         exit(0)
     }
 }
@@ -285,7 +295,10 @@ sleepWatcher.start()
 signal(SIGTERM, SIG_IGN)
 let termination = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
 termination.setEventHandler {
-    FanService.shared.queue.sync { _ = FanService.shared.applyAutomatic() }
+    FanService.shared.queue.sync {
+        _ = FanService.shared.applyAutomatic()
+        LidAwakeService.shared.restore()
+    }
     exit(0)
 }
 termination.resume()

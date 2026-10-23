@@ -16,13 +16,25 @@ final class PopoverViewModel: ObservableObject {
     @Published var apps: [AppUsage] = []
     @Published var sort: AppSortKey = .cpu
     @Published var selection: DeviceSelection = .thisMac
-    /// The temperature and fan panel under the top bar.
-    @Published var showsThermal = false
+    /// The panel under the top bar; at most one is open.
+    @Published var panel: PopoverPanel?
+
+    /// The temperature and fan panel.
+    var showsThermal: Bool {
+        get { panel == .thermal }
+        set { panel = newValue ? .thermal : nil }
+    }
 
     init(history: BoundedHistory<Snapshot>) {
         self.history = history
     }
 
+}
+
+/// What the top bar's buttons open under it.
+enum PopoverPanel: Equatable {
+    case thermal
+    case keepAwake
 }
 
 /// The reading being animated towards the newest sample.
@@ -48,11 +60,16 @@ private struct LiveSamples<Content: View>: View {
 struct PopoverView: View {
     static let width: CGFloat = 340
 
+    /// Lets the selected tab's background slide to the next one.
+    @Namespace private var tabSelection
+
     @ObservedObject var model: PopoverViewModel
     @ObservedObject var preferences: Preferences
     @ObservedObject var remote: RemoteMonitor
     @ObservedObject var updater: UpdateChecker
     @ObservedObject var fans: FanController
+    @ObservedObject var keepAwake: KeepAwakeController
+    @ObservedObject var helper: HelperConnection
     let onSelect: (DeviceSelection) -> Void
     let onRetry: () -> Void
     /// Opens the settings window, on a given page or on whichever was shown last.
@@ -62,13 +79,7 @@ struct PopoverView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             topBar
-            if model.showsThermal, model.selection == .thisMac {
-                ThermalPanel(
-                    assessment: assessment, reading: model.history.items.last?.thermal,
-                    unit: preferences.temperatureUnit, fans: fans
-                )
-                .transition(.opacity)
-            }
+            if model.selection == .thisMac { panel }
             if let release = updater.offered {
                 UpdateBanner(updater: updater, release: release)
             }
@@ -76,6 +87,36 @@ struct PopoverView: View {
         }
         .padding(12)
         .frame(width: Self.width)
+    }
+
+    /// The open panel, unless its button has been hidden in Settings.
+    @ViewBuilder
+    private var panel: some View {
+        switch model.panel {
+        case .thermal where showsFanButton:
+            ThermalPanel(
+                assessment: assessment, reading: model.history.items.last?.thermal,
+                unit: preferences.temperatureUnit, fans: fans, helper: helper
+            )
+            .transition(.opacity)
+        case .keepAwake where showsKeepAwakeButton:
+            KeepAwakePanel(keepAwake: keepAwake, helper: helper)
+                .transition(.opacity)
+        default:
+            EmptyView()
+        }
+    }
+
+    private var showsFanButton: Bool {
+        preferences.showsFanButton && model.history.items.last?.thermal != nil
+    }
+
+    private var showsKeepAwakeButton: Bool {
+        preferences.showsKeepAwakeButton && KeepAwakeController.isAvailable
+    }
+
+    private func togglePanel(_ panel: PopoverPanel) {
+        withAnimation(.easeOut(duration: 0.15)) { model.panel = model.panel == panel ? nil : panel }
     }
 
     @ViewBuilder
@@ -101,23 +142,38 @@ struct PopoverView: View {
                     tab(L("This Mac"), selection: .thisMac, status: nil)
                     ForEach(preferences.devices) { tab($0.name, selection: .remote($0.id), status: status(of: $0)) }
                 }
+                .motion(.snappy(duration: 0.22), value: model.selection)
             }
-            if model.selection == .thisMac, model.history.items.last?.thermal != nil {
+            if model.selection == .thisMac, showsFanButton {
                 ThermalButton(
                     assessment: assessment, unit: preferences.temperatureUnit,
-                    isManual: fans.mode.isManual, isOpen: model.showsThermal
+                    fanState: fanState, fanLoad: fanReading?.fanFraction ?? 0, isOpen: model.panel == .thermal
                 ) {
-                    withAnimation(.easeOut(duration: 0.15)) { model.showsThermal.toggle() }
+                    togglePanel(.thermal)
+                }
+            }
+            if model.selection == .thisMac, showsKeepAwakeButton {
+                KeepAwakeButton(isActive: keepAwake.isActive, isOpen: model.panel == .keepAwake) {
+                    togglePanel(.keepAwake)
                 }
             }
             Button { onSettings(nil) } label: {
                 Image(systemName: "gearshape").font(.body)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressScaleButtonStyle())
             .foregroundStyle(.secondary)
             .help(L("Settings"))
             .accessibilityLabel(L("Settings"))
         }
+    }
+
+    private var fanReading: ThermalReading? { model.history.items.last?.thermal }
+
+    /// Stopped, automatic or manual, from the control mode and the newest speed reading.
+    private var fanState: FanState {
+        let speeds = fanReading?.fans.map(\.rpm) ?? []
+        let average = speeds.isEmpty ? nil : speeds.reduce(0, +) / Double(speeds.count)
+        return FanState(isManual: fans.mode.isManual, rpm: average)
     }
 
     /// What is warming this Mac, read from the samples in the graphs.
@@ -147,12 +203,14 @@ struct PopoverView: View {
                 .lineLimit(1)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(
-                    Capsule().fill(Color.primary.opacity(isSelected ? 0.12 : 0))
-                )
+                .background {
+                    if isSelected {
+                        Capsule().fill(Color.primary.opacity(0.12)).matchedGeometryEffect(id: "tab", in: tabSelection)
+                    }
+                }
                 .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressScaleButtonStyle(scale: 0.96))
         .foregroundStyle(isSelected ? Color.primary : Color.secondary)
         .help(status?.description ?? "")
         .accessibilityValue(status?.description ?? "")

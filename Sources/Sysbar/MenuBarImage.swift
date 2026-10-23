@@ -14,6 +14,8 @@ enum MenuBarImage {
     private static let barHeight = CGFloat(MenuBarReadouts.barHeight)
     private static let barGap: CGFloat = 4
     private static let slotGap: CGFloat = 10
+    /// Between bars with no text next to them.
+    private static let compactSlotGap: CGFloat = 7
     private static let batteryBody = NSSize(width: 20, height: 10)
     private static let batteryCap = NSSize(width: 1.5, height: 4)
     private static let font = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .medium)
@@ -22,31 +24,38 @@ enum MenuBarImage {
     private static let alertWidth: CGFloat = 12
 
     /// Changes only when something visible changes, so callers can skip redundant redraws.
-    static func signature(for readouts: [MenuBarReadout], colored: Bool, alert: LoadLevel? = nil) -> String {
+    static func signature(
+        for readouts: [MenuBarReadout], colored: Bool, style: MenuBarStyle = .barsAndValues, alert: LoadLevel? = nil
+    ) -> String {
         let parts = readouts.map { readout in
-            let pixels = Int((readout.level * barHeight).rounded())
+            let pixels = style.showsBars ? Int((readout.level * barHeight).rounded()) : 0
+            let text = style.showsValues ? readout.text : ""
             let showsColor = colored || readout.isAlwaysColored
-            return "\(readout.slot.id):\(readout.text):\(pixels):\(showsColor ? "\(String(describing: readout.load))" : "")"
+            return "\(readout.slot.id):\(text):\(pixels):\(showsColor ? "\(String(describing: readout.load))" : "")"
         }
-        return parts.joined(separator: "|") + (colored ? "#c" : "") + (alert.map { "!\($0)" } ?? "")
+        return parts.joined(separator: "|") + (colored ? "#c" : "") + "#\(style.rawValue)" + (alert.map { "!\($0)" } ?? "")
     }
 
     /// `alert` adds a thermometer in that level's colour after the readouts.
-    static func make(_ readouts: [MenuBarReadout], colored: Bool, alert: LoadLevel? = nil) -> NSImage {
+    static func make(
+        _ readouts: [MenuBarReadout], colored: Bool, style: MenuBarStyle = .barsAndValues, alert: LoadLevel? = nil,
+        alertOpacity: CGFloat = 1
+    ) -> NSImage {
         let isTemplate = !keepsColors(readouts, colored: colored) && alert == nil
         let slotTextWidths = readouts.map { max(width(of: $0.slot.widestText), width(of: $0.text)) }
-        let slotWidths = zip(readouts, slotTextWidths).map { graphicWidth(for: $0.0) + barGap + $0.1 }
-        let readoutsWidth = slotWidths.reduce(0, +) + slotGap * CGFloat(max(readouts.count - 1, 0))
-        let alertSpace = alert == nil ? 0 : (readouts.isEmpty ? 0 : slotGap) + alertWidth
+        let slotWidths = zip(readouts, slotTextWidths).map { slotWidth(for: $0.0, textWidth: $0.1, style: style) }
+        let gap = style == .barsOnly ? compactSlotGap : slotGap
+        let readoutsWidth = slotWidths.reduce(0, +) + gap * CGFloat(max(readouts.count - 1, 0))
+        let alertSpace = alert == nil ? 0 : (readouts.isEmpty ? 0 : gap) + alertWidth
         let totalWidth = readoutsWidth + alertSpace
 
         let image = NSImage(size: NSSize(width: max(totalWidth, 1), height: height), flipped: false) { _ in
             var x: CGFloat = 0
             for (readout, slotWidth) in zip(readouts, slotWidths) {
-                draw(readout, slotWidth: slotWidth, originX: x, colored: colored, isTemplate: isTemplate)
-                x += slotWidth + slotGap
+                draw(readout, slotWidth: slotWidth, originX: x, colored: colored, style: style, isTemplate: isTemplate)
+                x += slotWidth + gap
             }
-            if let alert { drawAlert(alert, maxX: totalWidth) }
+            if let alert { drawAlert(alert, maxX: totalWidth, opacity: alertOpacity) }
             return true
         }
         image.isTemplate = isTemplate
@@ -62,24 +71,38 @@ enum MenuBarImage {
         readout.slot == .battery ? batteryBody.width + batteryCap.width : barWidth
     }
 
+    /// Each slot is as wide as its widest possible content, so the item never shifts.
+    private static func slotWidth(for readout: MenuBarReadout, textWidth: CGFloat, style: MenuBarStyle) -> CGFloat {
+        let graphic = style.showsBars ? graphicWidth(for: readout) : 0
+        let text = style.showsValues ? textWidth : 0
+        return graphic + (style.showsBars && style.showsValues ? barGap : 0) + text
+    }
+
     private static func width(of text: String) -> CGFloat {
         ceil((text as NSString).size(withAttributes: [.font: font]).width)
     }
 
     private static func draw(
-        _ readout: MenuBarReadout, slotWidth: CGFloat, originX: CGFloat, colored: Bool, isTemplate: Bool
+        _ readout: MenuBarReadout, slotWidth: CGFloat, originX: CGFloat, colored: Bool, style: MenuBarStyle,
+        isTemplate: Bool
     ) {
         let ink = isTemplate ? NSColor.black : NSColor.labelColor
         let track = isTemplate ? NSColor.black.withAlphaComponent(0.28) : NSColor.tertiaryLabelColor
-        let fill = (colored || readout.isAlwaysColored) ? (readout.load?.nsColor ?? ActivityColors.nsColor) : ink
+        let isColored = colored || readout.isAlwaysColored
+        let fill = isColored ? (readout.load?.nsColor ?? ActivityColors.nsColor) : ink
 
-        if readout.slot == .battery {
-            drawBattery(level: readout.level, originX: originX, outline: track, fill: fill)
-        } else {
-            drawBar(level: readout.level, originX: originX, track: track, fill: fill)
+        if style.showsBars {
+            if readout.slot == .battery {
+                drawBattery(level: readout.level, originX: originX, outline: track, fill: fill)
+            } else {
+                drawBar(level: readout.level, originX: originX, track: track, fill: fill)
+            }
         }
 
-        let text = NSAttributedString(string: readout.text, attributes: [.font: font, .foregroundColor: ink])
+        guard style.showsValues else { return }
+        // Without bars, the colour moves to the text.
+        let textColor = style.showsBars ? ink : fill
+        let text = NSAttributedString(string: readout.text, attributes: [.font: font, .foregroundColor: textColor])
         let size = text.size()
         text.draw(at: NSPoint(x: originX + slotWidth - size.width, y: (height - size.height) / 2))
     }
@@ -100,8 +123,9 @@ enum MenuBarImage {
         ).fill()
     }
 
-    private static func drawAlert(_ level: LoadLevel, maxX: CGFloat) {
-        let configuration = alertSymbol.applying(NSImage.SymbolConfiguration(paletteColors: [level.nsColor]))
+    private static func drawAlert(_ level: LoadLevel, maxX: CGFloat, opacity: CGFloat) {
+        let color = level.nsColor.withAlphaComponent(opacity)
+        let configuration = alertSymbol.applying(NSImage.SymbolConfiguration(paletteColors: [color]))
         guard
             let symbol = NSImage(systemSymbolName: "thermometer.high", accessibilityDescription: nil)?
                 .withSymbolConfiguration(configuration)

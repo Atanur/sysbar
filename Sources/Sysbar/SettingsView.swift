@@ -59,7 +59,7 @@ struct SettingsView: View {
 
     @ObservedObject var preferences: Preferences
     let updater: UpdateChecker
-    let fans: FanController
+    let helper: HelperConnection
     @ObservedObject var navigation: SettingsNavigation
 
     var body: some View {
@@ -88,7 +88,11 @@ struct SettingsView: View {
             .safeAreaInset(edge: .bottom) { quitButton }
             .navigationSplitViewColumnWidth(min: 200, ideal: 215, max: 260)
         } detail: {
-            page
+            // A soft cross-fade between pages.
+            ZStack {
+                page.id(navigation.selection).transition(.opacity)
+            }
+            .motion(.easeInOut(duration: 0.18), value: navigation.selection)
         }
         .frame(minWidth: 740, minHeight: 500)
     }
@@ -117,7 +121,7 @@ struct SettingsView: View {
         case .menuBar: MenuBarPage(preferences: preferences)
         case .popover: PopoverPage(preferences: preferences)
         case .devices: DevicesPage(preferences: preferences)
-        case .preferences: PreferencesPage(preferences: preferences, updater: updater, fans: fans)
+        case .preferences: PreferencesPage(preferences: preferences, updater: updater, helper: helper)
         case .about: AboutPage(updater: updater, preferences: preferences)
         }
     }

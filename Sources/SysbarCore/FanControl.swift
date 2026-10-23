@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-/// What the app and its privileged fan helper agree on. The helper accepts exactly these two
+/// What the app and its privileged helper agree on. The helper accepts exactly these three
 /// requests, and only from a copy of Sysbar signed by the same team.
 @objc public protocol FanControlProtocol {
     /// Runs every fan at `fraction` of the way from its minimum (0) to its maximum (1) speed.
@@ -9,6 +9,9 @@ import Security
     func setManual(fraction: Double, reply: @escaping (String?) -> Void)
     /// Hands the fans back to macOS's own control.
     func setAutomatic(reply: @escaping (String?) -> Void)
+    /// Keeps the Mac awake with its lid closed (`enabled`), or lets it sleep again. Like manual
+    /// fan speed it lapses unless asked for again within `FanControlLimits.leaseSeconds`.
+    func setLidAwake(enabled: Bool, reply: @escaping (String?) -> Void)
 }
 
 public enum FanControlLimits {

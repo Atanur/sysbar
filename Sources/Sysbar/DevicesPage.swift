@@ -8,7 +8,7 @@ struct DevicesPage: View {
     @State private var editing: RemoteDevice?
 
     var body: some View {
-        SettingsPageScaffold(page: .devices) {
+        SettingsPageScaffold(page: .devices, animating: AnyHashable(preferences.devices.map(\.id))) {
             if preferences.devices.isEmpty {
                 emptyState
             } else {
