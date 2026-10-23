@@ -1,6 +1,6 @@
 cask "sysbar" do
-  version "0.1.2"
-  sha256 "638555206147b8e7fe3038c1b3e0009cc0e619dcf72bb0f9a0c7bfeaaf71b490"
+  version "0.2.0"
+  sha256 "156be406f5473ea1179fedd826b34131fe2db17769a45494e363e32e7c0f088f"
 
   url "https://github.com/atanur/sysbar/releases/download/v#{version}/Sysbar-#{version}.zip"
   name "Sysbar"
@@ -19,6 +19,7 @@ cask "sysbar" do
   app "Sysbar.app"
 
   uninstall quit:       "com.atanur.sysbar",
+            launchctl:  "com.atanur.sysbar.fanhelper",
             login_item: "Sysbar"
 
   zap trash: [
