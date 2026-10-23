@@ -18,8 +18,8 @@ cask "sysbar" do
 
   app "Sysbar.app"
 
-  uninstall quit:       "com.atanur.sysbar",
-            launchctl:  "com.atanur.sysbar.fanhelper",
+  uninstall launchctl:  "com.atanur.sysbar.fanhelper",
+            quit:       "com.atanur.sysbar",
             login_item: "Sysbar"
 
   zap trash: [
