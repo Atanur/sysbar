@@ -317,3 +317,8 @@
 "Fans manual" = "风扇手动";
 "Lid closed, Mac awake" = "已合盖，Mac 保持唤醒";
 "Lid open, Mac may sleep" = "已开盖，Mac 可睡眠";
+"Until a time…" = "直到某个时间…";
+"While charging" = "充电时";
+"While an app is open" = "某个 App 打开期间";
+"Start" = "开始";
+"Turned off: the charger was unplugged." = "已关闭：充电器已拔出。";

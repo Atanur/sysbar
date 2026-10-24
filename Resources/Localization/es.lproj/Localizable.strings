@@ -317,3 +317,8 @@
 "Fans manual" = "Ventiladores manuales";
 "Lid closed, Mac awake" = "Tapa cerrada, Mac despierto";
 "Lid open, Mac may sleep" = "Tapa abierta, el Mac puede dormir";
+"Until a time…" = "Hasta una hora…";
+"While charging" = "Mientras se carga";
+"While an app is open" = "Mientras una app esté abierta";
+"Start" = "Iniciar";
+"Turned off: the charger was unplugged." = "Desactivado: se desconectó el cargador.";

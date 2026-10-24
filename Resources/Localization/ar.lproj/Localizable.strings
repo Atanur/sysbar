@@ -317,3 +317,8 @@
 "Fans manual" = "المراوح يدوية";
 "Lid closed, Mac awake" = "الغطاء مغلق، الـ Mac مستيقظ";
 "Lid open, Mac may sleep" = "الغطاء مفتوح، يمكن للـ Mac أن ينام";
+"Until a time…" = "حتى وقت معيّن…";
+"While charging" = "أثناء الشحن";
+"While an app is open" = "ما دام تطبيق مفتوحًا";
+"Start" = "ابدأ";
+"Turned off: the charger was unplugged." = "تم الإيقاف: تم فصل الشاحن.";

@@ -317,3 +317,8 @@
 "Fans manual" = "Вентиляторы: вручную";
 "Lid closed, Mac awake" = "Крышка закрыта, Mac не спит";
 "Lid open, Mac may sleep" = "Крышка открыта, Mac может уснуть";
+"Until a time…" = "До определённого времени…";
+"While charging" = "Во время зарядки";
+"While an app is open" = "Пока открыто приложение";
+"Start" = "Начать";
+"Turned off: the charger was unplugged." = "Выключено: зарядное устройство отключено.";

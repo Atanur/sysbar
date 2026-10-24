@@ -25,6 +25,18 @@ public enum KeepAwakeStop: Equatable, Sendable {
     case lowBattery
     /// The app it was kept awake for was closed.
     case appQuit
+    /// It was kept awake only while the charger was connected, and the charger was unplugged.
+    case unplugged
+}
+
+/// Working out when "until a time" ends.
+public enum KeepAwakeSchedule {
+    /// The next moment the clock reads `hour`:`minute` after `now`: today if that is still ahead,
+    /// otherwise tomorrow. The moment it is already that time counts as passed.
+    public static func nextOccurrence(hour: Int, minute: Int, after now: Date, calendar: Calendar = .current) -> Date {
+        let components = DateComponents(hour: hour, minute: minute, second: 0)
+        return calendar.nextDate(after: now, matching: components, matchingPolicy: .nextTime) ?? now.addingTimeInterval(86_400)
+    }
 }
 
 /// When keeping the Mac awake ends by itself. A closed lid in a bag is the risk, so a low
@@ -33,12 +45,38 @@ public enum KeepAwakePolicy {
     /// Charge, in percent, at or below which it ends while the Mac runs on battery.
     public static let lowBatteryPercent = 20
 
-    public static func stopReason(now: Date, endsAt: Date?, battery: BatteryInfo?) -> KeepAwakeStop? {
+    /// `requiresPower` is for keeping awake only while the charger is connected: unplugging ends it.
+    public static func stopReason(
+        now: Date, endsAt: Date?, battery: BatteryInfo?, requiresPower: Bool = false
+    ) -> KeepAwakeStop? {
         if let endsAt, now >= endsAt { return .timeUp }
+        if requiresPower, let battery, !battery.isPluggedIn { return .unplugged }
         if let battery, !battery.isPluggedIn, BatteryMenuBar.percent(battery.fraction) <= lowBatteryPercent {
             return .lowBattery
         }
         return nil
+    }
+}
+
+/// Tells when the app it is kept awake for has really been closed: a look that does not find it
+/// counts only once it has stayed missing for `graceSeconds`, so one missed look (an app relaunching,
+/// a list that is briefly empty) cannot end keeping the Mac awake.
+public struct AppPresence: Sendable {
+    public static let graceSeconds = 10.0
+
+    private var missingSince: Date?
+
+    public init() {}
+
+    /// Call with each look at the app; true once it has been missing for the whole grace period.
+    public mutating func isGone(running: Bool, now: Date) -> Bool {
+        guard !running else {
+            missingSince = nil
+            return false
+        }
+        let since = missingSince ?? now
+        missingSince = since
+        return now.timeIntervalSince(since) >= Self.graceSeconds
     }
 }
 

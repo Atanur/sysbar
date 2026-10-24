@@ -317,3 +317,8 @@
 "Fans manual" = "ファン手動";
 "Lid closed, Mac awake" = "蓋を閉じても Mac は起動中";
 "Lid open, Mac may sleep" = "蓋が開いている、Mac はスリープ可能";
+"Until a time…" = "指定した時刻まで…";
+"While charging" = "充電中";
+"While an app is open" = "アプリが開いている間";
+"Start" = "開始";
+"Turned off: the charger was unplugged." = "オフにしました: 充電器が取り外されました。";

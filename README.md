@@ -48,8 +48,8 @@
 - Fans: Automatic, or Manual with one slider from each fan's minimum to its maximum speed. Manual control uses a small helper that macOS asks you to approve once. It can only set fan speeds and keep the Mac awake (below), accepts only Sysbar signed by the same developer, and returns the fans to automatic when Sysbar quits, crashes or hangs (a 15-second lease), or when the Mac sleeps.
 
 **Keep awake with the lid closed** (laptops)
-- The laptop button next to the fan button keeps the Mac awake with its lid closed for 1 hour, 4 hours, until you turn it off, or for as long as an app you pick from the open ones stays open. It sets `pmset disablesleep` through the same helper, so there is no password prompt.
-- It ends by itself when its time is up, or when the battery falls to 20 % while unplugged, and the panel says why. It also ends when Sysbar quits, crashes or hangs (the same 15-second lease). If it is switched off elsewhere (`pmset disablesleep 0`), Sysbar notices within seconds.
+- The laptop button next to the fan button keeps the Mac awake with its lid closed. A pop-up menu picks how long: 1 hour, 4 hours, until a time you set (today, or tomorrow if it has passed), until you turn it off, while the charger is connected, or for as long as an app you pick from the open ones stays open. It sets `pmset disablesleep` through the same helper, so there is no password prompt.
+- It ends by itself when its time is up, when the charger is unplugged (for "while charging"), or when the battery falls to 20 % while unplugged, and the panel says why. It also ends when Sysbar quits, crashes or hangs (the same 15-second lease). If it is switched off elsewhere (`pmset disablesleep 0`), Sysbar notices within seconds.
 - A setting you turned on yourself in Terminal is shown as on, and is only turned off if you choose Off.
 - A closed Mac in a bag can get warm; that is why it is never permanent.
 

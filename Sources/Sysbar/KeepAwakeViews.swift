@@ -31,19 +31,30 @@ struct KeepAwakePanel: View {
     /// Whether the list of open apps is shown, and the apps in it as of when it was opened.
     @State private var choosingApp = false
     @State private var openApps: [KeepAwakeController.WatchedApp] = []
+    /// Whether the time of day is being picked, and the time shown in the picker.
+    @State private var choosingTime = false
+    @State private var untilTime = KeepAwakePanel.defaultUntilTime
 
     private enum Choice: Hashable {
         case off
         case duration(KeepAwakeDuration)
+        case untilTime
+        case whileCharging
         case app
+    }
+
+    /// Where the time picker starts: 8 in the morning, when a night's keeping awake would usually end.
+    private static var defaultUntilTime: Date {
+        Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: Date()) ?? Date()
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(L("Keep awake with the lid closed")).font(.callout.weight(.medium))
                 .help(L("The Mac stays awake even when the lid is closed, so it can get warm in a bag. It sleeps again when Sysbar quits."))
-            CapsulePicker(options: options, selected: selection, onSelect: choose)
+            dropdown
                 .disabled(helper.state != .ready)
+            if choosingTime { timeChooser }
             if choosingApp { appList }
             status
             helperState
@@ -67,34 +78,104 @@ struct KeepAwakePanel: View {
             (L("Off"), .off),
             (L("1 hour"), .duration(.oneHour)),
             (L("4 hours"), .duration(.fourHours)),
+            (L("Until a time…"), .untilTime),
             (L("Until off"), .duration(.untilOff)),
-            (L("App"), .app),
+            (L("While charging"), .whileCharging),
+            (L("While an app is open"), .app),
         ]
     }
 
     /// Nil, with no option chosen, while it was turned on outside Sysbar.
     private var selection: Choice? {
         if choosingApp { return .app }
+        if choosingTime { return .untilTime }
         switch keepAwake.state {
         case .off: return .off
         case .on(.duration(let duration), _): return .duration(duration)
+        case .on(.until, _): return .untilTime
+        case .on(.whileCharging, _): return .whileCharging
         case .on(.app, _): return .app
         case .outside: return nil
         }
     }
 
+    /// The pop-up menu: shows the chosen option, and lists them all with a tick on the chosen one.
+    private var dropdown: some View {
+        Menu {
+            ForEach(options.indices, id: \.self) { index in
+                let option = options[index]
+                Button {
+                    choose(option.value)
+                } label: {
+                    if option.value == selection {
+                        Label(option.title, systemImage: "checkmark")
+                    } else {
+                        Text(option.title)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Text(options.first { $0.value == selection }?.title ?? "–").font(.caption.weight(.medium)).lineLimit(1)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.up.chevron.down").font(.caption2).foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .frame(maxWidth: .infinity)
+            .background(Capsule().fill(Color.primary.opacity(0.06)))
+            .contentShape(Capsule())
+        }
+        .menuStyle(.button)
+        .menuIndicator(.hidden)
+        .buttonStyle(.plain)
+        .accessibilityLabel(L("Keep awake with the lid closed"))
+    }
+
     private func choose(_ choice: Choice) {
         switch choice {
         case .off:
-            choosingApp = false
+            closeChoosers()
             keepAwake.stop()
         case .duration(let duration):
-            choosingApp = false
+            closeChoosers()
             keepAwake.start(.duration(duration))
+        case .whileCharging:
+            closeChoosers()
+            keepAwake.start(.whileCharging)
+        case .untilTime:
+            choosingApp = false
+            choosingTime = true
         case .app:
             openApps = KeepAwakeController.openApps()
-            choosingApp.toggle()
+            choosingTime = false
+            choosingApp = true
         }
+    }
+
+    private func closeChoosers() {
+        choosingApp = false
+        choosingTime = false
+    }
+
+    // MARK: Time
+
+    private var timeChooser: some View {
+        HStack(spacing: 8) {
+            DatePicker(L("Until a time…"), selection: $untilTime, displayedComponents: .hourAndMinute)
+                .labelsHidden()
+                .datePickerStyle(.stepperField)
+            Spacer(minLength: 0)
+            Button(L("Start"), action: startUntilTime).controlSize(.small)
+        }
+    }
+
+    /// Ends at the next time the clock shows the chosen hour and minute: today, or tomorrow if it has passed.
+    private func startUntilTime() {
+        let time = Calendar.current.dateComponents([.hour, .minute], from: untilTime)
+        let end = KeepAwakeSchedule.nextOccurrence(hour: time.hour ?? 0, minute: time.minute ?? 0, after: Date())
+        closeChoosers()
+        keepAwake.start(.until(end))
     }
 
     // MARK: Apps
@@ -118,7 +199,7 @@ struct KeepAwakePanel: View {
 
     private func appRow(_ app: KeepAwakeController.WatchedApp) -> some View {
         Button {
-            choosingApp = false
+            closeChoosers()
             keepAwake.start(.app(app))
         } label: {
             HStack(spacing: 6) {
@@ -167,6 +248,7 @@ struct KeepAwakePanel: View {
         case .timeUp: L("Turned off: the time was up.")
         case .lowBattery: L("Turned off: the battery was low.")
         case .appQuit: L("Turned off: the app was closed.")
+        case .unplugged: L("Turned off: the charger was unplugged.")
         }
     }
 

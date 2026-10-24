@@ -317,3 +317,8 @@
 "Fans manual" = "Fanlar elle";
 "Lid closed, Mac awake" = "Kapak kapalı, Mac uyanık";
 "Lid open, Mac may sleep" = "Kapak açık, Mac uyuyabilir";
+"Until a time…" = "Belirli bir saate kadar…";
+"While charging" = "Şarjdayken";
+"While an app is open" = "Bir uygulama açıkken";
+"Start" = "Başlat";
+"Turned off: the charger was unplugged." = "Kapatıldı: şarj cihazı çıkarıldı.";

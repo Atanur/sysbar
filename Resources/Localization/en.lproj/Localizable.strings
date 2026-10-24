@@ -224,6 +224,7 @@
 "Slowing down to cool" = "Slowing down to cool";
 "Sort by %@ column" = "Sort by %@ column";
 "Source code" = "Source code";
+"Start" = "Start";
 "Startup" = "Startup";
 "Statistics from the graphics driver" = "Statistics from the graphics driver";
 "Style" = "Style";
@@ -273,6 +274,7 @@
 "Try again" = "Try again";
 "Turned off: the app was closed." = "Turned off: the app was closed.";
 "Turned off: the battery was low." = "Turned off: the battery was low.";
+"Turned off: the charger was unplugged." = "Turned off: the charger was unplugged.";
 "Turned off: the time was up." = "Turned off: the time was up.";
 "Turned on outside Sysbar." = "Turned on outside Sysbar.";
 "Turns off in" = "Turns off in";
@@ -281,6 +283,7 @@
 "Units" = "Units";
 "Unknown" = "Unknown";
 "Unknown error (code %@)." = "Unknown error (code %@).";
+"Until a time…" = "Until a time…";
 "Until off" = "Until off";
 "Update" = "Update";
 "Updates" = "Updates";
@@ -299,6 +302,8 @@
 "What's new" = "What's new";
 "What's new in %@" = "What's new in %@";
 "While %@ is open" = "While %@ is open";
+"While an app is open" = "While an app is open";
+"While charging" = "While charging";
 "Window" = "Window";
 "charging" = "charging";
 "charging +%@ W" = "charging +%@ W";

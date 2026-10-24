@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import OSLog
 import SysbarCore
 
 /// Keeps the Mac awake with its lid closed, through the helper. Lives as long as the app: the
@@ -25,15 +26,19 @@ final class KeepAwakeController: ObservableObject {
         }
     }
 
-    /// What ends it: a length of time, or an app being closed.
+    /// What ends it: a length of time, a time of day, an app being closed or the charger coming out.
     enum Plan: Equatable {
         case duration(KeepAwakeDuration)
+        /// Until this moment, worked out from a time of day when it was chosen.
+        case until(Date)
         case app(WatchedApp)
+        case whileCharging
 
         var endDate: Date? {
             switch self {
             case .duration(let duration): duration.endDate(from: Date())
-            case .app: nil
+            case .until(let date): date
+            case .app, .whileCharging: nil
             }
         }
     }
@@ -52,6 +57,12 @@ final class KeepAwakeController: ObservableObject {
     /// Set while Sysbar has the setting on, so a later launch knows the setting is Sysbar's to undo.
     private static let ownedKey = "keepAwakeSetBySysbar"
 
+    /// Why it ended by itself, for anyone finding out afterwards (Console, subsystem com.atanur.sysbar).
+    private static let log = Logger(subsystem: "com.atanur.sysbar", category: "keep-awake")
+    /// Tries per renewal, and the pause between them; the helper's lease is 15 s, a renewal comes every 5 s.
+    private static let renewAttempts = 3
+    private static let retryDelaySeconds = 1.5
+
     @Published private(set) var state: State = .off {
         didSet { updateActivity() }
     }
@@ -66,6 +77,8 @@ final class KeepAwakeController: ObservableObject {
     private var wakeObserver: NSObjectProtocol?
     private var quitObserver: NSObjectProtocol?
     private var connectionEnd: AnyCancellable?
+    /// Whether the app it is kept awake for is still open; ends only after it stayed closed a while.
+    private var appPresence = AppPresence()
     /// Held while it is on, so App Nap (this app has no windows, and the lid is closed) cannot
     /// delay the renewals past the helper's lease.
     private var activity: NSObjectProtocol?
@@ -103,6 +116,7 @@ final class KeepAwakeController: ObservableObject {
         task?.cancel()
         lastError = nil
         stopReason = nil
+        appPresence = AppPresence()
         state = .on(plan, endsAt: plan.endDate)
         defaults.set(true, forKey: Self.ownedKey)
         task = Task { [weak self] in
@@ -120,6 +134,7 @@ final class KeepAwakeController: ObservableObject {
     }
 
     func stop(because reason: KeepAwakeStop? = nil) {
+        if let reason { Self.log.notice("Keep awake ended: \(String(describing: reason), privacy: .public)") }
         task?.cancel()
         stopReason = reason
         state = .off
@@ -137,9 +152,12 @@ final class KeepAwakeController: ObservableObject {
     /// Called with every sample: ends it once its time is up, its app is closed or the battery is low.
     func evaluate(battery: BatteryInfo?, now: Date = Date()) {
         guard case .on(let plan, let endsAt) = state else { return }
-        if case .app(let app) = plan, !app.isRunning {
+        if case .app(let app) = plan, appPresence.isGone(running: app.isRunning, now: now) {
+            Self.log.notice("Keep awake ended: \(app.bundleID, privacy: .public) was not running for \(AppPresence.graceSeconds, privacy: .public) s")
             stop(because: .appQuit)
-        } else if let reason = KeepAwakePolicy.stopReason(now: now, endsAt: endsAt, battery: battery) {
+        } else if let reason = KeepAwakePolicy.stopReason(
+            now: now, endsAt: endsAt, battery: battery, requiresPower: plan == .whileCharging
+        ) {
             stop(because: reason)
         }
     }
@@ -189,16 +207,31 @@ final class KeepAwakeController: ObservableObject {
             guard !Task.isCancelled, case .on = state else { return }
             if actual == false {
                 // Turned off elsewhere; drop the helper's claim too.
+                Self.log.notice("Keep awake ended: pmset reports the setting is off")
                 state = .off
                 defaults.removeObject(forKey: Self.ownedKey)
                 _ = await send(enabled: false)
                 return
             }
-            guard await send(enabled: true) else {
-                if !Task.isCancelled { state = .off }
+            guard await renewLease() else {
+                if !Task.isCancelled {
+                    Self.log.error("Keep awake ended: the helper did not accept the renewal")
+                    state = .off
+                }
                 return
             }
         }
+    }
+
+    /// Renews the helper's lease; a failed request is tried again a couple of times, well inside the
+    /// lease, so one dropped message does not end keeping the Mac awake.
+    private func renewLease() async -> Bool {
+        for attempt in 1...Self.renewAttempts {
+            if await send(enabled: true) { return true }
+            guard attempt < Self.renewAttempts, !Task.isCancelled else { break }
+            try? await Task.sleep(for: .seconds(Self.retryDelaySeconds))
+        }
+        return false
     }
 
     /// Turns off a setting an earlier run of Sysbar left behind.
@@ -230,6 +263,7 @@ final class KeepAwakeController: ObservableObject {
         // Also ends when the helper is set up again, which is what clears a "did not answer".
         lastError = nil
         if case .on = state {
+            Self.log.notice("Keep awake ended: the helper connection closed")
             task?.cancel()
             state = .off
         }
