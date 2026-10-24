@@ -1,6 +1,6 @@
 cask "sysbar" do
-  version "0.3.1"
-  sha256 "1306c4c9c7acfb23c51b6f80ef6993bf62dda7ac1be539ca0c45853f04265b05"
+  version "0.3.2"
+  sha256 "a560ed8e31626ae0f0048627046025d8f2e6a545c3ba81a2a37c87c94fc2bb15"
 
   url "https://github.com/atanur/sysbar/releases/download/v#{version}/Sysbar-#{version}.zip"
   name "Sysbar"
