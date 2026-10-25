@@ -112,7 +112,7 @@ struct PopoverView: View {
     }
 
     private var showsKeepAwakeButton: Bool {
-        preferences.showsKeepAwakeButton && KeepAwakeController.isAvailable
+        preferences.showsKeepAwakeButton
     }
 
     private func togglePanel(_ panel: PopoverPanel) {

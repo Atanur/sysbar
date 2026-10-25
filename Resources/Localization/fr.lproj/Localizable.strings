@@ -322,3 +322,7 @@
 "While an app is open" = "Tant qu’une app est ouverte";
 "Start" = "Démarrer";
 "Turned off: the charger was unplugged." = "Désactivé : le chargeur a été débranché.";
+"Keep awake" = "Garder éveillé";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "Tant que cette option est active, le Mac ne se met pas en veille. Il pourra se mettre en veille dès que Sysbar se ferme.";
+"Mac kept awake" = "Mac maintenu éveillé";
+"Mac may sleep" = "Le Mac peut se mettre en veille";

@@ -322,3 +322,7 @@
 "While an app is open" = "某个 App 打开期间";
 "Start" = "开始";
 "Turned off: the charger was unplugged." = "已关闭：充电器已拔出。";
+"Keep awake" = "保持唤醒";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "开启期间，Mac 不会进入睡眠。退出 Sysbar 后，Mac 可再次睡眠。";
+"Mac kept awake" = "Mac 保持唤醒";
+"Mac may sleep" = "Mac 可能会睡眠";

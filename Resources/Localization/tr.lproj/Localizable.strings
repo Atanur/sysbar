@@ -322,3 +322,7 @@
 "While an app is open" = "Bir uygulama açıkken";
 "Start" = "Başlat";
 "Turned off: the charger was unplugged." = "Kapatıldı: şarj cihazı çıkarıldı.";
+"Keep awake" = "Uyanık tut";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "Bu açıkken Mac uykuya geçmez. Sysbar kapanınca yeniden uyuyabilir.";
+"Mac kept awake" = "Mac uyanık tutuluyor";
+"Mac may sleep" = "Mac uykuya geçebilir";

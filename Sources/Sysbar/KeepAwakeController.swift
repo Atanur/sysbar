@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import IOKit.pwr_mgt
 import OSLog
 import SysbarCore
 
@@ -51,8 +52,12 @@ final class KeepAwakeController: ObservableObject {
         case outside
     }
 
-    /// Only laptops have a lid. Read once.
-    static let isAvailable = BatteryProbe.read() != nil
+    /// Only laptops have a lid. A Mac without one is kept from sleeping by an assertion held by this
+    /// app instead of through the helper. Read once; `--no-lid` makes a laptop act like a desktop, to try it.
+    static let hasLid = BatteryProbe.read() != nil && !CommandLine.arguments.contains("--no-lid")
+
+    /// What the feature is called: it is about the lid only where there is one.
+    static var title: String { hasLid ? L("Keep awake with the lid closed") : L("Keep awake") }
 
     /// Set while Sysbar has the setting on, so a later launch knows the setting is Sysbar's to undo.
     private static let ownedKey = "keepAwakeSetBySysbar"
@@ -82,6 +87,8 @@ final class KeepAwakeController: ObservableObject {
     /// Held while it is on, so App Nap (this app has no windows, and the lid is closed) cannot
     /// delay the renewals past the helper's lease.
     private var activity: NSObjectProtocol?
+    /// Held while it is on, on a Mac without a lid: macOS then does not sleep when idle.
+    private var sleepAssertion: IOPMAssertionID?
 
     init(helper: HelperConnection, defaults: UserDefaults = .standard) {
         self.helper = helper
@@ -178,7 +185,7 @@ final class KeepAwakeController: ObservableObject {
     /// Brings the shown state in line with the system's: at launch, when the popover opens and
     /// after waking. A setting Sysbar left behind is turned off; one set by someone else is shown.
     func refreshFromSystem() {
-        guard Self.isAvailable else { return }
+        guard Self.hasLid else { return }
         Task { [weak self] in
             guard let actual = await Self.readSetting(), let self else { return }
             switch (self.state, actual) {
@@ -200,7 +207,8 @@ final class KeepAwakeController: ObservableObject {
 
     /// While on: reads the real setting and renews the helper's lease, well inside it.
     private func renewUntilEnded() async {
-        while !Task.isCancelled {
+        // The assertion needs no renewing, and nobody else can undo it.
+        while Self.hasLid, !Task.isCancelled {
             try? await Task.sleep(for: .seconds(FanControlLimits.renewSeconds))
             guard !Task.isCancelled, case .on = state else { return }
             let actual = await Self.readSetting()
@@ -272,6 +280,7 @@ final class KeepAwakeController: ObservableObject {
 
     /// Runs one request on the helper; false, with the reason in `lastError`, if it failed.
     private func send(enabled: Bool) async -> Bool {
+        guard Self.hasLid else { return setSleepAssertion(held: enabled) }
         let outcome = await helper.perform({ helper, reply in helper.setLidAwake(enabled: enabled, reply: reply) })
         // A request that was replaced meanwhile must not show its outcome.
         let current = !Task.isCancelled
@@ -285,6 +294,27 @@ final class KeepAwakeController: ObservableObject {
             if current { lastError = message }
             return false
         }
+    }
+
+    /// Takes or drops the assertion that stops the Mac sleeping when idle; false if macOS refused.
+    private func setSleepAssertion(held: Bool) -> Bool {
+        guard held else {
+            if let sleepAssertion { IOPMAssertionRelease(sleepAssertion) }
+            sleepAssertion = nil
+            return true
+        }
+        guard sleepAssertion == nil else { return true }
+        var id = IOPMAssertionID(0)
+        let result = IOPMAssertionCreateWithName(
+            kIOPMAssertionTypePreventUserIdleSystemSleep as CFString, IOPMAssertionLevel(kIOPMAssertionLevelOn),
+            "Sysbar is keeping the Mac awake" as CFString, &id
+        )
+        guard result == kIOReturnSuccess else {
+            Self.log.error("Keep awake failed: macOS refused the sleep assertion (\(result, privacy: .public))")
+            return false
+        }
+        sleepAssertion = id
+        return true
     }
 
     private static func readSetting() async -> Bool? {

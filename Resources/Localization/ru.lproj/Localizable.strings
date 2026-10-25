@@ -322,3 +322,7 @@
 "While an app is open" = "Пока открыто приложение";
 "Start" = "Начать";
 "Turned off: the charger was unplugged." = "Выключено: зарядное устройство отключено.";
+"Keep awake" = "Не давать засыпать";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "Пока это включено, Mac не переходит в режим сна. После выхода из Sysbar он снова сможет засыпать.";
+"Mac kept awake" = "Mac не засыпает";
+"Mac may sleep" = "Mac может заснуть";

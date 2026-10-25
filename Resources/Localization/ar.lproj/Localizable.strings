@@ -322,3 +322,7 @@
 "While an app is open" = "ما دام تطبيق مفتوحًا";
 "Start" = "ابدأ";
 "Turned off: the charger was unplugged." = "تم الإيقاف: تم فصل الشاحن.";
+"Keep awake" = "إبقاء الجهاز مستيقظًا";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "ما دام هذا الخيار قيد التشغيل، لا ينتقل الـ Mac إلى وضع السكون. يمكنه أن ينام مجددًا عند إغلاق Sysbar.";
+"Mac kept awake" = "تم إبقاء الـ Mac مستيقظًا";
+"Mac may sleep" = "قد ينتقل الـ Mac إلى وضع السكون";

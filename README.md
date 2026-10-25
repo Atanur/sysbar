@@ -52,6 +52,7 @@
 - It ends by itself when its time is up, when the charger is unplugged (for "while charging"), or when the battery falls to 20 % while unplugged, and the panel says why. It also ends when Sysbar quits, crashes or hangs (the same 15-second lease). If it is switched off elsewhere (`pmset disablesleep 0`), Sysbar notices within seconds.
 - A setting you turned on yourself in Terminal is shown as on, and is only turned off if you choose Off.
 - A closed Mac in a bag can get warm; that is why it is never permanent.
+- On a Mac without a lid (a Mac mini, Studio or iMac) the same menu keeps it from going to sleep while idle, with the same choices except "while charging". It needs no helper.
 
 **Updates**
 - Checks GitHub for a new release once a day and offers it in the popover. Updating downloads the release, installs it only if it is signed by the same developer, and relaunches.
@@ -144,6 +145,7 @@ Diagnostic flags, handy when checking a new Mac or server:
 | `--fan-test` | sets the fans to manual 60 %, prints the SMC readings, then returns them to automatic |
 | `--thermal-panel-test` | opens the popover, shows and hides the thermal panel, and prints the window's top edge and height |
 | `--smc-raw=KEY,KEY` | prints SMC keys' types and raw bytes, read only |
+| `--no-lid` | makes a laptop act like a Mac without a lid, to try its keep-awake menu |
 | `--update-now` | checks for a release at once and installs it, as the Update button does |
 
 ## Website

@@ -32,6 +32,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private var lastSignature: String?
     private var lastSnapshot: Snapshot?
     private var viewModel: PopoverViewModel?
+    /// Closes the popover on a click anywhere else: a transient popover alone stays open once a
+    /// control in it has been used (a menu, a stepper), which left it stuck on screen.
+    private var outsideClickMonitor: Any?
     private var preferencesSubscription: AnyCancellable?
     private var terminationObserver: NSObjectProtocol?
     /// Animates the popover's values and graphs between samples. The menu bar is not animated:
@@ -414,11 +417,17 @@ final class StatusController: NSObject, NSPopoverDelegate {
         // animated resize keeps the content centred while it runs, so the top bar would jump.
         popover.animates = false
         popover.contentViewController?.view.window?.makeKey()
+        // Global monitors see only events meant for other apps, so clicks in the popover are not seen.
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            MainActor.assumeIsolated { self?.popover?.performClose(nil) }
+        }
         // Starts this Mac's apps table, or resumes (or reconnects to) the remote device shown last.
         select(lastSelection)
     }
 
     func popoverDidClose(_ notification: Notification) {
+        if let outsideClickMonitor { NSEvent.removeMonitor(outsideClickMonitor) }
+        outsideClickMonitor = nil
         processMonitor?.stop()
         keepRemoteMonitoringAfterClose()
         viewModel = nil

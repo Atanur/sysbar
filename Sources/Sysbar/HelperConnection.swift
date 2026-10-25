@@ -50,7 +50,7 @@ final class HelperConnection: ObservableObject {
     }
 
     /// Whether anything this Mac can do needs the helper.
-    var isNeeded: Bool { FanController.macHasFans || KeepAwakeController.isAvailable }
+    var isNeeded: Bool { FanController.macHasFans || KeepAwakeController.hasLid }
 
     func refreshState() {
         guard team != nil else {

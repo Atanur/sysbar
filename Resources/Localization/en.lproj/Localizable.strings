@@ -322,3 +322,7 @@
 "~%@ W from the wall" = "~%@ W from the wall";
 "↓ Download · ↑ Upload" = "↓ Download · ↑ Upload";
 "↓ Read · ↑ Write" = "↓ Read · ↑ Write";
+"Keep awake" = "Keep awake";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits.";
+"Mac kept awake" = "Mac kept awake";
+"Mac may sleep" = "Mac may sleep";

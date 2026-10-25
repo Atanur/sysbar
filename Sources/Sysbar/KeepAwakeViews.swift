@@ -10,16 +10,21 @@ struct KeepAwakeButton: View {
 
     var body: some View {
         Button(action: action) {
-            LaptopLidIcon(isKeptAwake: isActive)
+            KeepAwakeIcon(isKeptAwake: isActive)
                 .foregroundStyle(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                 .frame(width: 22, height: 22)
                 .background(Circle().fill(Color.primary.opacity(isOpen ? 0.12 : 0)))
                 .contentShape(Circle())
         }
         .buttonStyle(PressScaleButtonStyle())
-        .help(L("Keep awake with the lid closed"))
-        .accessibilityLabel(L("Keep awake with the lid closed"))
-        .accessibilityValue(isActive ? L("Lid closed, Mac awake") : L("Lid open, Mac may sleep"))
+        .help(KeepAwakeController.title)
+        .accessibilityLabel(KeepAwakeController.title)
+        .accessibilityValue(accessibilityValue)
+    }
+
+    private var accessibilityValue: String {
+        if KeepAwakeController.hasLid { return isActive ? L("Lid closed, Mac awake") : L("Lid open, Mac may sleep") }
+        return isActive ? L("Mac kept awake") : L("Mac may sleep")
     }
 }
 
@@ -50,15 +55,15 @@ struct KeepAwakePanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(L("Keep awake with the lid closed")).font(.callout.weight(.medium))
-                .help(L("The Mac stays awake even when the lid is closed, so it can get warm in a bag. It sleeps again when Sysbar quits."))
+            Text(KeepAwakeController.title).font(.callout.weight(.medium)).help(explanation)
             dropdown
-                .disabled(helper.state != .ready)
+                .disabled(KeepAwakeController.hasLid && helper.state != .ready)
             if choosingTime { timeChooser }
             if choosingApp { appList }
             status
-            helperState
-            if let error = keepAwake.lastError ?? helper.setupError {
+            // Only the lid needs the helper.
+            if KeepAwakeController.hasLid { helperState }
+            if let error = keepAwake.lastError ?? (KeepAwakeController.hasLid ? helper.setupError : nil) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(error).font(.caption).foregroundStyle(LoadLevel.high.color)
                     Spacer(minLength: 0)
@@ -73,16 +78,21 @@ struct KeepAwakePanel: View {
         .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.05)))
     }
 
+    private var explanation: String {
+        KeepAwakeController.hasLid
+            ? L("The Mac stays awake even when the lid is closed, so it can get warm in a bag. It sleeps again when Sysbar quits.")
+            : L("The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits.")
+    }
+
     private var options: [(title: String, value: Choice)] {
-        [
+        let charging: [(title: String, value: Choice)] = KeepAwakeController.hasLid ? [(L("While charging"), .whileCharging)] : []
+        return [
             (L("Off"), .off),
             (L("1 hour"), .duration(.oneHour)),
             (L("4 hours"), .duration(.fourHours)),
             (L("Until a time…"), .untilTime),
             (L("Until off"), .duration(.untilOff)),
-            (L("While charging"), .whileCharging),
-            (L("While an app is open"), .app),
-        ]
+        ] + charging + [(L("While an app is open"), .app)]
     }
 
     /// Nil, with no option chosen, while it was turned on outside Sysbar.
@@ -129,7 +139,7 @@ struct KeepAwakePanel: View {
         .menuStyle(.button)
         .menuIndicator(.hidden)
         .buttonStyle(.plain)
-        .accessibilityLabel(L("Keep awake with the lid closed"))
+        .accessibilityLabel(KeepAwakeController.title)
     }
 
     private func choose(_ choice: Choice) {

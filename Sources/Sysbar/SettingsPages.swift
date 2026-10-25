@@ -267,11 +267,12 @@ struct PopoverPage: View {
                 SettingsRow(symbol: "fan", title: L("Temperature and fans")) {
                     RowToggle(isOn: $preferences.showsFanButton)
                 }
-                if KeepAwakeController.isAvailable {
-                    RowDivider()
-                    SettingsRow(symbol: "laptopcomputer", title: L("Keep awake with the lid closed")) {
-                        RowToggle(isOn: $preferences.showsKeepAwakeButton)
-                    }
+                RowDivider()
+                SettingsRow(
+                    symbol: KeepAwakeController.hasLid ? "laptopcomputer" : "cup.and.saucer",
+                    title: KeepAwakeController.title
+                ) {
+                    RowToggle(isOn: $preferences.showsKeepAwakeButton)
                 }
             }
 

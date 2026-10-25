@@ -322,3 +322,7 @@
 "While an app is open" = "앱이 열려 있는 동안";
 "Start" = "시작";
 "Turned off: the charger was unplugged." = "꺼짐: 충전기가 분리되었습니다.";
+"Keep awake" = "깨어 있게 유지";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "켜져 있는 동안 Mac이 잠자기에 들어가지 않습니다. Sysbar를 종료하면 다시 잠자기에 들어갈 수 있습니다.";
+"Mac kept awake" = "Mac이 깨어 있는 상태로 유지됨";
+"Mac may sleep" = "Mac이 잠자기에 들어갈 수 있음";

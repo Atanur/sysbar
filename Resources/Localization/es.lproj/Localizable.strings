@@ -322,3 +322,7 @@
 "While an app is open" = "Mientras una app esté abierta";
 "Start" = "Iniciar";
 "Turned off: the charger was unplugged." = "Desactivado: se desconectó el cargador.";
+"Keep awake" = "Mantener activo";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "Mientras esto esté activado, el Mac no se suspende. Vuelve a suspenderse cuando Sysbar se cierra.";
+"Mac kept awake" = "Mac mantenido activo";
+"Mac may sleep" = "El Mac puede suspenderse";

@@ -322,3 +322,7 @@
 "While an app is open" = "アプリが開いている間";
 "Start" = "開始";
 "Turned off: the charger was unplugged." = "オフにしました: 充電器が取り外されました。";
+"Keep awake" = "スリープさせない";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "オンの間、Mac はスリープしません。Sysbar を終了すると、再びスリープします。";
+"Mac kept awake" = "Mac をスリープさせていません";
+"Mac may sleep" = "Mac はスリープする場合があります";

@@ -322,3 +322,7 @@
 "While an app is open" = "Zolang een app open is";
 "Start" = "Start";
 "Turned off: the charger was unplugged." = "Uitgeschakeld: de oplader is losgekoppeld.";
+"Keep awake" = "Wakker houden";
+"The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "Zolang dit aan staat, valt de Mac niet in slaap. Zodra Sysbar sluit, kan hij weer slapen.";
+"Mac kept awake" = "Mac wordt wakker gehouden";
+"Mac may sleep" = "Mac kan in slaap vallen";
