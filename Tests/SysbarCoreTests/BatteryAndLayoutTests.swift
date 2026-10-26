@@ -93,6 +93,15 @@ private let chargingProperties: [String: Any] = [
         #expect(PowerSummary.headline(battery: nil) == nil)
     }
 
+    @Test func powerSourceTellsBatteryChargingPluggedInAndMainsApart() {
+        #expect(PowerSource(battery: battery(minutes: 267)) == .battery)
+        #expect(PowerSource(battery: battery(fraction: 0.78, plugged: true, charging: true)) == .charging)
+        #expect(PowerSource(battery: battery(fraction: 1, plugged: true, full: true)) == .pluggedIn)
+        // A battery macOS holds at 80% is plugged in but not charging.
+        #expect(PowerSource(battery: battery(fraction: 0.8, plugged: true)) == .pluggedIn)
+        #expect(PowerSource(battery: nil) == .mains)
+    }
+
     @Test func detailOnBatteryShowsDrainCyclesAndHealth() {
         let detail = PowerSummary.detail(
             battery: battery(cycles: 770, health: 0.8365, watts: -7.43), systemPower: 7.5

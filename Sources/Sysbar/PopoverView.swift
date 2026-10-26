@@ -305,16 +305,24 @@ struct PopoverView: View {
     private func powerCard(_ samples: [Snapshot], _ latest: Snapshot?) -> some View {
         let series = samples.compactMap(\.headlinePower)
         let battery = latest?.battery
-        let charging = battery?.isCharging == true
-        // While charging, the corner shows the charge and a green bolt instead of the word.
+        // On the adapter the corner shows a bolt, as the menu bar's battery does: green while
+        // charging, plain once the battery is full or held. A Mac without a battery always shows the
+        // plain bolt. On battery it shows the charge and the time left.
         let note: String
         let noteSymbol: NoteSymbol?
-        if let battery, charging {
-            note = Format.percent(battery.fraction)
-            noteSymbol = NoteSymbol(systemName: "bolt.fill", color: FlowColors.charge, label: L("charging"))
-        } else {
+        switch PowerSource(battery: battery) {
+        case .battery:
             note = PowerSummary.headline(battery: battery) ?? ""
             noteSymbol = nil
+        case .charging:
+            note = battery.map { Format.percent($0.fraction) } ?? ""
+            noteSymbol = NoteSymbol(systemName: "bolt.fill", color: FlowColors.charge, label: L("charging"))
+        case .pluggedIn:
+            note = battery.map { Format.percent($0.fraction) } ?? ""
+            noteSymbol = NoteSymbol(systemName: "bolt.fill", color: .primary, label: L("on power"))
+        case .mains:
+            note = ""
+            noteSymbol = NoteSymbol(systemName: "bolt.fill", color: .primary, label: L("on power"))
         }
         // With the charger in, what goes into the battery hangs below what the Mac itself uses.
         let charge = samples.compactMap { sample in sample.headlinePower.map { _ in Self.chargeWatts(sample.battery) } }

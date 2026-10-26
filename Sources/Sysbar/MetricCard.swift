@@ -66,7 +66,7 @@ struct MetricCard: View {
                 Text(title).font(.caption.weight(.medium)).foregroundStyle(.secondary)
                 Spacer(minLength: 4)
                 HStack(spacing: 3) {
-                    Text(note)
+                    if !note.isEmpty { Text(note) }
                     if let noteSymbol {
                         Image(systemName: noteSymbol.systemName)
                             .font(.caption2.weight(.bold))

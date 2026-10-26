@@ -1,5 +1,22 @@
 import Foundation
 
+/// Where the Mac's power comes from, as the power card's bolt shows it.
+public enum PowerSource: Equatable, Sendable {
+    /// Running on its battery.
+    case battery
+    /// On the adapter, with the battery taking charge.
+    case charging
+    /// On the adapter with the battery not taking charge: full, or held by macOS (at 80%, say).
+    case pluggedIn
+    /// A Mac without a battery, always on mains power.
+    case mains
+
+    public init(battery: BatteryInfo?) {
+        guard let battery else { self = .mains; return }
+        if !battery.isPluggedIn { self = .battery } else { self = battery.isCharging ? .charging : .pluggedIn }
+    }
+}
+
 /// Words for the power card: a short note for its header and the details for its tooltip.
 /// What matters differs by situation: on battery it is the charge and how long it lasts; on an
 /// adapter it is what the machine draws from the wall.
