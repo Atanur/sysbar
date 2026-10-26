@@ -36,6 +36,10 @@ private let gib = 1_073_741_824.0
     @Test func memorySizesUseMegabytesBelowOneGigabyte() {
         #expect(Format.memory(340 * 1_048_576) == "340M")
         #expect(Format.memory(UInt64(1.5 * gib)) == "1.5G")
+        // Never four digits of megabytes: from 1000M up it is gigabytes.
+        #expect(Format.memory(999 * 1_048_576) == "999M")
+        #expect(Format.memory(1_000 * 1_048_576) == "1.0G")
+        #expect(Format.memory(1_023 * 1_048_576) == "1.0G")
     }
 }
 

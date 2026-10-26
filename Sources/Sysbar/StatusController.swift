@@ -271,8 +271,12 @@ final class StatusController: NSObject, NSPopoverDelegate {
     // MARK: Popover
 
     /// For measuring: `Sysbar --open-popover` opens the popover right after launch.
+    /// It stays open until Sysbar quits, whatever is clicked, so its cost can be measured from outside.
     func openPopoverForTesting() {
         if popover?.isShown != true { togglePopover() }
+        popover?.behavior = .applicationDefined
+        if let outsideClickMonitor { NSEvent.removeMonitor(outsideClickMonitor) }
+        outsideClickMonitor = nil
     }
 
     /// For measuring memory: `Sysbar --popover-cycles N` opens and closes the popover N times and

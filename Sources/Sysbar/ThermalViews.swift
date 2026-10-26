@@ -2,8 +2,8 @@ import SysbarCore
 import SwiftUI
 
 /// The top bar's temperature and fan button: just a fan, since the panel it opens has the
-/// numbers. The fan shows what the fans are doing (see `FanIcon`), and takes the warning colour
-/// while the heat needs attention.
+/// numbers. The fan shows what the fans are doing and how hard (see `FanIcon`), and takes the
+/// warning colour while the heat needs attention.
 struct ThermalButton: View {
     let assessment: ThermalAssessment?
     let unit: TemperatureUnit
@@ -15,7 +15,10 @@ struct ThermalButton: View {
 
     var body: some View {
         Button(action: action) {
-            FanIcon(state: fanState, load: fanLoad, automaticStyle: automaticStyle)
+            FanIcon(
+                state: fanState, load: fanLoad, automaticStyle: automaticStyle,
+                isHeatWarning: assessment?.needsAttention == true
+            )
                 .frame(width: 22, height: 22)
                 .background(Circle().fill(Color.primary.opacity(isOpen ? 0.12 : 0)))
                 .contentShape(Circle())

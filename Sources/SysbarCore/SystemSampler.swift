@@ -12,8 +12,10 @@ public final class SystemSampler {
     /// probe here.
     private static let thermalRefreshNanos: UInt64 = 3_000_000_000
     private let thermalProbe = ThermalProbe()
+    private let linkProbe = NetworkLinkProbe()
     private var cachedThermal: (reading: ThermalReading, nanos: UInt64)?
-    /// Free disk space changes slowly; the connection type only when the user changes network.
+    /// Free disk space changes slowly; the connection only when the user changes network (and its
+    /// kind is remembered per interface by the probe).
     private static let diskSpaceRefreshNanos: UInt64 = 60_000_000_000
     private static let linkRefreshNanos: UInt64 = 3_000_000_000
     private var cachedDiskSpace: (value: DiskSpace?, nanos: UInt64)?
@@ -64,7 +66,7 @@ public final class SystemSampler {
 
     private func networkLink(at nanos: UInt64) -> NetworkLink? {
         if let cached = cachedLink, nanos - cached.nanos < Self.linkRefreshNanos { return cached.value }
-        let value = NetworkLinkProbe.primary()
+        let value = linkProbe.primary()
         cachedLink = (value, nanos)
         return value
     }

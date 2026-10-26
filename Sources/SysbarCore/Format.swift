@@ -64,10 +64,11 @@ public enum Format {
         return decimal(bytesPerSecond / kibibyte, digits: 0) + "K"
     }
 
-    /// Per-app memory: "340M" below one gigabyte, "1.5G" above.
+    /// Per-app memory: "340M" up to 999M, then "1.0G", "1.5G".
     public static func memory(_ bytes: UInt64) -> String {
         let value = Double(bytes)
-        return value >= gibibyte ? scaled(value / gibibyte, "G") : decimal(value / mebibyte, digits: 0) + "M"
+        // From what would round to 1000M up, gigabytes: "1023M" is wider and harder to read than "1.0G".
+        return value / mebibyte >= 999.5 ? scaled(value / gibibyte, "G") : decimal(value / mebibyte, digits: 0) + "M"
     }
 
     /// Short duration for tight spaces: "4h 27m", "45m", "1h".

@@ -83,4 +83,11 @@ struct NetworkLinkTests {
     func unknownInterface() {
         #expect(NetworkLinkProbe.link(forInterface: "nonexistent0") == .other)
     }
+
+    @Test("asking again gives the same answer, from what was remembered")
+    func repeatsItsAnswer() {
+        let probe = NetworkLinkProbe()
+        let first = probe.primary()
+        #expect(probe.primary() == first)
+    }
 }
