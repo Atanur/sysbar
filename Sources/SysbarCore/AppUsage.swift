@@ -23,7 +23,7 @@ public struct ProcessCounters: Equatable, Sendable {
 /// One app's current load, summed over all of its processes.
 public struct AppUsage: Equatable, Sendable {
     public let name: String
-    /// Share of a single core; above 1 means more than one core busy.
+    /// Share of the whole machine, all cores together, as the CPU card shows it.
     public let cpu: Double
     public let memoryBytes: UInt64
     /// Share of GPU time.
@@ -68,16 +68,18 @@ public enum AppGrouping {
 public enum AppUsageCalculator {
     private static let nanosecondsToSeconds = 1e-9
 
-    /// Per-app load over `seconds`. Processes without a previous reading (just started) contribute
-    /// memory only; counters that went backwards (process id reused) count as zero.
+    /// Per-app load over `seconds`. CPU is divided over the `cores` so the apps add up to no more
+    /// than the CPU card. Processes without a previous reading (just started) contribute memory
+    /// only; counters that went backwards (process id reused) count as zero.
     public static func usage(
-        previous: [Int32: ProcessCounters], current: [Int32: ProcessCounters], seconds: Double
+        previous: [Int32: ProcessCounters], current: [Int32: ProcessCounters], seconds: Double, cores: Int
     ) -> [AppUsage] {
+        let coreCount = Double(max(cores, 1))
         let perProcess = current.map { pid, now in
             let before = previous[pid]
             return AppUsage(
                 name: now.group,
-                cpu: rate(before?.cpuNanoseconds, now.cpuNanoseconds, seconds),
+                cpu: rate(before?.cpuNanoseconds, now.cpuNanoseconds, seconds) / coreCount,
                 memoryBytes: now.footprintBytes,
                 gpu: rate(before?.gpuNanoseconds, now.gpuNanoseconds, seconds),
                 powerWatts: rate(before?.energyNanojoules, now.energyNanojoules, seconds)

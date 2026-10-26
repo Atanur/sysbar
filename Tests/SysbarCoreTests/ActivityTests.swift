@@ -41,6 +41,13 @@ private let gib = 1_073_741_824.0
         #expect(Format.memory(1_000 * 1_048_576) == "1.0G")
         #expect(Format.memory(1_023 * 1_048_576) == "1.0G")
     }
+
+    @Test func appCPUSharesKeepOneDecimalBelowTenPercent() {
+        #expect(Format.finePercent(0.036, separator: ".") == "3.6%")
+        #expect(Format.finePercent(0, separator: ".") == "0.0%")
+        #expect(Format.finePercent(0.0996, separator: ".") == "10%")
+        #expect(Format.finePercent(0.234, separator: ".") == "23%")
+    }
 }
 
 @Suite struct GPUClientTests {
@@ -81,14 +88,23 @@ private let gib = 1_073_741_824.0
             2: counters("Chrome", cpu: 500_000_000, energy: 1_000_000_000, memory: 50),
         ]
 
-        let usage = AppUsageCalculator.usage(previous: previous, current: current, seconds: 2)
+        let usage = AppUsageCalculator.usage(previous: previous, current: current, seconds: 2, cores: 1)
 
         #expect(usage == [AppUsage(name: "Chrome", cpu: 0.75, memoryBytes: 150, gpu: 0.5, powerWatts: 2)])
     }
 
+    @Test func cpuIsAShareOfTheWholeMacLikeTheCPUCard() {
+        // Two cores' worth of work on an eight-core Mac is a quarter of it.
+        let usage = AppUsageCalculator.usage(
+            previous: [1: counters("Xcode")], current: [1: counters("Xcode", cpu: 4_000_000_000)], seconds: 2, cores: 8
+        )
+
+        #expect(usage.first?.cpu == 0.25)
+    }
+
     @Test func newProcessesReportMemoryButNoRates() {
         let usage = AppUsageCalculator.usage(
-            previous: [:], current: [7: counters("Fresh", cpu: 9_000_000_000, memory: 10)], seconds: 2
+            previous: [:], current: [7: counters("Fresh", cpu: 9_000_000_000, memory: 10)], seconds: 2, cores: 1
         )
 
         #expect(usage == [AppUsage(name: "Fresh", cpu: 0, memoryBytes: 10, gpu: 0, powerWatts: 0)])
@@ -96,7 +112,7 @@ private let gib = 1_073_741_824.0
 
     @Test func counterThatWentBackwardsCountsAsZero() {
         let usage = AppUsageCalculator.usage(
-            previous: [7: counters("Reused", cpu: 5_000_000_000)], current: [7: counters("Reused", cpu: 1)], seconds: 1
+            previous: [7: counters("Reused", cpu: 5_000_000_000)], current: [7: counters("Reused", cpu: 1)], seconds: 1, cores: 1
         )
 
         #expect(usage.first?.cpu == 0)

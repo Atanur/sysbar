@@ -204,7 +204,7 @@ if let flag = CommandLine.arguments.first(where: { $0.hasPrefix("--probe") }) {
     let apps = processes.sample()
     print("process scan:", ContinuousClock.now - scanStart)
     print("apps seen:", apps.count)
-    print(String(format: "all apps: cpu %.1f cores, power %.2f W", apps.map(\.cpu).reduce(0, +), apps.map(\.powerWatts).reduce(0, +)))
+    print(String(format: "all apps: cpu %.1f%%, power %.2f W", apps.map(\.cpu).reduce(0, +) * 100, apps.map(\.powerWatts).reduce(0, +)))
     for key in AppSortKey.allCases {
         print("top by \(key):")
         AppUsageCalculator.top(apps, by: key, limit: 5).forEach {

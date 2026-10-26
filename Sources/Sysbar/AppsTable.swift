@@ -70,7 +70,7 @@ struct AppsTable: View {
     /// Zero GPU and power show as a dash so the columns stay readable.
     private static func text(of column: AppSortKey, for app: AppUsage) -> String {
         switch column {
-        case .cpu: Format.percent(app.cpu)
+        case .cpu: Format.finePercent(app.cpu)
         case .memory: Format.memory(app.memoryBytes)
         case .gpu: app.gpu > 0.0005 ? Format.percent(app.gpu) : "–"
         case .power: powerText(app.powerWatts)

@@ -5,6 +5,7 @@ import Foundation
 /// visible to `proc_pid_rusage`. Stateful: use from one queue only.
 public final class ProcessSampler {
     private static let pathBufferSize = 4_096
+    private static let cores = ProcessInfo.processInfo.activeProcessorCount
 
     private var previous: [Int32: ProcessCounters] = [:]
     private var previousNanos: UInt64?
@@ -32,7 +33,9 @@ public final class ProcessSampler {
         previousNanos = nanos
 
         guard let last else { return [] }
-        return AppUsageCalculator.usage(previous: baseline, current: current, seconds: Double(nanos - last) / 1e9)
+        return AppUsageCalculator.usage(
+            previous: baseline, current: current, seconds: Double(nanos - last) / 1e9, cores: Self.cores
+        )
     }
 
     private func readCounters() -> [Int32: ProcessCounters] {

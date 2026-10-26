@@ -23,6 +23,13 @@ public enum Format {
         "\(Int((fraction * 100).rounded()))%"
     }
 
+    /// An app's share of the CPU: "3.6%" below 10%, where one app's share of all cores usually sits
+    /// and whole percents would round most rows to "0%", then "23%".
+    public static func finePercent(_ fraction: Double, separator: String = decimalSeparator) -> String {
+        let percent = fraction * 100
+        return percent < 9.95 ? decimal(percent, digits: 1, separator: separator) + "%" : "\(Int(percent.rounded()))%"
+    }
+
     public static func watts(_ value: Double) -> String {
         decimal(value, digits: 1) + " W"
     }

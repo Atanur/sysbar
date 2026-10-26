@@ -34,7 +34,7 @@ struct RemoteView: View {
                 }
                 AppsTable(
                     title: L("Top processes"),
-                    apps: Self.apps(from: latest.processes),
+                    apps: Self.apps(from: latest.processes, cores: latest.cores),
                     columns: [.cpu, .memory], rowLimit: rowLimit, sort: sort, onSort: { sort = $0 }
                 )
             }
@@ -177,12 +177,13 @@ struct RemoteView: View {
         return L("Peak %@", format(stats.max))
     }
 
-    /// Processes with the same name (a server's many workers) fold into one row.
-    private static func apps(from processes: [RemoteProcess]) -> [AppUsage] {
+    /// Processes with the same name (a server's many workers) fold into one row. `ps` reports a share
+    /// of one core, so it is divided over the server's cores to match its CPU card.
+    private static func apps(from processes: [RemoteProcess], cores: Int) -> [AppUsage] {
         Dictionary(grouping: processes, by: \.name).map { name, items in
             AppUsage(
                 name: name,
-                cpu: items.map(\.cpu).reduce(0, +),
+                cpu: items.map(\.cpu).reduce(0, +) / Double(max(cores, 1)),
                 memoryBytes: items.map(\.memoryBytes).reduce(0, +),
                 gpu: 0, powerWatts: 0
             )
