@@ -326,3 +326,6 @@
 "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "オンの間、Mac はスリープしません。Sysbar を終了すると、再びスリープします。";
 "Mac kept awake" = "Mac をスリープさせていません";
 "Mac may sleep" = "Mac はスリープする場合があります";
+"Move the mouse when idle" = "アイドル時にマウスを動かす";
+"While you are away, the cursor moves a little about once a minute, so apps see you as active." = "席を外している間、約1分ごとにカーソルが少し動き、アプリからアクティブに見えます。";
+"Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "マウスを動かすには、システム設定 → プライバシーとセキュリティ → アクセシビリティで Sysbar を許可する必要があります。";

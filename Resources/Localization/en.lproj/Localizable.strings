@@ -326,3 +326,6 @@
 "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits.";
 "Mac kept awake" = "Mac kept awake";
 "Mac may sleep" = "Mac may sleep";
+"Move the mouse when idle" = "Move the mouse when idle";
+"While you are away, the cursor moves a little about once a minute, so apps see you as active." = "While you are away, the cursor moves a little about once a minute, so apps see you as active.";
+"Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility.";

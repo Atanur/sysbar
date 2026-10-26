@@ -326,3 +326,6 @@
 "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "ما دام هذا الخيار قيد التشغيل، لا ينتقل الـ Mac إلى وضع السكون. يمكنه أن ينام مجددًا عند إغلاق Sysbar.";
 "Mac kept awake" = "تم إبقاء الـ Mac مستيقظًا";
 "Mac may sleep" = "قد ينتقل الـ Mac إلى وضع السكون";
+"Move the mouse when idle" = "تحريك الفأرة عند الخمول";
+"While you are away, the cursor moves a little about once a minute, so apps see you as active." = "أثناء غيابك، يتحرك المؤشر قليلًا مرة كل دقيقة تقريبًا، فتراك التطبيقات نشطًا.";
+"Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "لتحريك الفأرة، يجب السماح لـ Sysbar في إعدادات النظام ← الخصوصية والأمان ← تسهيلات الاستخدام.";

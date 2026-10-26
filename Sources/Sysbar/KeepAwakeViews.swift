@@ -60,6 +60,16 @@ struct KeepAwakePanel: View {
                 .disabled(KeepAwakeController.hasLid && helper.state != .ready)
             if choosingTime { timeChooser }
             if choosingApp { appList }
+            Toggle(L("Move the mouse when idle"), isOn: $keepAwake.movesMouse)
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .font(.caption)
+                .help(L("While you are away, the cursor moves a little about once a minute, so apps see you as active."))
+            if keepAwake.movesMouse, !keepAwake.hasMouseAccess {
+                HelperNote(text: L("Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility.")) {
+                    Button(L("Open System Settings")) { keepAwake.openMouseAccessSettings() }
+                }
+            }
             status
             // Only the lid needs the helper.
             if KeepAwakeController.hasLid { helperState }
@@ -76,6 +86,7 @@ struct KeepAwakePanel: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
         .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.05)))
+        .onAppear { keepAwake.refreshMouseAccess() }
     }
 
     private var explanation: String {

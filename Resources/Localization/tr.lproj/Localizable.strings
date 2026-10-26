@@ -326,3 +326,6 @@
 "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "Bu açıkken Mac uykuya geçmez. Sysbar kapanınca yeniden uyuyabilir.";
 "Mac kept awake" = "Mac uyanık tutuluyor";
 "Mac may sleep" = "Mac uykuya geçebilir";
+"Move the mouse when idle" = "Boştayken fareyi oynat";
+"While you are away, the cursor moves a little about once a minute, so apps see you as active." = "Sen uzaktayken imleç yaklaşık dakikada bir biraz hareket eder; uygulamalar seni aktif görür.";
+"Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Fareyi oynatmak için Sysbar'a Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik bölümünden izin vermelisin.";

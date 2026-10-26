@@ -326,3 +326,6 @@
 "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "Пока это включено, Mac не переходит в режим сна. После выхода из Sysbar он снова сможет засыпать.";
 "Mac kept awake" = "Mac не засыпает";
 "Mac may sleep" = "Mac может заснуть";
+"Move the mouse when idle" = "Двигать мышь при простое";
+"While you are away, the cursor moves a little about once a minute, so apps see you as active." = "Пока вас нет, курсор слегка двигается примерно раз в минуту, чтобы приложения считали вас активным.";
+"Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Чтобы двигать мышь, Sysbar нужно разрешить в Системных настройках → Конфиденциальность и безопасность → Универсальный доступ.";

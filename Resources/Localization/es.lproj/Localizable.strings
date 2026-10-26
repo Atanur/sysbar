@@ -326,3 +326,6 @@
 "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "Mientras esto esté activado, el Mac no se suspende. Vuelve a suspenderse cuando Sysbar se cierra.";
 "Mac kept awake" = "Mac mantenido activo";
 "Mac may sleep" = "El Mac puede suspenderse";
+"Move the mouse when idle" = "Mover el ratón en reposo";
+"While you are away, the cursor moves a little about once a minute, so apps see you as active." = "Mientras estás ausente, el cursor se mueve un poco aproximadamente una vez por minuto, para que las apps te vean activo.";
+"Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Para mover el ratón, Sysbar debe tener permiso en Ajustes del Sistema → Privacidad y seguridad → Accesibilidad.";

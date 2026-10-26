@@ -326,3 +326,6 @@
 "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "开启期间，Mac 不会进入睡眠。退出 Sysbar 后，Mac 可再次睡眠。";
 "Mac kept awake" = "Mac 保持唤醒";
 "Mac may sleep" = "Mac 可能会睡眠";
+"Move the mouse when idle" = "闲置时移动鼠标";
+"While you are away, the cursor moves a little about once a minute, so apps see you as active." = "你离开时，光标大约每分钟轻微移动一次，让应用认为你仍处于活跃状态。";
+"Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "移动鼠标需要在“系统设置”→“隐私与安全性”→“辅助功能”中允许 Sysbar。";

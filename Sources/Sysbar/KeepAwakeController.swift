@@ -61,6 +61,7 @@ final class KeepAwakeController: ObservableObject {
 
     /// Set while Sysbar has the setting on, so a later launch knows the setting is Sysbar's to undo.
     private static let ownedKey = "keepAwakeSetBySysbar"
+    private static let movesMouseKey = "keepAwakeMovesMouse"
 
     /// Why it ended by itself, for anyone finding out afterwards (Console, subsystem com.atanur.sysbar).
     private static let log = Logger(subsystem: "com.atanur.sysbar", category: "keep-awake")
@@ -68,8 +69,22 @@ final class KeepAwakeController: ObservableObject {
     private static let renewAttempts = 3
     private static let retryDelaySeconds = 1.5
 
+    /// Whether the cursor moves a little, about once a minute, while the Mac is left alone and kept awake.
+    @Published var movesMouse: Bool {
+        didSet {
+            defaults.set(movesMouse, forKey: Self.movesMouseKey)
+            updateMouse()
+            if movesMouse, !MouseMover.hasAccess { requestMouseAccess() }
+        }
+    }
+    /// Moving the mouse needs the Accessibility permission.
+    @Published private(set) var hasMouseAccess = MouseMover.hasAccess
+
     @Published private(set) var state: State = .off {
-        didSet { updateActivity() }
+        didSet {
+            updateActivity()
+            updateMouse()
+        }
     }
     @Published private(set) var lastError: String?
     /// Why it last ended by itself, until the user starts it again.
@@ -89,10 +104,14 @@ final class KeepAwakeController: ObservableObject {
     private var activity: NSObjectProtocol?
     /// Held while it is on, on a Mac without a lid: macOS then does not sleep when idle.
     private var sleepAssertion: IOPMAssertionID?
+    private let mouseMover = MouseMover()
+    /// Looks for the Accessibility permission to be granted, after the user was sent to System Settings.
+    private var accessWatch: Task<Void, Never>?
 
     init(helper: HelperConnection, defaults: UserDefaults = .standard) {
         self.helper = helper
         self.defaults = defaults
+        movesMouse = defaults.bool(forKey: Self.movesMouseKey)
         wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
         ) { [weak self] _ in
@@ -251,6 +270,48 @@ final class KeepAwakeController: ObservableObject {
             defaults.removeObject(forKey: Self.ownedKey)
         } else {
             state = .outside
+        }
+    }
+
+    /// Runs the mouse mover while Sysbar keeps the Mac awake and the user chose it.
+    private func updateMouse() {
+        if case .on = state, movesMouse {
+            mouseMover.start()
+        } else {
+            mouseMover.stop()
+        }
+    }
+
+    /// Asks macOS for the permission; it shows its own prompt the first time only.
+    func requestMouseAccess() {
+        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
+        hasMouseAccess = AXIsProcessTrustedWithOptions(options)
+        if !hasMouseAccess { watchMouseAccess() }
+    }
+
+    func openMouseAccessSettings() {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
+        watchMouseAccess()
+    }
+
+    func refreshMouseAccess() {
+        hasMouseAccess = MouseMover.hasAccess
+    }
+
+    /// Checks every second, for two minutes, so the panel notices the permission being granted.
+    private func watchMouseAccess() {
+        accessWatch?.cancel()
+        accessWatch = Task { [weak self] in
+            for _ in 0..<120 {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled, let self else { return }
+                if MouseMover.hasAccess {
+                    self.hasMouseAccess = true
+                    return
+                }
+            }
         }
     }
 
