@@ -5,8 +5,24 @@ import SwiftUI
 struct UpdateBanner: View {
     @ObservedObject var updater: UpdateChecker
     let release: ReleaseInfo
+    @State private var showsNotes = false
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            summary
+            if showsNotes {
+                ReleaseNotesList(items: release.notes)
+                    .font(.caption)
+                Button(L("Release notes")) { updater.openReleasePage(release) }
+                    .buttonStyle(.link)
+                    .font(.caption)
+            }
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.primary.opacity(0.06)))
+    }
+
+    private var summary: some View {
         HStack(spacing: 8) {
             Image(systemName: "arrow.down.circle.fill")
                 .foregroundStyle(.tint)
@@ -17,9 +33,7 @@ struct UpdateBanner: View {
                 if case .failed(let message) = updater.state {
                     Text(message).font(.caption).foregroundStyle(.secondary).lineLimit(2)
                 } else {
-                    Button(L("What's new")) { updater.openReleasePage(release) }
-                        .buttonStyle(.link)
-                        .font(.caption)
+                    whatsNew
                 }
             }
             Spacer(minLength: 4)
@@ -39,8 +53,29 @@ struct UpdateBanner: View {
                 .accessibilityLabel(L("Skip this version"))
             }
         }
-        .padding(10)
-        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.primary.opacity(0.06)))
+    }
+
+    /// Unfolds the release's notes in place; a release without notes opens its page instead.
+    private var whatsNew: some View {
+        Button {
+            if release.notes.isEmpty {
+                updater.openReleasePage(release)
+            } else {
+                showsNotes.toggle()
+            }
+        } label: {
+            HStack(spacing: 2) {
+                Text(L("What's new"))
+                if !release.notes.isEmpty {
+                    Image(systemName: "chevron.down")
+                        .font(.caption2.weight(.semibold))
+                        .rotationEffect(.degrees(showsNotes ? 180 : 0))
+                }
+            }
+        }
+        .buttonStyle(.link)
+        .font(.caption)
+        .motion(.snappy(duration: 0.2), value: showsNotes)
     }
 }
 

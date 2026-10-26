@@ -44,6 +44,8 @@ public struct ReleaseInfo: Equatable, Sendable {
     /// The `Sysbar-<version>.zip` asset; nil when the release has none, in which case the update
     /// is offered through the release page.
     public let downloadURL: URL?
+    /// The release's notes as plain items, shown before updating; empty when it has none.
+    public let notes: [String]
 }
 
 public enum UpdateCheck {
@@ -52,6 +54,8 @@ public enum UpdateCheck {
     public static let checkInterval: TimeInterval = 24 * 60 * 60
     /// Only links into this repository are ever opened or downloaded.
     private static let repositoryPath = "/atanur/sysbar/"
+    /// The update banner shows at most this many of a release's notes.
+    private static let maxNotes = 6
 
     public static func isDue(lastCheck: Date?, now: Date) -> Bool {
         guard let lastCheck else { return true }
@@ -74,7 +78,10 @@ public enum UpdateCheck {
             .first { $0.name == archiveName }
             .flatMap { URL(string: $0.browserDownloadURL) }
             .flatMap { isRepositoryLink($0) && $0.path.contains("/releases/download/") ? $0 : nil }
-        return ReleaseInfo(version: version, pageURL: page, downloadURL: archive)
+        return ReleaseInfo(
+            version: version, pageURL: page, downloadURL: archive,
+            notes: Changelog.items(in: reply.body ?? "", limit: maxNotes)
+        )
     }
 
     /// The release to suggest, if it is newer than the running version and not one the user skipped.
@@ -99,9 +106,10 @@ public enum UpdateCheck {
         let draft: Bool?
         let prerelease: Bool?
         let assets: [Asset]?
+        let body: String?
 
         enum CodingKeys: String, CodingKey {
-            case tagName = "tag_name", htmlURL = "html_url", draft, prerelease, assets
+            case tagName = "tag_name", htmlURL = "html_url", draft, prerelease, assets, body
         }
     }
 

@@ -14,6 +14,14 @@ struct AboutPage: View {
         SettingsPageScaffold(page: .about) {
             header
 
+            if let notes = BundledChangelog.current {
+                SettingsGroup(title: L("What's new in %@", AppIdentity.shortVersion)) {
+                    ReleaseNotesList(items: notes.items)
+                        .font(.callout)
+                        .padding(12)
+                }
+            }
+
             UpdateSettingsGroup(updater: updater)
 
             SettingsGroup(title: L("Help and feedback")) {
@@ -28,10 +36,7 @@ struct AboutPage: View {
                 RowDivider()
                 linkRow("lightbulb", L("Suggest a feature"), L("Opens a form on GitHub"), ProjectLinks.featureRequest())
                 RowDivider()
-                linkRow(
-                    "doc.text", L("Release notes"), L("What's new in %@", AppIdentity.shortVersion),
-                    ProjectLinks.releaseNotes(version: AppVersion(AppIdentity.shortVersion))
-                )
+                linkRow("doc.text", L("Release notes"), L("Every release, on the website"), ProjectLinks.changelog)
                 RowDivider()
                 SettingsRow(
                     symbol: "doc.on.clipboard", title: L("Copy diagnostic info"),

@@ -15,7 +15,8 @@
 <p align="center">
   A tiny, native system monitor for the macOS menu bar.<br>
   <a href="https://sysbar.atanur.dev">sysbar.atanur.dev</a><br>
-  CPU, GPU, memory, power, disk and network at a glance — and your servers over SSH when you need them.
+  CPU, GPU, memory, power, disk and network at a glance — and your servers over SSH when you need them.<br>
+  <a href="CHANGELOG.md">What's new</a>
 </p>
 
 ---
@@ -23,7 +24,7 @@
 ## Why Sysbar
 
 - **Glanceable.** Each metric is a thin level bar and a fixed-width number, so the menu bar never shifts as values change. Bars can be tinted by load or follow the menu bar's own colour.
-- **Light.** Written in Swift against the system's own counters. With the popover closed it uses about 1% of a single core and around 14 MB of memory, and it stops sampling while the Mac or its screens sleep.
+- **Light.** Written in Swift against the system's own counters. With the popover closed it uses about 2% of a single core and around 14 MB of memory, and it stops sampling while the Mac or its screens sleep.
 - **Honest.** It shows what can be measured and hides what cannot. Values that are estimates are labelled as such.
 - **Private.** No accounts, no analytics. Besides the SSH connections you set up, the only request is a once-a-day check for a new release on GitHub, which you can turn off; nothing about your Mac is sent.
 
@@ -38,15 +39,16 @@
 
 **Popover**
 - One card per metric with a graph of the last 150 samples, so its span follows the refresh rate (15 seconds at 0.1 s, 5 minutes at 2 s). Cards can be reordered and laid out automatically (two columns for an even count, one for an odd), in one column, or in two.
-- The cards are black, white and grey. Colour appears only where it means something: a graph turns amber, orange and red as its load rises, and the charge going into the battery is green, with a green bolt beside the percentage while it charges.
+- The cards are black, white and grey. Colour appears only where it means something: a graph turns amber, orange and red as its load rises, and the charge going into the battery is green. On the adapter a bolt sits beside the percentage: green while it charges, plain once the battery is full or macOS holds the charge, and always plain on a Mac without a battery.
 - Disk, Network and Power draw two lines either side of a zero line on one scale: read and write, download and upload, and what the Mac uses and what goes into the battery while it charges. The Disk card's corner shows the room left (amber under 15 %, red under 5 %), the Network card's shows Wi-Fi or Ethernet.
 - Click a card to open the matching tab in Activity Monitor (or Battery settings). Right-click the menu bar item for Settings, Check for updates, About and Quit.
-- Power reacts to how the Mac is powered: charge and time left on battery, adapter and wall draw when plugged in.
-- **Top apps** table with CPU, memory, GPU and estimated energy per app; helper processes fold into their app. Columns are configurable.
+- Power reacts to how the Mac is powered: charge and time left on battery; on the adapter, the bolt in the corner and the adapter and wall draw in its tooltip.
+- **Top apps** table with CPU, memory, GPU and estimated energy per app; helper processes fold into their app. CPU is a share of the whole Mac, like the CPU card, so the rows never add up to more than the total (one decimal under 10%). Columns are configurable.
 
 **Temperature and fans**
 - The fan button above the cards opens a panel that names what is warming the Mac: processor work, graphics work (language models, rendering, games), heavy work, cooling down, warm at rest, cooling at its limit, or macOS slowing down to cool. It shows CPU, GPU, memory and battery temperatures, each the mean of the hotter half of that part's sensors.
 - A thermometer appears in the menu bar only when the heat is out of the ordinary; a busy chip in the 80s is not.
+- The fan button is drawn still: an outline while macOS runs the fans, amber, orange and red as they work harder, dimmed when they stand still, and filled while you set them by hand.
 - Fans: Automatic, or Manual with one slider from each fan's minimum to its maximum speed. Manual control uses a small helper that macOS asks you to approve once. It can only set fan speeds and keep the Mac awake (below), accepts only Sysbar signed by the same developer, and returns the fans to automatic when Sysbar quits, crashes or hangs (a 15-second lease), or when the Mac sleeps.
 
 **Keep awake with the lid closed** (laptops)
@@ -58,7 +60,8 @@
 - On a Mac without a lid (a Mac mini, Studio or iMac) the same menu keeps it from going to sleep while idle, with the same choices except "while charging". It needs no helper.
 
 **Updates**
-- Checks GitHub for a new release once a day and offers it in the popover. Updating downloads the release, installs it only if it is signed by the same developer, and relaunches.
+- Checks GitHub for a new release once a day and offers it in the popover, where **What's new** unfolds its notes. Updating downloads the release, installs it only if it is signed by the same developer, and relaunches.
+- Settings › About shows what is new in the version you run, from the [changelog](CHANGELOG.md) built into the app; every release is on the website.
 
 **Remote devices over SSH**
 - Watch a Linux server or another Mac: CPU, memory, load average, network, disk and NVIDIA GPU where available, plus the busiest processes.
@@ -98,11 +101,14 @@ Move `build/Sysbar.app` to `/Applications` to keep it, and turn on **Launch at l
 
 ## Releasing
 
-`scripts/release.sh <version>` sets the version, builds and zips `Sysbar.app`, and writes the Homebrew cask to `packaging/homebrew/Casks/sysbar.rb` with the zip's checksum. It publishes nothing; it prints the remaining steps:
+First write the release's notes in [CHANGELOG.md](CHANGELOG.md): a `## <version> — <date>` heading and a few `- ` items, written for people who use the app. `scripts/changelog.py draft <version>` lists the `feat`, `fix` and `perf` commits since the last tag to write them from. The same notes appear in the app's About page, on the GitHub release and on the website.
 
-1. Commit the version bump, tag it `v<version>` and push.
-2. `gh release create v<version> build/Sysbar-<version>.zip` to attach the zip to a GitHub release.
+`scripts/release.sh <version>` refuses to run without those notes. It sets the version, builds and zips `Sysbar.app`, writes the Homebrew cask to `packaging/homebrew/Casks/sysbar.rb` with the zip's checksum, the release notes to `build/notes-<version>.md`, and the website's "What's new" into `docs/index.html`. It publishes nothing; it prints the remaining steps:
+
+1. Commit the version bump and the website, tag it `v<version>` and push.
+2. `gh release create v<version> build/Sysbar-<version>.zip --notes-file build/notes-<version>.md` to publish the GitHub release.
 3. Copy the cask into the tap repository `atanur/homebrew-sysbar`, under `Casks/`, and push.
+4. `npx wrangler deploy` to publish the website.
 
 Set `SIGN_IDENTITY` (a Developer ID Application certificate) and `NOTARY_PROFILE` (from `xcrun notarytool store-credentials`) to sign and notarize the build. Without them it is ad-hoc signed and macOS blocks it on first launch, so a public release should be notarized.
 
@@ -128,6 +134,7 @@ swift test                   # unit tests for the core library
 ./scripts/make-icon.sh       # redraw the icon from scripts/make-icon.swift
 ./scripts/strings.py extract # refresh the English source strings
 ./scripts/strings.py check   # verify every translation is complete
+./scripts/changelog.py site  # refresh the website's "What's new" from CHANGELOG.md
 ```
 
 `Sources/SysbarCore` holds the samplers, parsers and formatting, with no UI, and is what the tests cover. `Sources/Sysbar` is the AppKit and SwiftUI app. Every user-facing string goes through `L("English text")`; translations live in `Resources/Localization/<language>.lproj/Localizable.strings`.
@@ -153,7 +160,7 @@ Diagnostic flags, handy when checking a new Mac or server:
 
 ## Website
 
-[sysbar.atanur.dev](https://sysbar.atanur.dev) is the single page in `docs/`, served by Cloudflare. `wrangler.jsonc` deploys it as static assets on that custom domain:
+[sysbar.atanur.dev](https://sysbar.atanur.dev) is the single page in `docs/`, served by Cloudflare. Its "What's new" section, between the `changelog:start` and `changelog:end` comments, is written by `scripts/changelog.py site`; edit CHANGELOG.md rather than the page. `wrangler.jsonc` deploys it as static assets on that custom domain:
 
 ```bash
 npx wrangler deploy

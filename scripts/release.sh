@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Prepares a release: sets the version, builds Sysbar.app, zips it and writes the Homebrew cask.
-# Nothing is uploaded or pushed; the steps to publish are printed at the end.
+# Prepares a release: sets the version, builds Sysbar.app, zips it, writes the Homebrew cask, the
+# release notes and the website's "What's new". Nothing is uploaded or pushed; the steps to publish
+# are printed at the end. CHANGELOG.md must already have notes for the version
+# (scripts/changelog.py draft lists the commits to write them from).
 #
 #   scripts/release.sh 0.1.0
 #
@@ -17,6 +19,7 @@ if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo "usage: scripts/release.sh <major.minor.patch>" >&2
   exit 2
 fi
+./scripts/changelog.py check "$VERSION"
 OWNER="${GITHUB_OWNER:-$(gh api user -q .login 2>/dev/null || true)}"
 if [[ -z "$OWNER" ]]; then
   echo "Set GITHUB_OWNER or log in with 'gh auth login'." >&2
@@ -51,6 +54,10 @@ if [[ -n "${SIGN_IDENTITY:-}" && -n "${NOTARY_PROFILE:-}" ]]; then
   ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
 fi
 
+NOTES="build/notes-$VERSION.md"
+./scripts/changelog.py notes "$VERSION" > "$NOTES"
+./scripts/changelog.py site
+
 SHA256="$(shasum -a 256 "$ZIP" | awk '{print $1}')"
 mkdir -p packaging/homebrew/Casks
 sed -e "s/{{VERSION}}/$VERSION/g" -e "s/{{SHA256}}/$SHA256/g" -e "s/{{OWNER}}/$OWNER/g" \
@@ -62,14 +69,17 @@ Release $VERSION is ready (nothing has been published):
   $ZIP
   sha256 $SHA256
   packaging/homebrew/Casks/sysbar.rb
+  $NOTES
+  docs/index.html (What's new)
 
 To publish:
   1. Commit the version bump and tag it:
-       git commit -m "chore: release $VERSION" Resources/Info.plist packaging/homebrew/Casks/sysbar.rb && git tag v$VERSION && git push --follow-tags
-  2. Create the GitHub release with the zip:
-       gh release create v$VERSION "$ZIP" --title "Sysbar $VERSION" --generate-notes
+       git commit -m "chore: release $VERSION" Resources/Info.plist packaging/homebrew/Casks/sysbar.rb docs/index.html && git tag v$VERSION && git push --follow-tags
+  2. Create the GitHub release with the zip and the notes from CHANGELOG.md:
+       gh release create v$VERSION "$ZIP" --title "Sysbar $VERSION" --notes-file "$NOTES"
   3. Copy the cask into your tap (github.com/$OWNER/homebrew-sysbar, folder Casks/) and push it.
-  4. Users install with:
+  4. Deploy the website: npx wrangler deploy
+  5. Users install with:
        brew install --cask $OWNER/sysbar/sysbar
 EOF
 if [[ -z "${SIGN_IDENTITY:-}" ]]; then

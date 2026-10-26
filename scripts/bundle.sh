@@ -19,6 +19,8 @@ cp "Resources/LaunchDaemons/$HELPER_ID.plist" "$APP/Contents/Library/LaunchDaemo
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 cp -R Resources/Localization/*.lproj "$APP/Contents/Resources/"
+# The changelog, for the About page's "What's new".
+cp CHANGELOG.md "$APP/Contents/Resources/CHANGELOG.md"
 # Inner code first, under the identifier the app requires of the helper.
 codesign --force --sign - --identifier "$HELPER_ID" "$APP/Contents/MacOS/SysbarFanHelper"
 codesign --force --sign - "$APP"

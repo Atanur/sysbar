@@ -13,7 +13,10 @@
 :root {
   --bg: #f6f6f4; --surface: #ffffff; --raised: #fbfbfa; --text: #1d1f22; --muted: #63676d;
   --line: rgba(0,0,0,.09); --accent: #3d5c86;
-  --low: #4d8f66; --mid: #bd9a3d; --high: #c67a40; --crit: #b34d48; --io: #4f858f;
+  /* The app's palette: quiet load is neutral grey, only a load worth noticing turns amber, orange
+     and red, and green is kept for charge going into the battery. */
+  --low: #6e6e75; --mid: #9e6e05; --high: #b85719; --crit: #c93030; --charge: #1f8047;
+  --in: #26262b; --out: #5c5c63;
   --menubar: rgba(246,246,244,.82); --nav: rgba(246,246,244,.72); --shadow: 0 20px 60px rgba(20,24,30,.12);
   --radius: 14px;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
@@ -22,7 +25,8 @@
   :root:not([data-theme="light"]) {
     --bg: #131416; --surface: #1c1e21; --raised: #222428; --text: #ececea; --muted: #9a9ea4;
     --line: rgba(255,255,255,.09); --accent: #8fb0db;
-    --low: #66a37d; --mid: #ccab5c; --high: #d68f59; --crit: #cc6b66; --io: #6b9ea8;
+    --low: #a8a8b0; --mid: #e0b352; --high: #e8874a; --crit: #eb6b61; --charge: #61cc85;
+    --in: #e6e6eb; --out: #b8b8bf;
     --menubar: rgba(30,32,36,.82); --nav: rgba(19,20,22,.72); --shadow: 0 20px 60px rgba(0,0,0,.45);
   }
 }
@@ -70,7 +74,11 @@ nav .links a:hover, nav .links a.active { color: var(--text); text-decoration: n
 .tabs { display: flex; gap: 4px; }
 .tab { padding: 3px 11px; border-radius: 999px; font-size: 14px; color: var(--muted); }
 .tab.active { background: rgba(127,127,127,.18); color: var(--text); font-weight: 600; }
-.gear { color: var(--muted); }
+.tools { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+.tools svg { display: block; }
+.card .head svg.bolt { display: inline-block; width: 7px; height: 10px; margin: 0 0 0 3px; vertical-align: -1px; }
+.bolt.charging { fill: var(--charge); }
+.bolt.plain { fill: var(--text); }
 .card polygon { fill-opacity: .16; stroke: none; }
 .apps .title { font-weight: 650; font-size: 15px; margin-bottom: 6px; }
 .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -99,7 +107,7 @@ section p.sub { color: var(--muted); margin: 0 0 32px; font-size: 17px; max-widt
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
 .checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
 .checks li { display: flex; gap: 10px; }
-.checks li::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: .55em; border-radius: 50%; background: var(--low); }
+.checks li::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: .55em; border-radius: 50%; background: var(--text); opacity: .55; }
 .terminal { background: #15171a; color: #d8dad6; border-radius: var(--radius); padding: 18px 20px; font: 13.5px/1.7 ui-monospace, "SF Mono", Menlo, monospace; overflow-x: auto; border: 1px solid var(--line); }
 .terminal .c { color: #7f858c; }
 .terminal .p { color: #8fb0db; }
@@ -133,7 +141,7 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
 .tab:hover { color: var(--text); }
 .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tab .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background .3s ease; }
-.tab .dot.live { background: var(--low); animation: pulse 1.8s ease-out infinite; }
+.tab .dot.live { background: var(--text); animation: pulse 1.8s ease-out infinite; }
 .view[hidden], .connecting[hidden] { display: none; }
 .view { animation: fade .25s ease; }
 .connecting { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; padding: 2px 2px 10px; }
@@ -145,7 +153,7 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
 .card .head span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fade { from { opacity: 0; transform: translateY(4px); } }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(102,163,125,.55); } 70% { box-shadow: 0 0 0 6px rgba(102,163,125,0); } 100% { box-shadow: 0 0 0 0 rgba(102,163,125,0); } }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(127,127,127,.55); } 70% { box-shadow: 0 0 0 6px rgba(127,127,127,0); } 100% { box-shadow: 0 0 0 0 rgba(127,127,127,0); } }
 
 /* Load colours, used where they carry meaning */
 .glance { background-image: linear-gradient(90deg, var(--low), var(--mid) 45%, var(--high) 70%, var(--crit)); background-size: 100% .09em; background-repeat: no-repeat; background-position: 0 92%; }
@@ -154,9 +162,24 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
 .scale { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 12px; font-size: 12px; color: var(--muted); }
 .scale span { display: inline-flex; align-items: center; gap: 5px; }
 .scale i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
-.stat b.good { color: var(--low); }
+.stat b.good { color: var(--text); }
 .gauge { display: block; height: 4px; border-radius: 2px; background: rgba(127,127,127,.18); margin-top: 12px; overflow: hidden; }
 .gauge i { display: block; height: 100%; border-radius: 2px; }
+
+/* Changelog: the latest releases open, older ones folded away */
+.releases { display: grid; gap: 14px; max-width: 46em; }
+.release { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+.release h3 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; font-size: 17px; }
+.release .version { font-variant-numeric: tabular-nums; }
+.release time { color: var(--muted); font-size: 14px; font-weight: 400; }
+.release ul { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: 15px; }
+.release li + li { margin-top: 4px; }
+.older { margin-top: 2px; }
+.older summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 15px; padding: 6px 0; width: max-content; border-radius: 6px; }
+.older summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.older[open] summary { margin-bottom: 12px; }
+.older .release + .release { margin-top: 14px; }
+.history { margin-top: 18px; font-size: 15px; }
 
 @media (max-width: 860px) {
   .hero, .split { grid-template-columns: 1fr; }
@@ -188,6 +211,7 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
   .card .value { font-size: 19px; }
   .apps { font-size: 12px; }
   .apps .row { grid-template-columns: 1fr 44px 48px; }
+  .release { padding: 14px 16px; }
   section { padding: 48px 0; }
   section h2 { font-size: 23px; line-height: 1.25; }
   section p.sub { font-size: 15px; margin-bottom: 22px; }
@@ -219,6 +243,7 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
       <div class="links">
         <a class="hide-sm" href="#features">Features</a>
         <a class="hide-sm" href="#remote">Remote</a>
+        <a class="hide-sm" href="#changelog">Changelog</a>
         <a href="#install">Install</a>
         <a href="https://github.com/atanur/sysbar">GitHub</a>
       </div>
@@ -230,13 +255,13 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
   <header class="hero">
     <div class="intro">
       <h1 style="--delay:.05s">Your Mac, <span class="glance">at a glance.</span></h1>
-      <p class="lead" style="--delay:.15s">Sysbar is a tiny, native system monitor for the menu bar. CPU, GPU, memory, power, disk and network in a few pixels — and your Linux servers and other Macs over SSH, when you want them.</p>
+      <p class="lead" style="--delay:.15s">Sysbar is a tiny, native system monitor for the menu bar. CPU, GPU, memory, power, disk and network in a few pixels, temperatures and fan control, keep awake with the lid closed — and your Linux servers and other Macs over SSH, when you want them.</p>
       <div class="cta" style="--delay:.25s">
         <a class="button primary" href="#install">Install with Homebrew</a>
         <a class="button" href="https://github.com/atanur/sysbar">View on GitHub</a>
       </div>
       <div class="facts" style="--delay:.35s">
-        <span><b>~1%</b> of one core</span>
+        <span><b>~2%</b> of one core</span>
         <span><b>~14 MB</b> memory</span>
         <span><b>13</b> languages</span>
         <span><b>0</b> telemetry</span>
@@ -257,16 +282,20 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
         <div class="top">
           <div class="tabs" role="tablist">
             <button class="tab active" role="tab" aria-selected="true" data-view="mac">This Mac</button>
-            <button class="tab" role="tab" aria-selected="false" data-view="linux"><span class="dot" aria-hidden="true"></span>Linux</button>
+            <button class="tab" role="tab" aria-selected="false" data-view="linux"><span class="dot" aria-hidden="true"></span>VPS</button>
           </div>
-          <svg class="gear" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 5.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Zm6 3.6V7.2l-1.7-.5a4.6 4.6 0 0 0-.5-1.1l.8-1.6-1.1-1.1-1.6.8c-.4-.2-.7-.4-1.1-.5L8.8 1.5H7.2l-.5 1.7c-.4.1-.8.3-1.1.5L4 2.9 2.9 4l.8 1.6c-.2.3-.4.7-.5 1.1l-1.7.5v1.6l1.7.5c.1.4.3.8.5 1.1L2.9 12 4 13.1l1.6-.8c.3.2.7.4 1.1.5l.5 1.7h1.6l.5-1.7c.4-.1.8-.3 1.1-.5l1.6.8 1.1-1.1-.8-1.6c.2-.3.4-.7.5-1.1L14 8.8Z" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
+          <div class="tools" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"><circle cx="8" cy="8" r="1.4"/><path d="M8 6.6C7.2 4.6 7.6 2.4 9.4 2.1c1.7-.3 2.2 1.6.9 3.1L9.2 6.6M9.4 8C11.4 7.2 13.6 7.6 13.9 9.4c.3 1.7-1.6 2.2-3.1.9L9.4 9.2M8 9.4c.8 2-.4 4.2-1.4 4.5-1.7.3-2.2-1.6-.9-3.1l1.1-1.4M6.6 8C4.6 8.8 2.4 8.4 2.1 6.6c-.3-1.7 1.6-2.2 3.1-.9l1.4 1.1"/></g></svg>
+            <svg width="18" height="16" viewBox="0 0 18 16"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"><rect x="3.2" y="3" width="11.6" height="7.6" rx="1"/><path d="M1.4 12.4h15.2l-.8 1.1H2.2z"/></g></svg>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 5.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Zm6 3.6V7.2l-1.7-.5a4.6 4.6 0 0 0-.5-1.1l.8-1.6-1.1-1.1-1.6.8c-.4-.2-.7-.4-1.1-.5L8.8 1.5H7.2l-.5 1.7c-.4.1-.8.3-1.1.5L4 2.9 2.9 4l.8 1.6c-.2.3-.4.7-.5 1.1l-1.7.5v1.6l1.7.5c.1.4.3.8.5 1.1L2.9 12 4 13.1l1.6-.8c.3.2.7.4 1.1.5l.5 1.7h1.6l.5-1.7c.4-.1.8-.3 1.1-.5l1.6.8 1.1-1.1-.8-1.6c.2-.3.4-.7.5-1.1L14 8.8Z" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
+          </div>
         </div>
         <div class="view" id="macView" role="tabpanel">
           <div class="cards">
           <div class="card"><div class="head"><span>CPU</span><span class="num" id="cpuNote">50°</span></div><div class="value num"><span id="cpuValue">24%</span></div><svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polygon id="cpuArea" points=""/><polyline id="cpuLine" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" points=""/></svg></div>
+          <div class="card"><div class="head"><span>GPU</span><span class="num" id="gpuNote">46°</span></div><div class="value num"><span id="gpuValue">18%</span></div><svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polygon id="gpuArea" points=""/><polyline id="gpuLine" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" points=""/></svg></div>
           <div class="card"><div class="head"><span>Memory</span><span class="num">16GB</span></div><div class="value num"><span id="memValue">11.6 GB</span></div><svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polygon id="memArea" points=""/><polyline id="memLine" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" points=""/></svg></div>
-          <div class="card"><div class="head"><span>Power</span><span class="num">51% · 2h 40m</span></div><div class="value num"><span id="pwrValue">9.6 W</span></div><svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polygon id="pwrArea" points=""/><polyline id="pwrLine" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" points=""/></svg></div>
-          <div class="card"><div class="head"><span>Network</span><span class="num" id="netNote">↓1K ↑1K</span></div><div class="value num"><span id="netValue">1K</span><span class="unit"> /s</span></div><svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polygon id="netArea" points=""/><polyline id="netLine" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" points=""/></svg></div>
+          <div class="card"><div class="head"><span>Power</span><span class="num"><span id="pwrNote">84%</span><svg class="bolt charging" id="pwrBolt" viewBox="0 0 7 10" role="img" aria-label="charging"><path d="M4.2 0 0 5.6h2.9L2.4 10 7 4.2H4z"/></svg></span></div><div class="value num"><span id="pwrValue">9.6 W</span></div><svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polygon id="pwrArea" points=""/><polyline id="pwrLine" fill="none" stroke-width="1.5" vector-effect="non-scaling-stroke" points=""/></svg></div>
           </div>
           <div class="apps">
             <div class="title">Top apps</div>
@@ -288,7 +317,7 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
             <div id="procRows"></div>
           </div>
         </div>
-        <p class="hint" id="tabHint">Tap <b>Linux</b> to watch a server too — both keep running.</p>
+        <p class="hint" id="tabHint">Tap <b>VPS</b> to watch a server too — both keep running.</p>
       </div>
     </div>
   </header>
@@ -300,11 +329,14 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
     <p class="sub reveal" style="--delay:.08s">Everything a menu bar monitor should do, and nothing it should not.</p>
     <div class="grid" data-stagger>
       <div class="feature reveal"><div class="icon"><span class="mini" aria-hidden="true"><i></i><i></i><i></i></span></div><h3>No jitter</h3><p>Fixed-width slots mean the menu bar never shifts between 3% and 100%. Pick exactly the metrics you want.</p></div>
-      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 30 18" aria-hidden="true" class="wide"><polyline id="featLine" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" points=""/></svg></div><h3>History that follows the rate</h3><p>Every card keeps a graph tinted by load. It always holds 150 samples, so it spans 15 seconds at the fastest rate and 12.5 minutes at the slowest.</p><div class="scale" aria-label="Load colours"><span><i style="background:var(--low)"></i>Low</span><span><i style="background:var(--mid)"></i>Moderate</span><span><i style="background:var(--high)"></i>High</span><span><i style="background:var(--crit)"></i>Critical</span></div></div>
-      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="5" width="12" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="14.5" y="7.5" width="1.6" height="3" rx=".8" fill="currentColor"/><rect id="featBattery" x="3.6" y="6.6" width="6" height="4.8" rx="1"/></svg></div><h3>Power that makes sense</h3><p>Charge and time left on battery; adapter and wall draw when plugged in. Estimates are labelled as estimates.</p></div>
-      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><rect class="featApp" x="3" y="4" width="12" height="2.2" rx="1.1"/><rect class="featApp" x="3" y="8" width="8" height="2.2" rx="1.1"/><rect class="featApp" x="3" y="12" width="5" height="2.2" rx="1.1"/></svg></div><h3>Top apps</h3><p>CPU, memory, GPU and energy per app, with helper processes folded into the app they belong to.</p></div>
-      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M7 4H4v10h10v-3M10 3h5v5M15 3 8 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>One click deeper</h3><p>Click any card to open the matching tab in Activity Monitor, or Battery settings for power.</p></div>
-      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2 3 4.5v4c0 3.6 2.5 6.4 6 7.5 3.5-1.1 6-3.9 6-7.5v-4L9 2Z" fill="none" stroke="var(--low)" stroke-width="1.6" stroke-linejoin="round"/><path d="m6.3 9 1.9 1.9 3.6-3.7" fill="none" stroke="var(--low)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Private by design</h3><p>No account, no analytics. Besides the SSH sessions you set up, Sysbar only asks GitHub once a day whether a new release is out.</p></div>
+      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 30 18" aria-hidden="true" class="wide"><polyline id="featLine" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" points=""/></svg></div><h3>History that follows the rate</h3><p>Every card keeps a graph of its last 150 samples: 15 seconds at the fastest rate, 5 minutes at the default, 12.5 at the slowest. Cards stay black, white and grey until a load is worth noticing. Click one to open Activity Monitor.</p><div class="scale" aria-label="Load colours"><span><i style="background:var(--low)"></i>Quiet</span><span><i style="background:var(--mid)"></i>Moderate</span><span><i style="background:var(--high)"></i>High</span><span><i style="background:var(--crit)"></i>Critical</span></div></div>
+      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="5" width="12" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="14.5" y="7.5" width="1.6" height="3" rx=".8" fill="currentColor"/><rect id="featBattery" x="3.6" y="6.6" width="6" height="4.8" rx="1"/></svg></div><h3>Power that makes sense</h3><p>Charge and time left on battery. Plugged in, a bolt beside the charge: green while it charges, plain once it is full or held. What goes into the battery is drawn below what the Mac uses.</p></div>
+      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h14" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2"/><path d="M2 7.5 5 5l3 1.5 3-3.5 3 2 2-1" fill="none" stroke="var(--in)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10.5 5 12l3-1 3 2.5 3-1.5 2 1" fill="none" stroke="var(--out)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Both directions at once</h3><p>Disk, network and power draw two lines either side of a zero line on one scale: read and write, download and upload. Disk shows the room left, network whether it is Wi-Fi or Ethernet.</p></div>
+      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M7.5 3.5a1.5 1.5 0 0 1 3 0v6.6a3 3 0 1 1-3 0Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="9" cy="12.6" r="1.3" fill="currentColor"/><path d="M9 11.3V6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><h3>Temperature and fans</h3><p>A panel names what is warming the Mac — processor or graphics work, cooling down, or macOS slowing down to cool — and a thermometer joins the menu bar only when the heat is out of the ordinary. Set the fans by hand with one slider.</p></div>
+      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="4" width="12" height="7.5" rx="1"/><path d="M1.5 13.5h15"/><path d="M3 3 15 15" stroke-linecap="round"/></g></svg></div><h3>Keep awake, lid closed</h3><p>For an hour, until a time, while charging, or for as long as an app stays open — it ends on its own and says why. It can nudge the mouse while you are away, and on a Mac mini it simply keeps it from sleeping.</p></div>
+      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><rect class="featApp" x="3" y="4" width="12" height="2.2" rx="1.1"/><rect class="featApp" x="3" y="8" width="8" height="2.2" rx="1.1"/><rect class="featApp" x="3" y="12" width="5" height="2.2" rx="1.1"/></svg></div><h3>Top apps</h3><p>CPU, memory, GPU and energy per app, helpers folded into their app. CPU is a share of the whole Mac, so the rows add up to the CPU card.</p></div>
+      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5v8.5M5.5 7.5 9 11l3.5-3.5"/><path d="M3 12.5v2h12v-2"/></g></svg></div><h3>Updates in place</h3><p>A new release shows up in the popover. Sysbar installs it only if it is signed by the same developer, then relaunches.</p></div>
+      <div class="feature reveal"><div class="icon"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2 3 4.5v4c0 3.6 2.5 6.4 6 7.5 3.5-1.1 6-3.9 6-7.5v-4L9 2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m6.3 9 1.9 1.9 3.6-3.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Private by design</h3><p>No account, no analytics. Besides the SSH sessions you set up, Sysbar only asks GitHub once a day whether a new release is out.</p></div>
     </div>
   </div>
 </section>
@@ -339,9 +371,9 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
 <section>
   <div class="wrap">
     <h2 class="reveal">Built to stay out of the way.</h2>
-    <p class="sub reveal" style="--delay:.08s">Measured on an M1 Pro with the popover closed.</p>
+    <p class="sub reveal" style="--delay:.08s">Measured with the popover closed.</p>
     <div class="stats" data-stagger>
-      <div class="stat reveal"><b class="num good">~1%</b><span>of a single core</span><i class="gauge"><i style="width:4%;background:var(--low)"></i></i></div>
+      <div class="stat reveal"><b class="num good">~2%</b><span>of a single core</span><i class="gauge"><i style="width:6%;background:var(--low)"></i></i></div>
       <div class="stat reveal"><b class="num good">~2 ms</b><span>per sample</span><i class="gauge"><i style="width:6%;background:var(--low)"></i></i></div>
       <div class="stat reveal"><b class="num good">0</b><span>work while asleep</span><i class="gauge"><i style="width:0%"></i></i></div>
       <div class="stat reveal"><b class="num">Native</b><span>Swift, AppKit, SwiftUI</span></div>
@@ -356,6 +388,22 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
     <div class="languages" data-stagger data-step=".04">
       <span class="reveal">English</span><span class="reveal">Türkçe</span><span class="reveal">Deutsch</span><span class="reveal">Français</span><span class="reveal">Español</span><span class="reveal">Italiano</span><span class="reveal">Português (Brasil)</span><span class="reveal">Nederlands</span><span class="reveal">Русский</span><span class="reveal">日本語</span><span class="reveal">한국어</span><span class="reveal">简体中文</span><span class="reveal" lang="ar" dir="rtl">العربية</span>
     </div>
+  </div>
+</section>
+
+<section id="changelog">
+  <div class="wrap">
+    <h2 class="reveal">What's new</h2>
+    <p class="sub reveal" style="--delay:.08s">Every release, in plain words. Sysbar offers each one in the popover as it comes out.</p>
+    <div class="releases reveal">
+<!-- changelog:start -->
+<article class="release"><h3><span class="version">0.5.4</span> <time datetime="2026-10-27">Oct 27, 2026</time></h3><ul><li>What&#x27;s new, in the app: Settings › About shows the changes in the version you run, and the update banner&#x27;s <b>What&#x27;s new</b> unfolds the notes of the new release before you install it.</li><li>A changelog for every release, on the website and in <a href="https://github.com/Atanur/sysbar/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</li><li>The website and the README describe everything Sysbar does today, from temperature and fans to keep awake.</li></ul></article>
+<article class="release"><h3><span class="version">0.5.3</span> <time datetime="2026-10-27">Oct 27, 2026</time></h3><ul><li>The Power card&#x27;s corner shows a bolt whenever the Mac runs on its adapter: green while the battery charges, plain once it is full or macOS holds the charge. A Mac without a battery always shows the plain bolt.</li></ul></article>
+<article class="release"><h3><span class="version">0.5.2</span> <time datetime="2026-10-27">Oct 27, 2026</time></h3><ul><li>CPU in the Top apps table is now a share of the whole Mac, like the CPU card above it, so the apps no longer seem to add up to more than the total. Shares under 10% keep one decimal.</li><li>Remote devices divide their processes&#x27; CPU over the server&#x27;s cores in the same way.</li></ul></article>
+<details class="older"><summary>Earlier releases</summary><article class="release"><h3><span class="version">0.5.1</span> <time datetime="2026-10-26">Oct 26, 2026</time></h3><ul><li>Lighter on the CPU: the kind of network connection is looked up once per connection instead of on every sample.</li><li>The fan icon no longer spins. It is drawn still, and turns amber, orange and red as the fans work harder.</li><li>App memory switches to gigabytes from 1000 MB, so &quot;1023M&quot; reads &quot;1.0G&quot;.</li></ul></article><article class="release"><h3><span class="version">0.5.0</span> <time datetime="2026-10-26">Oct 26, 2026</time></h3><ul><li>A calmer look: cards are black, white and grey, and colour appears only where it means something, as load turns amber, orange and red, and charge turns green.</li><li>Disk, Network and Power draw both directions either side of a zero line: read and write, download and upload, and what the Mac uses next to what goes into the battery.</li><li>The Disk card shows the room left on the disk, the Network card whether you are on Wi-Fi or Ethernet, and the GPU card its temperature.</li><li>Right-click the menu bar item for Settings, Check for updates, About and Quit.</li></ul></article><article class="release"><h3><span class="version">0.4.0</span> <time datetime="2026-10-26">Oct 26, 2026</time></h3><ul><li>Keep awake can move the mouse when the Mac is idle, so chat apps do not show you as away. About once a minute the cursor takes a short curved trip and comes back. Nothing is clicked or typed, and it needs the Accessibility permission, which Sysbar asks for only when you turn it on.</li></ul></article><article class="release"><h3><span class="version">0.3.3</span> <time datetime="2026-10-26">Oct 26, 2026</time></h3><ul><li>Keep awake works on Macs without a lid (Mac mini, Studio, iMac): it keeps them from sleeping while idle.</li><li>A new MacBook icon for keep awake, struck through while the Mac is kept awake.</li><li>The popover closes when you click outside it.</li></ul></article><article class="release"><h3><span class="version">0.3.2</span> <time datetime="2026-10-24">Oct 24, 2026</time></h3><ul><li>Keep awake has a menu with two new choices: until a time of day, and while the charger is connected.</li><li>&quot;While an app is open&quot; no longer ends when the app briefly disappears, and keep awake records why it ended by itself.</li></ul></article></details>
+<!-- changelog:end -->
+    </div>
+    <p class="history reveal"><a href="https://github.com/Atanur/sysbar/blob/main/CHANGELOG.md">Full history on GitHub</a></p>
   </div>
 </section>
 
@@ -391,7 +439,7 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
   /* Like the app: every graph holds a fixed number of samples and fills from the right. */
   const POINTS = 150;
 
-  /* Colours follow the app's load thresholds: green, amber, orange, red. */
+  /* Colours follow the app's load thresholds: neutral while quiet, then amber, orange and red. */
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const loadColor = f => css(f < .5 ? "--low" : f < .75 ? "--mid" : f < .9 ? "--high" : "--crit");
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -402,7 +450,7 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
   const metric = (value, lo, hi, spike) => ({ value, target: value, lo, hi, spike, hold: 0 });
   const metrics = {
     cpu: metric(.24, .04, .97, .25), mem: metric(.725, .66, .93, .02),
-    pwr: metric(9.6, 3.5, 27, .2), net: metric(1, .5, 900, .3), temp: metric(50, 42, 92, 0),
+    pwr: metric(9.6, 3.5, 27, .2), gpu: metric(.18, .02, .95, .2), temp: metric(50, 42, 92, 0), gtemp: metric(46, 40, 88, 0),
     /* The Linux server: mostly quiet, with the occasional busy moment. */
     lcpu: metric(.03, .01, .92, .12), lmem: metric(.33, .3, .62, .05),
     lload: metric(.42, .05, 3.6, .12), lnet: metric(52, 4, 900, .2),
@@ -419,16 +467,19 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
   const stepTemperature = () => {
     const t = metrics.temp;
     t.value = clamp(t.value + ((44 + metrics.cpu.value * 46) - t.value) * .06, t.lo, t.hi);
+    const g = metrics.gtemp;
+    g.value = clamp(g.value + ((41 + metrics.gpu.value * 44) - g.value) * .06, g.lo, g.hi);
   };
 
-  const graphs = ["cpu", "mem", "pwr", "net", "lcpu", "lmem", "lload", "lnet"];
-  const scale = { cpu: 1, mem: 1, pwr: 30, net: 900, lcpu: 1, lmem: 1, lload: 4, lnet: 900 };
+  const graphs = ["cpu", "gpu", "mem", "pwr", "lcpu", "lmem", "lload", "lnet"];
+  const scale = { cpu: 1, gpu: 1, mem: 1, pwr: 30, lcpu: 1, lmem: 1, lload: 4, lnet: 900 };
   const fmtRate = k => k >= 1000 ? `${(k / 1024).toFixed(1)}M` : `${Math.round(k)}K`;
   const colorFor = {
-    cpu: () => loadColor(metrics.cpu.value), mem: () => loadColor(metrics.mem.value > .9 ? .6 : .2),
-    pwr: () => loadColor(metrics.pwr.value / 30), net: () => css("--io"),
+    cpu: () => loadColor(metrics.cpu.value), gpu: () => loadColor(metrics.gpu.value),
+    mem: () => loadColor(metrics.mem.value > .9 ? .6 : .2),
+    pwr: () => loadColor(metrics.pwr.value / 30),
     lcpu: () => loadColor(metrics.lcpu.value), lmem: () => loadColor(metrics.lmem.value),
-    lload: () => loadColor(metrics.lload.value / 4), lnet: () => css("--io"),
+    lload: () => loadColor(metrics.lload.value / 4), lnet: () => css("--in"),
   };
 
   /* Completed samples per graph, plus the sample being moved towards. Both machines are
@@ -461,24 +512,29 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
 
   const readouts = [...document.querySelectorAll("#readouts .readout")];
   const apps = [
-    { name: "Google Chrome", cpu: 49, ram: "1.3G", share: .5 }, { name: "Safari", cpu: 15, ram: "1.6G", share: .25 },
-    { name: "Xcode", cpu: 6, ram: "1.1G", share: .15 }, { name: "Sysbar", cpu: 1, ram: "14M", share: .01 },
+    { name: "Google Chrome", cpu: 9, ram: "1.3G", share: .4 }, { name: "Safari", cpu: 4, ram: "1.6G", share: .2 },
+    { name: "Xcode", cpu: 2, ram: "1.1G", share: .12 }, { name: "Sysbar", cpu: .3, ram: "60M", share: .01 },
   ];
   const procs = [
-    { name: "nginx", cpu: 2, ram: "20M", share: .45 }, { name: "postgres", cpu: 1, ram: "102M", share: .3 },
-    { name: "dockerd", cpu: .7, ram: "1.0G", share: .1 }, { name: "node", cpu: .4, ram: "180M", share: .15 },
+    { name: "nginx", cpu: 1, ram: "20M", share: .45 }, { name: "postgres", cpu: .6, ram: "102M", share: .3 },
+    { name: "dockerd", cpu: .3, ram: "1.0G", share: .1 }, { name: "node", cpu: .2, ram: "180M", share: .15 },
   ];
-  /* Each process holds a share of its machine's total load (cores × usage), with some jitter,
-     so the table reshuffles without drifting off to the limits. */
+  /* As in the app, an app's CPU is a share of the whole machine, all cores together, so each one
+     holds a part of the CPU card's value, with some jitter so the table reshuffles. */
   const followLoad = (list, total) => list.forEach(a => {
-    a.cpu = clamp(a.cpu + (a.share * total - a.cpu) * .3 + (Math.random() - .5) * 3, .1, 99);
+    a.cpu = clamp(a.cpu + (a.share * total - a.cpu) * .3 + (Math.random() - .5) * total * .04, 0, 100);
   });
-  const rows = (list, max) => [...list].sort((a, b) => b.cpu - a.cpu).slice(0, 3)
-    .map(a => `<div class="row"><span>${a.name}</span><span class="num">${Math.round(a.cpu)}%</span><span class="num">${a.ram}</span></div>`).join("");
+  /* One decimal below 10%, where most rows sit, whole percents above: "3.6%", "23%". */
+  const finePercent = v => v < 9.95 ? `${v.toFixed(1)}%` : `${Math.round(v)}%`;
+  const rows = list => [...list].sort((a, b) => b.cpu - a.cpu).slice(0, 3)
+    .map(a => `<div class="row"><span>${a.name}</span><span class="num">${finePercent(a.cpu)}</span><span class="num">${a.ram}</span></div>`).join("");
   const featureBars = [...document.querySelectorAll(".feature .mini i")];
   const featureApps = [...document.querySelectorAll(".feature .featApp")];
   const featLine = $("featLine"), featBattery = $("featBattery");
   let battery = .51;
+  /* The mock's own battery, charging towards full and then held there on the adapter. */
+  let charge = .84;
+  const pwrBolt = $("pwrBolt"), pwrNote = $("pwrNote");
 
   /* A new sample: menu bar and card text update at once, graphs start gliding towards it. */
   const tick = () => {
@@ -502,10 +558,16 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
     });
     $("cpuValue").textContent = texts.cpu;
     $("cpuNote").textContent = `${Math.round(m.temp)}°`;
+    $("gpuValue").textContent = `${Math.round(m.gpu * 100)}%`;
+    $("gpuNote").textContent = `${Math.round(m.gtemp)}°`;
     $("memValue").textContent = `${(16 * m.mem).toFixed(1)} GB`;
     $("pwrValue").textContent = `${m.pwr.toFixed(1)} W`;
-    $("netValue").textContent = fmtRate(m.net);
-    $("netNote").textContent = `↓${fmtRate(m.net * .82)} ↑${fmtRate(m.net * .18)}`;
+    /* Green bolt while it charges, plain once the battery is full. */
+    charge = charge >= 1 ? 1 : Math.min(1, charge + .0015);
+    const charging = charge < 1;
+    pwrNote.textContent = `${Math.round(charge * 100)}%`;
+    pwrBolt.setAttribute("class", `bolt ${charging ? "charging" : "plain"}`);
+    pwrBolt.setAttribute("aria-label", charging ? "charging" : "on power");
     $("lcpuValue").textContent = `${Math.round(m.lcpu * 100)}%`;
     $("lmemValue").textContent = `${(7.6 * m.lmem).toFixed(1)} GB`;
     $("lloadValue").textContent = m.lload.toFixed(2);
@@ -513,8 +575,8 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
     $("lnetValue").textContent = fmtRate(m.lnet);
     $("lnetNote").textContent = `↓${fmtRate(m.lnet * .7)} ↑${fmtRate(m.lnet * .3)}`;
 
-    followLoad(apps, m.cpu * 800);
-    followLoad(procs, m.lcpu * 400);
+    followLoad(apps, m.cpu * 100);
+    followLoad(procs, m.lcpu * 100);
     $("appRows").innerHTML = rows(apps);
     $("procRows").innerHTML = rows(procs);
 
@@ -536,8 +598,8 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
     }
     [...apps].sort((a, b) => b.cpu - a.cpu).slice(0, 3).forEach((a, i) => {
       if (!featureApps[i]) return;
-      featureApps[i].setAttribute("width", (2 + clamp(a.cpu / 60, 0, 1) * 10).toFixed(2));
-      featureApps[i].setAttribute("fill", loadColor(a.cpu / 60));
+      featureApps[i].setAttribute("width", (2 + clamp(a.cpu / 40, 0, 1) * 10).toFixed(2));
+      featureApps[i].setAttribute("fill", loadColor(a.cpu / 40));
     });
   };
 
@@ -570,7 +632,7 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
     }
     hint.innerHTML = name === "linux"
       ? "Switch back any time — this server keeps being watched in the background."
-      : connected ? "Linux is still live in the background. Tap it to pick up where it left off." : "Tap <b>Linux</b> to watch a server too — both keep running.";
+      : connected ? "The VPS is still live in the background. Tap it to pick up where it left off." : "Tap <b>VPS</b> to watch a server too — both keep running.";
   };
   tabs.forEach(t => t.addEventListener("click", () => show(t.dataset.view)));
   connecting.hidden = true;

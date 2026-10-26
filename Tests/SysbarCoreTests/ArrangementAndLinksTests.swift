@@ -64,7 +64,6 @@ import Testing
     }
 
     @Test func releaseNotesPointAtTheRunningVersion() {
-        #expect(ProjectLinks.releaseNotes(version: AppVersion("0.1.1")).absoluteString.hasSuffix("/releases/tag/v0.1.1"))
-        #expect(ProjectLinks.releaseNotes(version: nil).absoluteString.hasSuffix("/releases"))
+        #expect(ProjectLinks.changelog.absoluteString == "https://sysbar.atanur.dev/#changelog")
     }
 }

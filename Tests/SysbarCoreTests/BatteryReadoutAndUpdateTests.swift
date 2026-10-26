@@ -72,10 +72,10 @@ import Testing
         tag: String = "v0.2.0", page: String = "https://github.com/Atanur/sysbar/releases/tag/v0.2.0",
         asset: String = "Sysbar-0.2.0.zip",
         download: String = "https://github.com/Atanur/sysbar/releases/download/v0.2.0/Sysbar-0.2.0.zip",
-        draft: Bool = false, prerelease: Bool = false
+        draft: Bool = false, prerelease: Bool = false, body: String = "- Faster\\r\\n- Smaller"
     ) -> Data {
         let json = """
-        {"tag_name":"\(tag)","html_url":"\(page)","draft":\(draft),"prerelease":\(prerelease),
+        {"tag_name":"\(tag)","html_url":"\(page)","draft":\(draft),"prerelease":\(prerelease),"body":"\(body)",
          "assets":[{"name":"\(asset)","browser_download_url":"\(download)"}]}
         """
         return Data(json.utf8)
@@ -102,6 +102,7 @@ import Testing
         #expect(release.version == AppVersion("0.2.0"))
         #expect(release.pageURL.absoluteString.hasSuffix("/tag/v0.2.0"))
         #expect(release.downloadURL?.lastPathComponent == "Sysbar-0.2.0.zip")
+        #expect(release.notes == ["Faster", "Smaller"])
     }
 
     @Test func ignoresDraftsPrereleasesAndForeignLinks() {
