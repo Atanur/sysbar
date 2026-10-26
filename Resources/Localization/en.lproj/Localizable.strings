@@ -39,7 +39,7 @@
 "Back to automatic when Sysbar quits or the Mac sleeps." = "Back to automatic when Sysbar quits or the Mac sleeps.";
 "Bars and values" = "Bars and values";
 "Bars only" = "Bars only";
-"Bars turn from green to red as load rises" = "Bars turn from green to red as load rises";
+"Bars start neutral and turn amber, orange and red as load rises" = "Bars start neutral and turn amber, orange and red as load rises";
 "Battery" = "Battery";
 "Battery charge" = "Battery charge";
 "Battery draw %@ W" = "Battery draw %@ W";
@@ -218,7 +218,7 @@
 "Settings" = "Settings";
 "Show details" = "Show details";
 "Show table" = "Show table";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "Shown only while running on battery. It turns from green to red as the charge runs low.";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low.";
 "Shown readouts" = "Shown readouts";
 "Skip this version" = "Skip this version";
 "Slowing down to cool" = "Slowing down to cool";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "Move the mouse when idle";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "While you are away, the cursor moves a little about once a minute, so apps see you as active.";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility.";
+"%@ free" = "%@ free";
+"%1$@ free of %2$@" = "%1$@ free of %2$@";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "Ethernet";
+"Above the line: what the Mac uses · Below: going into the battery" = "Above the line: what the Mac uses · Below: going into the battery";

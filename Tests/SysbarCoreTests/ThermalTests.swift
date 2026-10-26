@@ -34,6 +34,12 @@ import Testing
         #expect(result.level == .moderate)
     }
 
+    @Test func snapshotExposesBothPartTemperatures() throws {
+        let snapshot = try #require(samples(cpu: 0.2, gpu: 0.9) { _ in [.cpu: 58, .gpu: 78] }.first)
+        #expect(snapshot.cpuTemperature == 58)
+        #expect(snapshot.gpuTemperature == 78)
+    }
+
     @Test func busyProcessorNamesTheCPU() throws {
         let result = try #require(ThermalAssessment.assess(samples(cpu: 0.8) { _ in [.cpu: 82, .gpu: 50] }))
         #expect(result.cause == .cpuWork)

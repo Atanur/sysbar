@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "يجب أن يبقى عمود واحد على الأقل ظاهراً.";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "فشلت المصادقة. كلمات المرور غير مدعومة؛ استخدم مفتاح ssh أو ssh-agent.";
 "Peak %@" = "الذروة %@";
-"Bars turn from green to red as load rises" = "تتحول الأشرطة من الأخضر إلى الأحمر مع ارتفاع الحمل";
+"Bars start neutral and turn amber, orange and red as load rises" = "تبدأ الأشرطة محايدة ثم تتحول إلى الكهرماني فالبرتقالي فالأحمر مع ارتفاع الحمل";
 "Battery draw %@ W" = "استهلاك البطارية %@ واط";
 "CPU" = "CPU";
 "CPU and RAM power" = "طاقة CPU وRAM";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "أرسل GitHub ردًا غير متوقع.";
 "Installing…" = "جارٍ التثبيت…";
 "Once a day" = "مرة يوميًا";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "يظهر فقط عند العمل على البطارية، ويتحوّل من الأخضر إلى الأحمر كلما انخفض الشحن.";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "يظهر فقط عند العمل على البطارية. يبقى محايدًا ثم يتحول إلى الكهرماني والأحمر كلما انخفض الشحن.";
 "Skip this version" = "تخطي هذا الإصدار";
 "Sysbar %@ is available" = "يتوفر Sysbar %@";
 "Sysbar is up to date" = "Sysbar محدَّث";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "تحريك الفأرة عند الخمول";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "أثناء غيابك، يتحرك المؤشر قليلًا مرة كل دقيقة تقريبًا، فتراك التطبيقات نشطًا.";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "لتحريك الفأرة، يجب السماح لـ Sysbar في إعدادات النظام ← الخصوصية والأمان ← تسهيلات الاستخدام.";
+"%@ free" = "%@ متاح";
+"%1$@ free of %2$@" = "%1$@ متاح من أصل %2$@";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "إيثرنت";
+"Above the line: what the Mac uses · Below: going into the battery" = "فوق الخط: ما يستهلكه الـ Mac · تحته: الشحن إلى البطارية";

@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "Хотя бы один столбец должен оставаться видимым.";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "Ошибка аутентификации. Пароли не поддерживаются; используйте ключ ssh или ssh-agent.";
 "Peak %@" = "Пик %@";
-"Bars turn from green to red as load rises" = "Полоски меняют цвет с зелёного на красный по мере роста нагрузки";
+"Bars start neutral and turn amber, orange and red as load rises" = "Полоски начинаются с нейтрального цвета и по мере роста нагрузки становятся янтарными, оранжевыми и красными";
 "Battery draw %@ W" = "Потребление от батареи %@ Вт";
 "CPU" = "CPU";
 "CPU and RAM power" = "Энергопотребление CPU и RAM";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "GitHub прислал неожиданный ответ.";
 "Installing…" = "Установка…";
 "Once a day" = "Раз в день";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "Показывается только при работе от батареи. Цвет меняется с зелёного на красный по мере разряда.";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "Показывается только при работе от батареи. Остаётся нейтральным, а по мере разряда становится янтарным и красным.";
 "Skip this version" = "Пропустить эту версию";
 "Sysbar %@ is available" = "Доступна Sysbar %@";
 "Sysbar is up to date" = "Sysbar обновлена";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "Двигать мышь при простое";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "Пока вас нет, курсор слегка двигается примерно раз в минуту, чтобы приложения считали вас активным.";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Чтобы двигать мышь, Sysbar нужно разрешить в Системных настройках → Конфиденциальность и безопасность → Универсальный доступ.";
+"%@ free" = "свободно %@";
+"%1$@ free of %2$@" = "свободно %1$@ из %2$@";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "Ethernet";
+"Above the line: what the Mac uses · Below: going into the battery" = "Выше линии: потребление Mac · Ниже: зарядка батареи";

@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "少なくとも 1 つの列を表示しておく必要があります。";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "認証に失敗しました。パスワードはサポートされていません。ssh 鍵または ssh-agent を使用してください。";
 "Peak %@" = "ピーク %@";
-"Bars turn from green to red as load rises" = "負荷が高まると、バーの色が緑から赤に変わります";
+"Bars start neutral and turn amber, orange and red as load rises" = "バーは中立色から始まり、負荷が高まるにつれて琥珀色、オレンジ、赤に変わります";
 "Battery draw %@ W" = "バッテリー消費 %@ W";
 "CPU" = "CPU";
 "CPU and RAM power" = "CPU と RAM の電力";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "GitHub から予期しない応答がありました。";
 "Installing…" = "インストール中…";
 "Once a day" = "1日に1回";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "バッテリー駆動中のみ表示されます。残量が減ると緑から赤に変わります。";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "バッテリー駆動中のみ表示されます。中立色のまま、残量が減ると琥珀色、赤に変わります。";
 "Skip this version" = "このバージョンをスキップ";
 "Sysbar %@ is available" = "Sysbar %@ を利用できます";
 "Sysbar is up to date" = "Sysbar は最新です";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "アイドル時にマウスを動かす";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "席を外している間、約1分ごとにカーソルが少し動き、アプリからアクティブに見えます。";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "マウスを動かすには、システム設定 → プライバシーとセキュリティ → アクセシビリティで Sysbar を許可する必要があります。";
+"%@ free" = "空き %@";
+"%1$@ free of %2$@" = "%2$@ 中 空き %1$@";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "イーサネット";
+"Above the line: what the Mac uses · Below: going into the battery" = "線の上: Mac の消費電力 · 下: バッテリーへの充電";

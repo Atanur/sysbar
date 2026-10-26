@@ -31,6 +31,14 @@ public enum Format {
         decimal(Double(bytes) / gibibyte, digits: 1) + " GB"
     }
 
+    /// Room left on a disk as Finder writes it, in decimal units: "412 GB", "1.2 TB", "38.5 GB".
+    public static func diskSize(_ bytes: UInt64) -> String {
+        let value = Double(bytes)
+        if value >= 1e12 { return decimal(value / 1e12, digits: 1) + " TB" }
+        let gigabytes = value / 1e9
+        return decimal(gigabytes, digits: gigabytes >= 100 ? 0 : 1) + " GB"
+    }
+
     /// Menu bar memory text, e.g. "10.9G", dropping the decimal from 100 GB up so it stays five characters.
     public static func compactGigabytes(_ bytes: UInt64) -> String {
         let gigabytes = Double(bytes) / gibibyte

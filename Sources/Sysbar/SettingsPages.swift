@@ -167,7 +167,7 @@ struct MenuBarPage: View {
             if Self.hasBattery {
                 SettingsGroup(
                     title: L("Battery"),
-                    footer: L("Shown only while running on battery. It turns from green to red as the charge runs low.")
+                    footer: L("Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low.")
                 ) {
                     SettingsRow(symbol: "battery.50", title: L("Battery charge")) {
                         Picker("", selection: $preferences.batteryMenuBarThreshold) {
@@ -191,7 +191,7 @@ struct MenuBarPage: View {
                 }
                 SettingsRow(
                     symbol: "paintpalette.fill", title: L("Colored bars"),
-                    subtitle: L("Bars turn from green to red as load rises")
+                    subtitle: L("Bars start neutral and turn amber, orange and red as load rises")
                 ) {
                     RowToggle(isOn: $preferences.coloredMenuBar)
                 }

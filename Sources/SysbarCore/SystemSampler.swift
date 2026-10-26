@@ -13,6 +13,11 @@ public final class SystemSampler {
     private static let thermalRefreshNanos: UInt64 = 3_000_000_000
     private let thermalProbe = ThermalProbe()
     private var cachedThermal: (reading: ThermalReading, nanos: UInt64)?
+    /// Free disk space changes slowly; the connection type only when the user changes network.
+    private static let diskSpaceRefreshNanos: UInt64 = 60_000_000_000
+    private static let linkRefreshNanos: UInt64 = 3_000_000_000
+    private var cachedDiskSpace: (value: DiskSpace?, nanos: UInt64)?
+    private var cachedLink: (value: NetworkLink?, nanos: UInt64)?
     private var previousDisk: (totals: DiskTotals, nanos: UInt64)?
     private var previousNetwork: (totals: NetworkTotals, nanos: UInt64)?
 
@@ -44,8 +49,24 @@ public final class SystemSampler {
             disk: diskThroughput(at: nanos),
             network: networkThroughput(at: nanos),
             battery: battery(at: nanos),
-            thermal: thermal(at: nanos)
+            thermal: thermal(at: nanos),
+            diskSpace: diskSpace(at: nanos),
+            networkLink: networkLink(at: nanos)
         )
+    }
+
+    private func diskSpace(at nanos: UInt64) -> DiskSpace? {
+        if let cached = cachedDiskSpace, nanos - cached.nanos < Self.diskSpaceRefreshNanos { return cached.value }
+        let value = DiskSpaceProbe.read()
+        cachedDiskSpace = (value, nanos)
+        return value
+    }
+
+    private func networkLink(at nanos: UInt64) -> NetworkLink? {
+        if let cached = cachedLink, nanos - cached.nanos < Self.linkRefreshNanos { return cached.value }
+        let value = NetworkLinkProbe.primary()
+        cachedLink = (value, nanos)
+        return value
     }
 
     private func thermal(at nanos: UInt64) -> ThermalReading? {

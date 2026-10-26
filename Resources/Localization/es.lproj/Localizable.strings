@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "Debe quedar visible al menos una columna.";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "La autenticación ha fallado. No se admiten contraseñas; usa una clave ssh o ssh-agent.";
 "Peak %@" = "Máximo %@";
-"Bars turn from green to red as load rises" = "Las barras pasan de verde a rojo a medida que aumenta la carga";
+"Bars start neutral and turn amber, orange and red as load rises" = "Las barras empiezan en neutro y pasan a ámbar, naranja y rojo a medida que aumenta la carga";
 "Battery draw %@ W" = "Consumo de batería %@ W";
 "CPU" = "CPU";
 "CPU and RAM power" = "Energía de CPU y RAM";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "GitHub envió una respuesta inesperada.";
 "Installing…" = "Instalando…";
 "Once a day" = "Una vez al día";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "Solo se muestra con batería. Pasa de verde a rojo a medida que baja la carga.";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "Solo se muestra con batería. Permanece en neutro y pasa a ámbar y rojo a medida que baja la carga.";
 "Skip this version" = "Omitir esta versión";
 "Sysbar %@ is available" = "Sysbar %@ está disponible";
 "Sysbar is up to date" = "Sysbar está actualizado";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "Mover el ratón en reposo";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "Mientras estás ausente, el cursor se mueve un poco aproximadamente una vez por minuto, para que las apps te vean activo.";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Para mover el ratón, Sysbar debe tener permiso en Ajustes del Sistema → Privacidad y seguridad → Accesibilidad.";
+"%@ free" = "%@ libres";
+"%1$@ free of %2$@" = "%1$@ libres de %2$@";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "Ethernet";
+"Above the line: what the Mac uses · Below: going into the battery" = "Sobre la línea: lo que usa el Mac · Debajo: carga de la batería";

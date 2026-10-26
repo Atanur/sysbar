@@ -89,7 +89,8 @@ enum MenuBarImage {
         let ink = isTemplate ? NSColor.black : NSColor.labelColor
         let track = isTemplate ? NSColor.black.withAlphaComponent(0.28) : NSColor.tertiaryLabelColor
         let isColored = colored || readout.isAlwaysColored
-        let fill = isColored ? (readout.load?.nsColor ?? ActivityColors.nsColor) : ink
+        // A metric with no "too much" (disk, network) stays neutral even in colour mode.
+        let fill = isColored ? (readout.load?.nsColor ?? ink) : ink
 
         if style.showsBars {
             if readout.slot == .battery {

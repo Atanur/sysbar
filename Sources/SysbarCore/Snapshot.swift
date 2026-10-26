@@ -76,13 +76,20 @@ public struct Snapshot: Equatable, Sendable {
     public let battery: BatteryInfo?
     /// Temperatures by source, fans and thermal state, when the sensors can be read.
     public let thermal: ThermalReading?
+    /// The room left on the startup volume; read about once a minute.
+    public let diskSpace: DiskSpace?
+    /// How the Mac reaches the network; nil when offline.
+    public let networkLink: NetworkLink?
 
     public init(
         timestamp: Date, cpuUsage: Double, memory: MemoryReading,
         power: PowerReading?, systemPower: Double?,
         gpuUsage: Double? = nil, disk: IOThroughput? = nil, network: IOThroughput? = nil,
-        battery: BatteryInfo? = nil, thermal: ThermalReading? = nil
+        battery: BatteryInfo? = nil, thermal: ThermalReading? = nil,
+        diskSpace: DiskSpace? = nil, networkLink: NetworkLink? = nil
     ) {
+        self.diskSpace = diskSpace
+        self.networkLink = networkLink
         self.battery = battery
         self.thermal = thermal
         self.timestamp = timestamp
@@ -97,6 +104,9 @@ public struct Snapshot: Equatable, Sendable {
 
     /// CPU temperature in °C: the hotter half of the CPU core sensors.
     public var cpuTemperature: Double? { thermal?.celsius(.cpu) }
+
+    /// GPU temperature in °C, where the Mac has GPU sensors.
+    public var gpuTemperature: Double? { thermal?.celsius(.gpu) }
 
     /// Best available headline power figure: whole system, else CPU+GPU+ANE+RAM.
     public var headlinePower: Double? {

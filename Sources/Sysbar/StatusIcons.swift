@@ -114,8 +114,9 @@ struct KeepAwakeIcon: View {
     let isKeptAwake: Bool
 
     var body: some View {
+        // Light, so its filled screen and base weigh no more than the fan and the gear beside it.
         Image(systemName: symbol)
-            .font(.body)
+            .font(.body.weight(.light))
             .contentTransition(.symbolEffect(.replace))
             .motion(.easeOut(duration: 0.2), value: isKeptAwake)
     }

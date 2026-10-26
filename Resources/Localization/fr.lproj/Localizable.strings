@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "Au moins une colonne doit rester visible.";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "Échec de l'authentification. Les mots de passe ne sont pas pris en charge ; utilisez une clé ssh ou ssh-agent.";
 "Peak %@" = "Pic %@";
-"Bars turn from green to red as load rises" = "Les barres passent du vert au rouge à mesure que la charge augmente";
+"Bars start neutral and turn amber, orange and red as load rises" = "Les barres restent neutres puis passent à l'ambre, à l'orange et au rouge à mesure que la charge augmente";
 "Battery draw %@ W" = "Consommation de la batterie %@ W";
 "CPU" = "CPU";
 "CPU and RAM power" = "Puissance du CPU et de la RAM";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "GitHub a envoyé une réponse inattendue.";
 "Installing…" = "Installation…";
 "Once a day" = "Une fois par jour";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "Affichée seulement sur batterie. Elle passe du vert au rouge à mesure que la charge baisse.";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "Affichée seulement sur batterie. Elle reste neutre puis passe à l'ambre et au rouge à mesure que la charge baisse.";
 "Skip this version" = "Ignorer cette version";
 "Sysbar %@ is available" = "Sysbar %@ est disponible";
 "Sysbar is up to date" = "Sysbar est à jour";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "Bouger la souris en cas d’inactivité";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "Pendant votre absence, le curseur bouge un peu environ une fois par minute, pour que les apps vous voient comme actif.";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Pour bouger la souris, Sysbar doit être autorisé dans Réglages Système → Confidentialité et sécurité → Accessibilité.";
+"%@ free" = "%@ libres";
+"%1$@ free of %2$@" = "%1$@ libres sur %2$@";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "Ethernet";
+"Above the line: what the Mac uses · Below: going into the battery" = "Au-dessus de la ligne : consommation du Mac · En dessous : charge de la batterie";

@@ -116,23 +116,34 @@ struct RemoteView: View {
     }
 
     private func networkCard(_ samples: [RemoteSnapshot], _ latest: RemoteSnapshot) -> some View {
-        card(
+        let flow = samples.compactMap(\.network)
+        return card(
             title: L("Network"), symbol: "arrow.up.arrow.down",
-            value: latest.network.map { Format.rate($0.total) } ?? "–", unit: "/s",
-            note: latest.network.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "",
-            help: L("↓ Download · ↑ Upload"),
-            series: samples.compactMap { $0.network?.total }, range: nil, load: nil
+            value: latest.network.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "–", unit: "/s",
+            note: "", help: L("↓ Download · ↑ Upload"),
+            series: flow.map(\.inbound), secondary: flow.map(\.outbound),
+            readouts: flowReadouts(latest.network), range: nil, load: nil, tint: FlowColors.inbound
         )
     }
 
     private func diskCard(_ samples: [RemoteSnapshot], _ latest: RemoteSnapshot) -> some View {
-        card(
+        let flow = samples.compactMap(\.disk)
+        return card(
             title: L("Disk"), symbol: "internaldrive",
-            value: latest.disk.map { Format.rate($0.total) } ?? "–", unit: "/s",
-            note: latest.disk.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "",
-            help: L("↓ Read · ↑ Write"),
-            series: samples.compactMap { $0.disk?.total }, range: nil, load: nil
+            value: latest.disk.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "–", unit: "/s",
+            note: "", help: L("↓ Read · ↑ Write"),
+            series: flow.map(\.inbound), secondary: flow.map(\.outbound),
+            readouts: flowReadouts(latest.disk), range: nil, load: nil, tint: FlowColors.inbound
         )
+    }
+
+    /// The two figures of a card with a direction each: in (read, download) and out (write, upload).
+    private func flowReadouts(_ io: IOThroughput?) -> [Readout] {
+        guard let io else { return [] }
+        return [
+            Readout(text: "↓" + Format.rate(io.inbound), color: FlowColors.inbound),
+            Readout(text: "↑" + Format.rate(io.outbound), color: FlowColors.outbound),
+        ]
     }
 
     private func gpuCard(_ samples: [RemoteSnapshot], _ latest: RemoteSnapshot) -> some View {
@@ -148,12 +159,14 @@ struct RemoteView: View {
 
     private func card(
         title: String, symbol: String, value: String, unit: String = "", note: String, help: String,
-        series: [Double], range: ClosedRange<Double>?, load: LoadLevel?
+        series: [Double], secondary: [Double]? = nil, readouts: [Readout] = [],
+        range: ClosedRange<Double>?, load: LoadLevel?, tint: Color? = nil
     ) -> some View {
         MetricCard(
             title: title, symbol: symbol, value: value, unit: unit, note: note,
-            series: series, capacity: monitor.history.capacity, range: range,
-            tint: load?.color ?? ActivityColors.color, help: help
+            series: series, secondary: secondary, readouts: readouts,
+            capacity: monitor.history.capacity, range: range,
+            tint: tint ?? load?.cardColor ?? FlowColors.inbound, help: help
         )
     }
 

@@ -86,13 +86,14 @@ import Testing
 
     private func snapshot(
         cpu: Double, used: UInt64, pressure: MemoryPressure = .normal, systemPower: Double?,
-        gpu: Double?, network: IOThroughput?, at seconds: TimeInterval
+        gpu: Double?, network: IOThroughput?, at seconds: TimeInterval,
+        diskSpace: DiskSpace? = nil, networkLink: NetworkLink? = nil
     ) -> Snapshot {
         Snapshot(
             timestamp: Date(timeIntervalSince1970: seconds), cpuUsage: cpu,
             memory: MemoryReading(usedBytes: used, totalBytes: 16 * gib, pressure: pressure),
             power: PowerReading(cpu: nil, gpu: 1, ane: 0, ram: nil), systemPower: systemPower,
-            gpuUsage: gpu, network: network
+            gpuUsage: gpu, network: network, diskSpace: diskSpace, networkLink: networkLink
         )
     }
 
@@ -131,6 +132,22 @@ import Testing
         #expect(half.systemPower == 7)
         #expect(half.gpuUsage == nil)
         #expect(half.network == IOThroughput(inbound: 10, outbound: 10))
+    }
+
+    @Test func slowStateComesFromTheNewerSample() {
+        let from = snapshot(
+            cpu: 0.1, used: gib, systemPower: 5, gpu: 0.5, network: nil, at: 0,
+            diskSpace: DiskSpace(availableBytes: 20 * gib, totalBytes: 100 * gib), networkLink: .wifi
+        )
+        let to = snapshot(
+            cpu: 0.1, used: gib, systemPower: 5, gpu: 0.5, network: nil, at: 1,
+            diskSpace: DiskSpace(availableBytes: 10 * gib, totalBytes: 100 * gib), networkLink: .ethernet
+        )
+
+        let half = Snapshot.interpolated(from: from, to: to, fraction: 0.5)
+
+        #expect(half.diskSpace == to.diskSpace, "free space is a reading, not an animated number")
+        #expect(half.networkLink == .ethernet)
     }
 
     @Test func memoryShrinkingDoesNotUnderflow() {

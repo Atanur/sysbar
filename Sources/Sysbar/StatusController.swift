@@ -96,7 +96,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
         button.setAccessibilityLabel("Sysbar")
         button.toolTip = "Sysbar"
         button.target = self
-        button.action = #selector(togglePopover)
+        button.action = #selector(statusItemClicked)
+        button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         launchAnimation.start(on: button)
     }
 
@@ -374,6 +375,48 @@ final class StatusController: NSObject, NSPopoverDelegate {
             print("update result:", updater.state)
         }
     }
+
+    /// A click opens the popover; a right click, or a click with Control held, opens a small menu.
+    @objc private func statusItemClicked() {
+        let event = NSApp.currentEvent
+        if event?.type == .rightMouseUp || event?.modifierFlags.contains(.control) == true {
+            showMenu()
+        } else {
+            togglePopover()
+        }
+    }
+
+    private func showMenu() {
+        popover?.performClose(nil)
+        guard let button = statusItem.button else { return }
+        let menu = NSMenu()
+        for (title, key, action) in [
+            (L("Settings"), ",", #selector(openSettingsFromMenu)),
+            (L("Check for updates"), "", #selector(checkForUpdatesFromMenu)),
+            (L("About"), "", #selector(openAboutFromMenu)),
+        ] {
+            let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
+            item.target = self
+            menu.addItem(item)
+        }
+        menu.addItem(.separator())
+        let quit = NSMenuItem(title: L("Quit Sysbar"), action: #selector(quitFromMenu), keyEquivalent: "q")
+        quit.target = self
+        menu.addItem(quit)
+        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height + 5), in: button)
+    }
+
+    @objc private func openSettingsFromMenu() { openSettings(page: nil) }
+
+    @objc private func openAboutFromMenu() { openSettings(page: .about) }
+
+    /// The About page shows what the check finds.
+    @objc private func checkForUpdatesFromMenu() {
+        openSettings(page: .about)
+        Task { await updater.check(userInitiated: true) }
+    }
+
+    @objc private func quitFromMenu() { NSApp.terminate(nil) }
 
     @objc private func togglePopover() {
         if let popover, popover.isShown {

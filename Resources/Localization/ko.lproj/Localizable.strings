@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "최소한 하나의 열은 표시되어 있어야 합니다.";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "인증에 실패했습니다. 비밀번호는 지원되지 않으므로 ssh 키 또는 ssh-agent를 사용하세요.";
 "Peak %@" = "최고 %@";
-"Bars turn from green to red as load rises" = "부하가 높아지면 막대가 초록색에서 빨간색으로 바뀝니다";
+"Bars start neutral and turn amber, orange and red as load rises" = "막대는 중립 색으로 시작하고 부하가 높아지면 호박색, 주황색, 빨간색으로 바뀝니다";
 "Battery draw %@ W" = "배터리 소비 %@ W";
 "CPU" = "CPU";
 "CPU and RAM power" = "CPU 및 RAM 전력";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "GitHub에서 예상치 못한 응답을 보냈습니다.";
 "Installing…" = "설치 중…";
 "Once a day" = "하루에 한 번";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "배터리로 작동할 때만 표시됩니다. 잔량이 줄어들면 초록색에서 빨간색으로 바뀝니다.";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "배터리로 작동할 때만 표시됩니다. 중립 색을 유지하다가 잔량이 줄어들면 호박색과 빨간색으로 바뀝니다.";
 "Skip this version" = "이 버전 건너뛰기";
 "Sysbar %@ is available" = "Sysbar %@ 사용 가능";
 "Sysbar is up to date" = "Sysbar가 최신 상태입니다";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "유휴 시 마우스 움직이기";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "자리를 비운 동안 약 1분마다 커서가 조금 움직여 앱이 활성 상태로 인식합니다.";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "마우스를 움직이려면 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 Sysbar를 허용해야 합니다.";
+"%@ free" = "%@ 사용 가능";
+"%1$@ free of %2$@" = "%2$@ 중 %1$@ 사용 가능";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "이더넷";
+"Above the line: what the Mac uses · Below: going into the battery" = "선 위: Mac 사용량 · 아래: 배터리 충전";

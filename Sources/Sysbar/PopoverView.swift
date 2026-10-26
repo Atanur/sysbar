@@ -279,7 +279,8 @@ struct PopoverView: View {
         return card(
             .gpu, title: L("GPU"), symbol: "display",
             value: latest?.gpuUsage.map(Format.percent) ?? "–",
-            note: "", help: statsHelp(series, Format.percent) + watts,
+            note: latest?.gpuTemperature.map { preferences.temperatureUnit.format(celsius: $0) } ?? "",
+            help: statsHelp(series, Format.percent) + watts,
             series: series, range: 0...1,
             load: latest?.gpuUsage.map { LoadLevel(fraction: $0) }
         )
@@ -304,49 +305,119 @@ struct PopoverView: View {
     private func powerCard(_ samples: [Snapshot], _ latest: Snapshot?) -> some View {
         let series = samples.compactMap(\.headlinePower)
         let battery = latest?.battery
-        let note = PowerSummary.headline(battery: battery) ?? ""
+        let charging = battery?.isCharging == true
+        // While charging, the corner shows the charge and a green bolt instead of the word.
+        let note: String
+        let noteSymbol: NoteSymbol?
+        if let battery, charging {
+            note = Format.percent(battery.fraction)
+            noteSymbol = NoteSymbol(systemName: "bolt.fill", color: FlowColors.charge, label: L("charging"))
+        } else {
+            note = PowerSummary.headline(battery: battery) ?? ""
+            noteSymbol = nil
+        }
+        // With the charger in, what goes into the battery hangs below what the Mac itself uses.
+        let charge = samples.compactMap { sample in sample.headlinePower.map { _ in Self.chargeWatts(sample.battery) } }
+        let showsCharge = charge.contains { $0 > 0 }
+        let system = latest?.headlinePower
+        let load = system.map { LoadLevel(fraction: $0 / MenuBarReadouts.powerFullScaleWatts) }
+        let nowCharging = Self.chargeWatts(battery)
+        var readouts: [Readout] = []
+        if let system, nowCharging > 0 {
+            readouts = [
+                Readout(text: Format.watts(system), color: FlowColors.draw),
+                Readout(text: "+" + Format.watts(nowCharging), color: FlowColors.charge),
+            ]
+        }
         // The corner shows the battery state; adapter and wall details are in the tooltip.
         let tooltip = [
-            PowerSummary.detail(battery: battery, systemPower: latest?.headlinePower),
+            PowerSummary.detail(battery: battery, systemPower: system),
             latest?.power.map(componentText),
+            showsCharge ? L("Above the line: what the Mac uses · Below: going into the battery") : nil,
         ].compactMap { $0 }.joined(separator: "\n")
         return card(
             .power, title: L("Power"), symbol: powerSymbol(battery),
-            value: latest?.headlinePower.map(Format.watts) ?? "–",
-            note: note, help: tooltip.isEmpty ? statsHelp(series, Format.watts) : tooltip,
-            series: series, range: nil,
-            load: latest?.headlinePower.map { LoadLevel(fraction: $0 / MenuBarReadouts.powerFullScaleWatts) }
+            value: system.map(Format.watts) ?? "–",
+            note: note, noteSymbol: noteSymbol, help: tooltip.isEmpty ? statsHelp(series, Format.watts) : tooltip,
+            series: series, secondary: showsCharge ? charge : nil, secondaryTint: FlowColors.charge,
+            readouts: readouts, range: nil, load: load, tint: showsCharge ? FlowColors.draw : nil
         )
+    }
+
+    /// Watts going into the battery; zero on battery power or while it is not taking charge.
+    private static func chargeWatts(_ battery: BatteryInfo?) -> Double {
+        guard let battery, battery.isPluggedIn, let watts = battery.batteryWatts, watts >= 0.5 else { return 0 }
+        return watts
+    }
+
+    /// The two figures of a card with a direction each: in (read, download) and out (write, upload).
+    private func flowReadouts(_ io: IOThroughput?) -> [Readout] {
+        guard let io else { return [] }
+        return [
+            Readout(text: "↓" + Format.rate(io.inbound), color: FlowColors.inbound),
+            Readout(text: "↑" + Format.rate(io.outbound), color: FlowColors.outbound),
+        ]
     }
 
     private func diskCard(_ samples: [Snapshot], _ latest: Snapshot?) -> some View {
-        card(
+        let flow = samples.compactMap(\.disk)
+        let space = latest?.diskSpace
+        let spaceHelp = space.map {
+            L("%1$@ free of %2$@", Format.diskSize($0.availableBytes), Format.diskSize($0.totalBytes))
+        }
+        return card(
             .disk, title: L("Disk"), symbol: "internaldrive",
-            value: latest?.disk.map { Format.rate($0.total) } ?? "–", unit: "/s",
-            note: latest?.disk.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "",
-            help: L("↓ Read · ↑ Write"),
-            series: samples.compactMap { $0.disk?.total }, range: nil, load: nil
+            value: latest?.disk.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "–", unit: "/s",
+            note: space.map { L("%@ free", Format.diskSize($0.availableBytes)) } ?? "",
+            noteColor: space.flatMap(Self.noteColor(for:)),
+            help: [L("↓ Read · ↑ Write"), spaceHelp].compactMap { $0 }.joined(separator: "\n"),
+            series: flow.map(\.inbound), secondary: flow.map(\.outbound),
+            readouts: flowReadouts(latest?.disk), range: nil, load: nil, tint: FlowColors.inbound
         )
     }
 
+    /// The room left turns amber, then red, as the disk fills up; plenty of room stays quiet.
+    private static func noteColor(for space: DiskSpace) -> Color? {
+        switch space.level {
+        case .plenty: nil
+        case .low: LoadLevel.moderate.color
+        case .critical: LoadLevel.critical.color
+        }
+    }
+
     private func networkCard(_ samples: [Snapshot], _ latest: Snapshot?) -> some View {
-        card(
+        let flow = samples.compactMap(\.network)
+        return card(
             .network, title: L("Network"), symbol: "arrow.up.arrow.down",
-            value: latest?.network.map { Format.rate($0.total) } ?? "–", unit: "/s",
-            note: latest?.network.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "",
+            value: latest?.network.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "–", unit: "/s",
+            note: latest?.networkLink.flatMap(Self.name(of:)) ?? "",
             help: L("↓ Download · ↑ Upload"),
-            series: samples.compactMap { $0.network?.total }, range: nil, load: nil
+            series: flow.map(\.inbound), secondary: flow.map(\.outbound),
+            readouts: flowReadouts(latest?.network), range: nil, load: nil, tint: FlowColors.inbound
         )
+    }
+
+    /// What to call the connection in a card's corner; nothing for tunnels and other links.
+    private static func name(of link: NetworkLink) -> String? {
+        switch link {
+        case .wifi: L("Wi-Fi")
+        case .ethernet: L("Ethernet")
+        case .other: nil
+        }
     }
 
     private func card(
         _ metric: MenuBarMetric, title: String, symbol: String, value: String, unit: String = "",
-        note: String, help: String, series: [Double], range: ClosedRange<Double>?, load: LoadLevel?
+        note: String, noteColor: Color? = nil, noteSymbol: NoteSymbol? = nil, help: String, series: [Double],
+        secondary: [Double]? = nil, secondaryTint: Color = FlowColors.outbound, readouts: [Readout] = [],
+        range: ClosedRange<Double>?, load: LoadLevel?, tint: Color? = nil
     ) -> some View {
         MetricCard(
-            title: title, symbol: symbol, value: value, unit: unit, note: note,
-            series: series, capacity: model.history.capacity, range: range,
-            tint: load?.color ?? ActivityColors.color,
+            title: title, symbol: symbol, value: value, unit: unit, note: note, noteColor: noteColor,
+            noteSymbol: noteSymbol,
+            series: series, secondary: secondary, secondaryTint: secondaryTint, readouts: readouts,
+            capacity: model.history.capacity, range: range,
+            tint: tint ?? load?.cardColor ?? FlowColors.inbound,
             help: help.isEmpty ? L("Show details") : L("%@\nClick to show details", help),
             onTap: { onOpenDetails(metric) }
         )

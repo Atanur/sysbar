@@ -22,7 +22,9 @@ extension Snapshot {
             disk: lerp(from.disk, to.disk, t),
             network: lerp(from.network, to.network, t),
             battery: to.battery,
-            thermal: to.thermal
+            thermal: to.thermal,
+            diskSpace: to.diskSpace,
+            networkLink: to.networkLink
         )
     }
 

@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "En az bir sütun görünür kalmalıdır.";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "Kimlik doğrulama başarısız. Parolalar desteklenmez; bir ssh anahtarı veya ssh-agent kullanın.";
 "Peak %@" = "En yüksek %@";
-"Bars turn from green to red as load rises" = "Yük arttıkça çubuklar yeşilden kırmızıya döner";
+"Bars start neutral and turn amber, orange and red as load rises" = "Çubuklar nötr başlar; yük arttıkça kehribar, turuncu ve kırmızıya döner";
 "Battery draw %@ W" = "Pil çekişi %@ W";
 "CPU" = "CPU";
 "CPU and RAM power" = "CPU ve RAM gücü";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "GitHub beklenmeyen bir yanıt gönderdi.";
 "Installing…" = "Yükleniyor…";
 "Once a day" = "Günde bir kez";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "Yalnızca pille çalışırken gösterilir. Şarj azaldıkça yeşilden kırmızıya döner.";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "Yalnızca pille çalışırken gösterilir. Nötr kalır; şarj azaldıkça kehribar ve kırmızıya döner.";
 "Skip this version" = "Bu sürümü atla";
 "Sysbar %@ is available" = "Sysbar %@ hazır";
 "Sysbar is up to date" = "Sysbar güncel";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "Boştayken fareyi oynat";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "Sen uzaktayken imleç yaklaşık dakikada bir biraz hareket eder; uygulamalar seni aktif görür.";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Fareyi oynatmak için Sysbar'a Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik bölümünden izin vermelisin.";
+"%@ free" = "%@ boş";
+"%1$@ free of %2$@" = "%2$@ içinde %1$@ boş";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "Ethernet";
+"Above the line: what the Mac uses · Below: going into the battery" = "Çizginin üstü: Mac'in kullandığı · Altı: pile giren";

@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "Mindestens eine Spalte muss sichtbar bleiben.";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "Anmeldung fehlgeschlagen. Passwörter werden nicht unterstützt; verwenden Sie einen ssh-Schlüssel oder ssh-agent.";
 "Peak %@" = "Spitze %@";
-"Bars turn from green to red as load rises" = "Balken wechseln von Grün zu Rot, wenn die Last steigt";
+"Bars start neutral and turn amber, orange and red as load rises" = "Balken starten neutral und wechseln bei steigender Last zu Bernstein, Orange und Rot";
 "Battery draw %@ W" = "Akkuleistung %@ W";
 "CPU" = "CPU";
 "CPU and RAM power" = "Leistung von CPU und RAM";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "GitHub hat unerwartet geantwortet.";
 "Installing…" = "Wird installiert…";
 "Once a day" = "Einmal täglich";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "Wird nur im Akkubetrieb angezeigt. Die Farbe wechselt mit sinkender Ladung von Grün zu Rot.";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "Wird nur im Akkubetrieb angezeigt. Bleibt neutral und wechselt mit sinkender Ladung zu Bernstein und Rot.";
 "Skip this version" = "Diese Version überspringen";
 "Sysbar %@ is available" = "Sysbar %@ ist verfügbar";
 "Sysbar is up to date" = "Sysbar ist auf dem neuesten Stand";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "Maus bei Inaktivität bewegen";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "Während du weg bist, bewegt sich der Mauszeiger etwa einmal pro Minute ein wenig, damit Apps dich als aktiv sehen.";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Zum Bewegen der Maus muss Sysbar in Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen erlaubt werden.";
+"%@ free" = "%@ frei";
+"%1$@ free of %2$@" = "%1$@ von %2$@ frei";
+"Wi-Fi" = "WLAN";
+"Ethernet" = "Ethernet";
+"Above the line: what the Mac uses · Below: going into the battery" = "Über der Linie: Verbrauch des Mac · Darunter: Ladung in den Akku";

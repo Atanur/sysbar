@@ -32,13 +32,15 @@
 **Menu bar**
 - Choose any of CPU, GPU, memory, power, disk and network, and drag them into the order you like.
 - Fixed-width slots: no jitter between `3%` and `100%`.
-- Optional load colours (muted green → amber → red), adapted for light and dark menu bars.
+- Optional load colours (neutral → amber → red), adapted for light and dark menu bars.
 - Three styles: bars and values, bars only (the smallest), or values only. The bars glide to a new level, and on start the logo's bars wave until the first reading arrives.
-- On battery, the charge can join the menu bar once it drops to a level you choose (always, 80%, 50% or 20%), coloured from green to red.
+- On battery, the charge can join the menu bar once it drops to a level you choose (always, 80%, 50% or 20%), staying neutral until it turns amber and red.
 
 **Popover**
 - One card per metric with a graph of the last 150 samples, so its span follows the refresh rate (15 seconds at 0.1 s, 5 minutes at 2 s). Cards can be reordered and laid out automatically (two columns for an even count, one for an odd), in one column, or in two.
-- Click a card to open the matching tab in Activity Monitor (or Battery settings).
+- The cards are black, white and grey. Colour appears only where it means something: a graph turns amber, orange and red as its load rises, and the charge going into the battery is green, with a green bolt beside the percentage while it charges.
+- Disk, Network and Power draw two lines either side of a zero line on one scale: read and write, download and upload, and what the Mac uses and what goes into the battery while it charges. The Disk card's corner shows the room left (amber under 15 %, red under 5 %), the Network card's shows Wi-Fi or Ethernet.
+- Click a card to open the matching tab in Activity Monitor (or Battery settings). Right-click the menu bar item for Settings, Check for updates, About and Quit.
 - Power reacts to how the Mac is powered: charge and time left on battery, adapter and wall draw when plugged in.
 - **Top apps** table with CPU, memory, GPU and estimated energy per app; helper processes fold into their app. Columns are configurable.
 

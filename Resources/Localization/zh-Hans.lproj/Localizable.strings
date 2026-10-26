@@ -25,7 +25,7 @@
 "At least one column must stay visible." = "至少须保留一列可见。";
 "Authentication failed. Passwords are not supported; use an ssh key or ssh-agent." = "身份验证失败。不支持密码，请使用 ssh 密钥或 ssh-agent。";
 "Peak %@" = "峰值 %@";
-"Bars turn from green to red as load rises" = "负载升高时，条形图会由绿色变为红色";
+"Bars start neutral and turn amber, orange and red as load rises" = "条形图从中性色开始，负载升高时依次变为琥珀色、橙色和红色";
 "Battery draw %@ W" = "电池耗电 %@ W";
 "CPU" = "CPU";
 "CPU and RAM power" = "CPU 与 RAM 功耗";
@@ -182,7 +182,7 @@
 "GitHub sent an unexpected reply." = "GitHub 返回了意外的响应。";
 "Installing…" = "正在安装…";
 "Once a day" = "每天一次";
-"Shown only while running on battery. It turns from green to red as the charge runs low." = "仅在使用电池时显示。电量降低时会从绿色变为红色。";
+"Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "仅在使用电池时显示。保持中性色，电量降低时依次变为琥珀色和红色。";
 "Skip this version" = "跳过此版本";
 "Sysbar %@ is available" = "Sysbar %@ 现已推出";
 "Sysbar is up to date" = "Sysbar 已是最新版本";
@@ -329,3 +329,8 @@
 "Move the mouse when idle" = "闲置时移动鼠标";
 "While you are away, the cursor moves a little about once a minute, so apps see you as active." = "你离开时，光标大约每分钟轻微移动一次，让应用认为你仍处于活跃状态。";
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "移动鼠标需要在“系统设置”→“隐私与安全性”→“辅助功能”中允许 Sysbar。";
+"%@ free" = "可用 %@";
+"%1$@ free of %2$@" = "共 %2$@，可用 %1$@";
+"Wi-Fi" = "Wi-Fi";
+"Ethernet" = "以太网";
+"Above the line: what the Mac uses · Below: going into the battery" = "线上：Mac 的用电 · 线下：充入电池";
