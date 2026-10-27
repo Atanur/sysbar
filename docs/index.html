@@ -31,7 +31,7 @@
   }
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 72px; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 72px; overflow-x: clip; }
 body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.55; overflow-x: hidden; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -186,6 +186,8 @@ footer { padding: 36px 0 56px; color: var(--muted); font-size: 14px; border-top:
   .grid { grid-template-columns: 1fr 1fr; }
   .stats { grid-template-columns: 1fr 1fr; }
   nav .links a.hide-sm { display: none; }
+  /* Stacked, a block waiting to slide in from the side would stick out past a phone's edge. */
+  .reveal-left, .reveal-right { transform: translateY(28px) scale(.985); }
 }
 @media (max-width: 560px) {
   .grid, .stats { grid-template-columns: 1fr; }
