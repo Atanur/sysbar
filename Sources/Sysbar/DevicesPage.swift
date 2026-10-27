@@ -6,9 +6,19 @@ import SwiftUI
 struct DevicesPage: View {
     @ObservedObject var preferences: Preferences
     @State private var editing: RemoteDevice?
+    @State private var renamingThisMac = false
+
+    /// "MacBook Pro (14-inch, 2024)", read once.
+    private static let model: String = {
+        let info = SystemInfoProbe.read()
+        return info.modelName ?? info.modelIdentifier
+    }()
 
     var body: some View {
         SettingsPageScaffold(page: .devices, animating: AnyHashable(preferences.devices.map(\.id))) {
+            SettingsGroup(footer: L("Its name is shown on its tab in the popover.")) {
+                thisMacRow
+            }
             if preferences.devices.isEmpty {
                 emptyState
             } else {
@@ -40,6 +50,33 @@ struct DevicesPage: View {
                 },
                 onCancel: { editing = nil }
             )
+        }
+        .sheet(isPresented: $renamingThisMac) {
+            ThisMacNameEditor(
+                name: preferences.thisMacName,
+                onSave: { name in
+                    preferences.thisMacName = name
+                    renamingThisMac = false
+                },
+                onCancel: { renamingThisMac = false }
+            )
+        }
+    }
+
+    /// This Mac, always first: it can be renamed but not removed.
+    private var thisMacRow: some View {
+        let renamed = preferences.thisMacTitle != L("This Mac")
+        return SettingsRow(
+            symbol: "laptopcomputer", title: preferences.thisMacTitle,
+            subtitle: renamed ? "\(L("This Mac")) · \(Self.model)" : Self.model
+        ) {
+            Button { renamingThisMac = true } label: {
+                Image(systemName: "pencil").frame(width: 18, height: 18)
+            }
+            .help(L("Rename"))
+            .accessibilityLabel(L("Rename %@", preferences.thisMacTitle))
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
         }
     }
 
@@ -95,6 +132,35 @@ struct DevicesPage: View {
 
     private func closeConnection(of device: RemoteDevice) {
         Task { await SSHRunner().closeConnection(device) }
+    }
+}
+
+/// Renames this Mac. An empty name goes back to "This Mac".
+struct ThisMacNameEditor: View {
+    @State var name: String
+    let onSave: (String) -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Form {
+                Section {
+                    TextField(L("Name"), text: $name, prompt: Text(L("This Mac")))
+                } footer: {
+                    Text(L("Shown on its tab in the popover. Leave it empty to use This Mac."))
+                }
+            }
+            .formStyle(.grouped)
+
+            HStack {
+                Spacer()
+                Button(L("Cancel"), action: onCancel).keyboardShortcut(.cancelAction)
+                Button(L("Save")) { onSave(LocalDeviceName.normalized(name)) }
+                    .keyboardShortcut(.defaultAction)
+            }
+            .padding(16)
+        }
+        .frame(width: 400)
     }
 }
 

@@ -352,3 +352,7 @@
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "Vervang USER@ADDRESS door wat stap 2 toonde. Typ yes om het apparaat te vertrouwen en daarna eenmalig het wachtwoord. Het wachtwoord gaat van Terminal naar het apparaat; Sysbar ziet het nooit.";
 "On this Mac: check it" = "Op deze Mac: controleer het";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "Als dit terugkeert zonder iets te vragen, klik op Apparaat toevoegen en vul hetzelfde adres en dezelfde gebruikersnaam in.";
+"Its name is shown on its tab in the popover." = "De naam staat op het tabblad in de popover.";
+"Rename" = "Wijzig naam";
+"Rename %@" = "Wijzig naam van %@";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "Staat op het tabblad in de popover. Laat leeg om Deze Mac te gebruiken.";

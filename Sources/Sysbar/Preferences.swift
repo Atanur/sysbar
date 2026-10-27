@@ -26,6 +26,7 @@ final class Preferences: ObservableObject {
         static let remoteDevices = "remoteDevices"
         static let showsFanButton = "showsFanButton"
         static let showsKeepAwakeButton = "showsKeepAwakeButton"
+        static let thisMacName = "thisMacName"
     }
 
     private let defaults: UserDefaults
@@ -91,6 +92,20 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(showsKeepAwakeButton, forKey: Key.showsKeepAwakeButton) }
     }
 
+    /// The name the user gave this Mac; empty shows "This Mac". See `thisMacTitle`.
+    @Published var thisMacName: String {
+        didSet {
+            let normalized = LocalDeviceName.normalized(thisMacName)
+            if normalized != thisMacName { thisMacName = normalized }
+            defaults.set(normalized, forKey: Key.thisMacName)
+        }
+    }
+
+    /// This Mac's tab and row title: its given name, or "This Mac".
+    var thisMacTitle: String {
+        LocalDeviceName.display(thisMacName, fallback: L("This Mac"))
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         menuBarArrangement = Arrangement(
@@ -117,6 +132,7 @@ final class Preferences: ObservableObject {
         setupCompleted = defaults.bool(forKey: Key.setupCompleted)
         showsFanButton = defaults.object(forKey: Key.showsFanButton) as? Bool ?? true
         showsKeepAwakeButton = defaults.object(forKey: Key.showsKeepAwakeButton) as? Bool ?? true
+        thisMacName = LocalDeviceName.normalized(defaults.string(forKey: Key.thisMacName) ?? "")
         // Anything that fails validation is dropped, so edited or corrupt stored data can never
         // put an option-like value into an ssh command line.
         devices = Self.decodeDevices(defaults.data(forKey: Key.remoteDevices)).filter { $0.problems.isEmpty }
@@ -180,8 +196,8 @@ final class Preferences: ObservableObject {
 
     // MARK: Reset
 
-    /// Puts every setting on this object back to its default. Remote devices stay unless
-    /// `keepingDevices` is false; the first-run welcome is not shown again.
+    /// Puts every setting on this object back to its default. Remote devices and this Mac's name
+    /// stay unless `keepingDevices` is false; the first-run welcome is not shown again.
     func resetToDefaults(keepingDevices: Bool) {
         setMenuBar(Arrangement(order: MenuBarMetric.allCases, selected: MenuBarMetric.defaults))
         setCards(Arrangement(order: MenuBarMetric.allCases, selected: MenuBarMetric.allCases))
@@ -198,6 +214,7 @@ final class Preferences: ObservableObject {
         showsFanButton = true
         showsKeepAwakeButton = true
         if !keepingDevices {
+            thisMacName = ""
             devices = []
             persistDevices()
         }

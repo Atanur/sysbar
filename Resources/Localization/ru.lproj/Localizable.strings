@@ -352,3 +352,7 @@
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "Замените USER@ADDRESS тем, что вывел шаг 2. Введите yes, чтобы доверять устройству, затем один раз его пароль. Пароль идёт из Терминала прямо на устройство; Sysbar его не видит.";
 "On this Mac: check it" = "На этом Mac: проверьте";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "Если команда завершится, ничего не спросив, нажмите Добавить устройство и введите тот же адрес и имя пользователя.";
+"Its name is shown on its tab in the popover." = "Его имя показано на его вкладке во всплывающем окне.";
+"Rename" = "Переименовать";
+"Rename %@" = "Переименовать %@";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "Показывается на его вкладке во всплывающем окне. Оставьте пустым, чтобы использовать Этот Mac.";

@@ -352,3 +352,7 @@
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "把 USER@ADDRESS 换成第 2 步显示的内容。输入 yes 信任该设备,然后输入一次它的密码。密码从终端直接发送到设备,Sysbar 永远看不到。";
 "On this Mac: check it" = "在这台 Mac 上:检查";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "如果命令什么都没问就结束了,点按添加设备,并填写相同的地址和用户名。";
+"Its name is shown on its tab in the popover." = "它的名称显示在弹出窗口的标签上。";
+"Rename" = "重命名";
+"Rename %@" = "重命名 %@";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "显示在弹出窗口的标签上。留空则使用 此 Mac。";

@@ -352,3 +352,7 @@
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "USER@ADDRESS を手順 2 で表示されたものに置き換えます。yes と入力してデバイスを信頼し、パスワードを一度だけ入力します。パスワードはターミナルからデバイスに直接送られ、Sysbar が見ることはありません。";
 "On this Mac: check it" = "この Mac で:確認する";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "何も聞かれずに終われば、デバイスを追加 をクリックし、同じアドレスとユーザ名を入力します。";
+"Its name is shown on its tab in the popover." = "名前はポップオーバーのタブに表示されます。";
+"Rename" = "名前を変更";
+"Rename %@" = "%@ の名前を変更";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "ポップオーバーのタブに表示されます。空のままにすると この Mac になります。";

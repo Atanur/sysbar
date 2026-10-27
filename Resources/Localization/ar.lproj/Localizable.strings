@@ -352,3 +352,7 @@
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "ضع ما طبعته الخطوة 2 مكان USER@ADDRESS. اكتب yes للوثوق بالجهاز، ثم كلمة سره مرة واحدة. تنتقل كلمة السر من الطرفية إلى الجهاز مباشرة، ولا يراها Sysbar أبدًا.";
 "On this Mac: check it" = "على جهاز Mac هذا: تحقّق";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "إذا انتهى الأمر دون أن يسأل عن شيء، فانقر إضافة جهاز وأدخل العنوان واسم المستخدم نفسيهما.";
+"Its name is shown on its tab in the popover." = "يظهر اسمه على علامة التبويب الخاصة به في النافذة المنبثقة.";
+"Rename" = "إعادة التسمية";
+"Rename %@" = "إعادة تسمية %@";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "يظهر على علامة التبويب الخاصة به في النافذة المنبثقة. اتركه فارغًا لاستخدام هذا Mac.";

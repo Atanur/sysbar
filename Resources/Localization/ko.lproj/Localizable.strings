@@ -352,3 +352,7 @@
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "USER@ADDRESS를 2단계에서 출력된 값으로 바꾸세요. yes를 입력해 디바이스를 신뢰하고, 암호를 한 번 입력합니다. 암호는 터미널에서 디바이스로 바로 전달되며 Sysbar는 절대 보지 않습니다.";
 "On this Mac: check it" = "이 Mac에서: 확인하기";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "아무것도 묻지 않고 끝나면 디바이스 추가를 클릭하고 같은 주소와 사용자 이름을 입력하세요.";
+"Its name is shown on its tab in the popover." = "이름은 팝오버의 탭에 표시됩니다.";
+"Rename" = "이름 변경";
+"Rename %@" = "%@ 이름 변경";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "팝오버의 탭에 표시됩니다. 비워 두면 이 Mac이 사용됩니다.";

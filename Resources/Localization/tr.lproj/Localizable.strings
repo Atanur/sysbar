@@ -352,3 +352,7 @@
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "USER@ADDRESS yerine 2. adımın yazdığını koyun. Cihaza güvenmek için yes yazın, ardından bir kez parolasını girin. Parola Terminal'den doğrudan cihaza gider; Sysbar onu hiç görmez.";
 "On this Mac: check it" = "Bu Mac'te: deneyin";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "Bu komut hiçbir şey sormadan biterse Cihaz ekle'ye tıklayın ve aynı adresi ve kullanıcı adını girin.";
+"Its name is shown on its tab in the popover." = "Adı, açılır penceredeki sekmesinde görünür.";
+"Rename" = "Yeniden adlandır";
+"Rename %@" = "%@ adını değiştir";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "Açılır penceredeki sekmesinde görünür. Bu Mac adını kullanmak için boş bırakın.";

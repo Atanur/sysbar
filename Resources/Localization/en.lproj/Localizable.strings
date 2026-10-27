@@ -129,6 +129,7 @@
 "Installing…" = "Installing…";
 "Invalid server name. Letters, digits, dots, hyphens and colons are allowed, and it cannot start with a hyphen." = "Invalid server name. Letters, digits, dots, hyphens and colons are allowed, and it cannot start with a hyphen.";
 "Invalid user name." = "Invalid user name.";
+"Its name is shown on its tab in the popover." = "Its name is shown on its tab in the popover.";
 "Keep awake" = "Keep awake";
 "Keep awake with the lid closed" = "Keep awake with the lid closed";
 "Keep monitoring after closing" = "Keep monitoring after closing";
@@ -219,6 +220,8 @@
 "Release notes" = "Release notes";
 "Remote devices" = "Remote devices";
 "Remove" = "Remove";
+"Rename" = "Rename";
+"Rename %@" = "Rename %@";
 "Report a problem" = "Report a problem";
 "Reset" = "Reset";
 "Reset all settings" = "Reset all settings";
@@ -241,6 +244,7 @@
 "Settings" = "Settings";
 "Show details" = "Show details";
 "Show table" = "Show table";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "Shown on its tab in the popover. Leave it empty to use This Mac.";
 "Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low." = "Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low.";
 "Shown readouts" = "Shown readouts";
 "Skip this version" = "Skip this version";

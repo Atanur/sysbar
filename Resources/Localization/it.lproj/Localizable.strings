@@ -352,3 +352,7 @@
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "Sostituisci USER@ADDRESS con ciò che ha mostrato il passaggio 2. Digita yes per fidarti del dispositivo, poi la sua password, una sola volta. La password va dal Terminale al dispositivo; Sysbar non la vede mai.";
 "On this Mac: check it" = "Su questo Mac: verifica";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "Se termina senza chiedere nulla, fai clic su Aggiungi dispositivo e inserisci lo stesso indirizzo e nome utente.";
+"Its name is shown on its tab in the popover." = "Il suo nome appare sulla sua scheda nel popover.";
+"Rename" = "Rinomina";
+"Rename %@" = "Rinomina %@";
+"Shown on its tab in the popover. Leave it empty to use This Mac." = "Appare sulla sua scheda nel popover. Lascia vuoto per usare Questo Mac.";

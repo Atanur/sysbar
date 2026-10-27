@@ -3,6 +3,10 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.5.7 — 2026-10-28
+
+- This Mac is listed first in Settings › Devices, and you can rename it: its tab in the popover shows the name you give it instead of This Mac. Leave the name empty to go back.
+
 ## 0.5.6 — 2026-10-28
 
 - Remote Macs list their apps the way Activity Monitor does: helper processes count toward their app, and memory is each app's footprint, so Arc or Claude show their full size instead of one helper's.

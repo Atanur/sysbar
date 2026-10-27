@@ -139,7 +139,7 @@ struct PopoverView: View {
         HStack(spacing: 8) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 4) {
-                    tab(L("This Mac"), selection: .thisMac, status: nil)
+                    tab(preferences.thisMacTitle, selection: .thisMac, status: nil)
                     ForEach(preferences.devices) { tab($0.name, selection: .remote($0.id), status: status(of: $0)) }
                 }
                 .motion(.snappy(duration: 0.22), value: model.selection)
