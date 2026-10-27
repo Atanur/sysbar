@@ -26,6 +26,7 @@ struct DevicesPage: View {
                     addButton
                 }
             }
+            DeviceSetupGuideView()
         }
         .sheet(item: $editing) { device in
             DeviceEditor(

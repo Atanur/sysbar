@@ -3,6 +3,10 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.5.5 — 2026-10-28
+
+- Settings › Devices has a short guide, How to connect a device, folded under the list: the few commands to run once on a Mac or a Linux server and on this Mac, each with a copy button. It notices a key you already have and works on a local network or over a VPN such as Tailscale. Sysbar runs none of it and never sees your password.
+
 ## 0.5.4 — 2026-10-27
 
 - What's new, in the app: Settings › About shows the changes in the version you run, and the update banner's **What's new** unfolds the notes of the new release before you install it.
