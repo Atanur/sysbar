@@ -51,10 +51,12 @@ public struct RemoteRawSample: Equatable, Sendable {
 /// Reads the `key=value` lines printed by `RemoteScript`. Fields that are missing or unreadable
 /// become nil rather than failing the whole sample.
 public enum RemoteMetricsParser {
-    private static let maxProcesses = 8
+    /// The script sends the eight busiest apps by CPU and the eight largest by memory, so the table
+    /// is right whichever column it is sorted by.
+    private static let maxProcesses = 16
     /// Tools the script itself runs; they would otherwise show up as busy processes.
     private static let scriptToolNames: Set<String> = [
-        "ps", "sh", "top", "awk", "sed", "head", "tail", "grep", "tr", "netstat", "vm_stat", "sysctl", "uname",
+        "ps", "sh", "top", "awk", "sed", "sort", "head", "tail", "grep", "tr", "netstat", "vm_stat", "sysctl", "uname",
     ]
 
     public static func parse(_ output: String) -> RemoteRawSample? {
