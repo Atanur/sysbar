@@ -40,7 +40,11 @@
 	<true/>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_ssh._tcp</string>
+	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Sysbar uses the local network to monitor devices you add over SSH.</string>
+	<string>Sysbar uses the local network to find Macs with Remote Login on and to monitor devices you add over SSH.</string>
 </dict>
 </plist>

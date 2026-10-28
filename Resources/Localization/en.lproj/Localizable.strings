@@ -11,6 +11,7 @@
 "%1$@h %2$@m" = "%1$@h %2$@m";
 "%@ cycles" = "%@ cycles";
 "%@ free" = "%@ free";
+"%@ hidden" = "%@ hidden";
 "%@ rpm" = "%@ rpm";
 "%@ s" = "%@ s";
 "%@\nClick to show details" = "%@\nClick to show details";
@@ -27,6 +28,8 @@
 "Adapter %@ W" = "Adapter %@ W";
 "Add Linux servers and Macs with SSH turned on, then watch their live usage from the tabs at the top of the popover." = "Add Linux servers and Macs with SSH turned on, then watch their live usage from the tabs at the top of the popover.";
 "Add device" = "Add device";
+"Address" = "Address";
+"Add…" = "Add…";
 "Allow Sysbar in System Settings → General → Login Items to control the fans." = "Allow Sysbar in System Settings → General → Login Items to control the fans.";
 "Allow Sysbar's helper in System Settings → General → Login Items to keep the Mac awake." = "Allow Sysbar's helper in System Settings → General → Login Items to keep the Mac awake.";
 "Always" = "Always";
@@ -110,6 +113,7 @@
 "Fans manual" = "Fans manual";
 "Fans stopped" = "Fans stopped";
 "Faster refreshes use more CPU. Each graph holds 150 samples, so its time span follows the refresh rate. The apps table refreshes at most once a second, and each remote device has its own rate." = "Faster refreshes use more CPU. Each graph holds 150 samples, so its time span follows the refresh rate. The apps table refreshes at most once a second, and each remote device has its own rate.";
+"Found on your network" = "Found on your network";
 "GPU" = "GPU";
 "GPU usage" = "GPU usage";
 "General" = "General";
@@ -122,13 +126,17 @@
 "Heavy work" = "Heavy work";
 "Help and feedback" = "Help and feedback";
 "Helper" = "Helper";
+"Hide" = "Hide";
+"Hide %@" = "Hide %@";
 "Hiding a button also ends what it started: manual fan speed, or keeping the Mac awake." = "Hiding a button also ends what it started: manual fan speed, or keeping the Mac awake.";
 "High" = "High";
 "How to connect a device" = "How to connect a device";
 "If this returns without asking for anything, click Add device and fill in the same address and user name." = "If this returns without asking for anything, click Add device and fill in the same address and user name.";
+"If this returns without asking for anything, click Add device." = "If this returns without asking for anything, click Add device.";
 "Installing…" = "Installing…";
 "Invalid server name. Letters, digits, dots, hyphens and colons are allowed, and it cannot start with a hyphen." = "Invalid server name. Letters, digits, dots, hyphens and colons are allowed, and it cannot start with a hyphen.";
 "Invalid user name." = "Invalid user name.";
+"It is already on, so you can skip this step." = "It is already on, so you can skip this step.";
 "Its name is shown on its tab in the popover." = "Its name is shown on its tab in the popover.";
 "Keep awake" = "Keep awake";
 "Keep awake with the lid closed" = "Keep awake with the lid closed";
@@ -149,10 +157,13 @@
 "Load" = "Load";
 "Load average" = "Load average";
 "Load average: 1 min (large number), 5 min and 15 min" = "Load average: 1 min (large number), 5 min and 15 min";
+"Local network" = "Local network";
+"Look for Macs on this network" = "Look for Macs on this network";
 "Low" = "Low";
 "MIT License" = "MIT License";
 "Mac kept awake" = "Mac kept awake";
 "Mac may sleep" = "Mac may sleep";
+"Macs with Remote Login on in this network, and your Macs and Linux machines in Tailscale. Sysbar only reads these lists; it connects to nothing until you add a device." = "Macs with Remote Login on in this network, and your Macs and Linux machines in Tailscale. Sysbar only reads these lists; it connects to nothing until you add a device.";
 "Manual" = "Manual";
 "Max" = "Max";
 "Measuring…" = "Measuring…";
@@ -176,6 +187,7 @@
 "No analytics, no account" = "No analytics, no account";
 "No devices yet" = "No devices yet";
 "No other apps are open." = "No other apps are open.";
+"No other devices found yet." = "No other devices found yet.";
 "Normal" = "Normal";
 "Not now" = "Not now";
 "Not set up" = "Not set up";
@@ -232,9 +244,11 @@
 "Restart" = "Restart";
 "Restart Sysbar to use the new language" = "Restart Sysbar to use the new language";
 "Row count" = "Row count";
+"Run once in Terminal" = "Run once in Terminal";
 "Sampling" = "Sampling";
 "Sampling rate and startup" = "Sampling rate and startup";
 "Save" = "Save";
+"Search" = "Search";
 "Server" = "Server";
 "Servers and Macs monitored over SSH" = "Servers and Macs monitored over SSH";
 "Set up Sysbar's helper?" = "Set up Sysbar's helper?";
@@ -242,6 +256,7 @@
 "Set up; used from the popover" = "Set up; used from the popover";
 "Set up…" = "Set up…";
 "Settings" = "Settings";
+"Show" = "Show";
 "Show details" = "Show details";
 "Show table" = "Show table";
 "Shown on its tab in the popover. Leave it empty to use This Mac." = "Shown on its tab in the popover. Leave it empty to use This Mac.";
@@ -273,6 +288,7 @@
 "Test connection" = "Test connection";
 "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits." = "The Mac does not go to sleep while this is on. It sleeps again when Sysbar quits.";
 "The Mac stays awake even when the lid is closed, so it can get warm in a bag. It sleeps again when Sysbar quits." = "The Mac stays awake even when the lid is closed, so it can get warm in a bag. It sleeps again when Sysbar quits.";
+"The Tailscale address also works away from this network." = "The Tailscale address also works away from this network.";
 "The connection timed out." = "The connection timed out.";
 "The connection was refused. Is the SSH server running?" = "The connection was refused. Is the SSH server running?";
 "The download could not be opened." = "The download could not be opened.";
@@ -311,6 +327,7 @@
 "Turns off in" = "Turns off in";
 "Two columns" = "Two columns";
 "Two columns for an even number of cards, one for an odd number" = "Two columns for an even number of cards, one for an odd number";
+"Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it.";
 "Units" = "Units";
 "Unknown" = "Unknown";
 "Unknown error (code %@)." = "Unknown error (code %@).";
@@ -339,6 +356,7 @@
 "Wi-Fi" = "Wi-Fi";
 "Window" = "Window";
 "You already have one, %@, so you can skip this step." = "You already have one, %@, so you can skip this step.";
+"Your user name on that device" = "Your user name on that device";
 "charging" = "charging";
 "charging +%@ W" = "charging +%@ W";
 "critical" = "critical";
@@ -348,10 +366,12 @@
 "full in %@" = "full in %@";
 "health %@" = "health %@";
 "high" = "high";
+"macOS asks once to allow Sysbar on the local network." = "macOS asks once to allow Sysbar on the local network.";
 "macOS is lowering performance to bring the temperature down." = "macOS is lowering performance to bring the temperature down.";
 "macOS kernel counters" = "macOS kernel counters";
 "macOS needs you to allow Sysbar's helper again in System Settings → General → Login Items." = "macOS needs you to allow Sysbar's helper again in System Settings → General → Login Items.";
 "normal" = "normal";
+"offline" = "offline";
 "on power" = "on power";
 "~%@ W from the wall" = "~%@ W from the wall";
 "↓ Download · ↑ Upload" = "↓ Download · ↑ Upload";

@@ -27,6 +27,8 @@ final class Preferences: ObservableObject {
         static let showsFanButton = "showsFanButton"
         static let showsKeepAwakeButton = "showsKeepAwakeButton"
         static let thisMacName = "thisMacName"
+        static let searchesLocalNetwork = "searchesLocalNetwork"
+        static let hiddenSuggestions = "hiddenSuggestions"
     }
 
     private let defaults: UserDefaults
@@ -101,6 +103,17 @@ final class Preferences: ObservableObject {
         }
     }
 
+    /// True once the user has asked to look for devices on this network, so Settings › Devices
+    /// listens for them each time it opens. Off at first, because listening needs a macOS permission.
+    @Published var searchesLocalNetwork: Bool {
+        didSet { defaults.set(searchesLocalNetwork, forKey: Key.searchesLocalNetwork) }
+    }
+
+    /// Found devices the user does not want suggested, by `DeviceDiscovery.Found.id`.
+    @Published var hiddenSuggestions: [String] {
+        didSet { defaults.set(hiddenSuggestions, forKey: Key.hiddenSuggestions) }
+    }
+
     /// This Mac's tab and row title: its given name, or "This Mac".
     var thisMacTitle: String {
         LocalDeviceName.display(thisMacName, fallback: L("This Mac"))
@@ -133,6 +146,8 @@ final class Preferences: ObservableObject {
         showsFanButton = defaults.object(forKey: Key.showsFanButton) as? Bool ?? true
         showsKeepAwakeButton = defaults.object(forKey: Key.showsKeepAwakeButton) as? Bool ?? true
         thisMacName = LocalDeviceName.normalized(defaults.string(forKey: Key.thisMacName) ?? "")
+        searchesLocalNetwork = defaults.bool(forKey: Key.searchesLocalNetwork)
+        hiddenSuggestions = defaults.stringArray(forKey: Key.hiddenSuggestions) ?? []
         // Anything that fails validation is dropped, so edited or corrupt stored data can never
         // put an option-like value into an ssh command line.
         devices = Self.decodeDevices(defaults.data(forKey: Key.remoteDevices)).filter { $0.problems.isEmpty }
@@ -196,8 +211,8 @@ final class Preferences: ObservableObject {
 
     // MARK: Reset
 
-    /// Puts every setting on this object back to its default. Remote devices and this Mac's name
-    /// stay unless `keepingDevices` is false; the first-run welcome is not shown again.
+    /// Puts every setting on this object back to its default. Remote devices, this Mac's name and
+    /// the device suggestions stay unless `keepingDevices` is false; the first-run welcome is not shown again.
     func resetToDefaults(keepingDevices: Bool) {
         setMenuBar(Arrangement(order: MenuBarMetric.allCases, selected: MenuBarMetric.defaults))
         setCards(Arrangement(order: MenuBarMetric.allCases, selected: MenuBarMetric.allCases))
@@ -215,6 +230,8 @@ final class Preferences: ObservableObject {
         showsKeepAwakeButton = true
         if !keepingDevices {
             thisMacName = ""
+            searchesLocalNetwork = false
+            hiddenSuggestions = []
             devices = []
             persistDevices()
         }

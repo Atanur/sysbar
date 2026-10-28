@@ -36,6 +36,7 @@ struct DevicesPage: View {
                     addButton
                 }
             }
+            DiscoveredDevicesView(preferences: preferences) { editing = $0 }
             DeviceSetupGuideView()
         }
         .sheet(item: $editing) { device in

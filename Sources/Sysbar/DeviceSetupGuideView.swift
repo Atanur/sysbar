@@ -55,17 +55,27 @@ struct DeviceSetupGuideView: View {
             .labelsHidden()
             .frame(maxWidth: 220)
 
-            let steps = DeviceSetupGuide.steps(for: system, existingKey: Self.existingKey())
-            ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
-                GuideStep(number: index + 1, step: step)
-            }
+            GuideSteps(steps: DeviceSetupGuide.steps(for: system, existingKey: Self.existingKey()))
         }
     }
 
     /// Looked up each time the guide is drawn, so a key made while it is open shows up.
-    private static func existingKey() -> String? {
+    static func existingKey() -> String? {
         let directory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".ssh").path
         return DeviceSetupGuide.defaultKey(in: directory) { FileManager.default.fileExists(atPath: $0) }
+    }
+}
+
+/// The numbered steps, here and in the sheet that adds a found device.
+struct GuideSteps: View {
+    let steps: [DeviceSetupGuide.Step]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                GuideStep(number: index + 1, step: step)
+            }
+        }
     }
 }
 

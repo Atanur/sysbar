@@ -45,4 +45,15 @@ import Testing
         #expect(DeviceSetupGuide.defaultKey(in: "/home/.ssh", exists: present.contains) == "~/.ssh/id_ed25519")
         #expect(DeviceSetupGuide.defaultKey(in: "/home/.ssh", exists: { _ in false }) == nil)
     }
+
+    @Test func aFoundDeviceGetsItsOwnAddressAndNoAddressStep() {
+        let steps = DeviceSetupGuide.steps(for: .mac, existingKey: nil, destination: "me@air.local", sshIsOn: true)
+        let all = commands(steps)
+
+        #expect(all.contains("ssh-copy-id me@air.local"))
+        #expect(all.last == "ssh -o BatchMode=yes me@air.local true")
+        #expect(!all.contains { $0.contains("USER@ADDRESS") || $0.contains("scutil") })
+        #expect(steps.first?.isOptional == true)
+        #expect(DeviceSetupGuide.steps(for: .linux, existingKey: nil, destination: "me@pi").first?.isOptional == false)
+    }
 }

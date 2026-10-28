@@ -29,8 +29,20 @@ public enum DeviceSetupGuide {
     private static let defaultKeyNames = ["id_ed25519_sk", "id_ed25519", "id_ecdsa_sk", "id_ecdsa", "id_rsa"]
 
     /// `existingKey` is the key this Mac already has, as from `defaultKey(in:exists:)`.
-    public static func steps(for system: System, existingKey: String?) -> [Step] {
-        remoteSteps(for: system) + localSteps(existingKey: existingKey)
+    ///
+    /// For a device Sysbar found, `destination` is its "user@address": the commands use it, and the
+    /// step that finds the address is left out. `sshIsOn` marks turning on SSH as already done.
+    public static func steps(
+        for system: System, existingKey: String?, destination: String? = nil, sshIsOn: Bool = false
+    ) -> [Step] {
+        guard let destination else {
+            return remoteSteps(for: system) + localSteps(existingKey: existingKey, destination: nil)
+        }
+        let turnOn = remoteSteps(for: system)[0]
+        let first = sshIsOn
+            ? Step(title: turnOn.title, detail: L("It is already on, so you can skip this step."), commands: turnOn.commands, isOptional: true)
+            : turnOn
+        return [first] + localSteps(existingKey: existingKey, destination: destination)
     }
 
     /// The first default key found, shown as `~/.ssh/<name>`, or nil if there is none. Newer kinds
@@ -79,8 +91,9 @@ public enum DeviceSetupGuide {
         }
     }
 
-    private static func localSteps(existingKey: String?) -> [Step] {
-        [
+    private static func localSteps(existingKey: String?, destination known: String?) -> [Step] {
+        let destination = known ?? Self.destination
+        return [
             Step(
                 title: L("On this Mac: make an ssh key"),
                 detail: existingKey.map { L("You already have one, %@, so you can skip this step.", $0) }
@@ -90,13 +103,17 @@ public enum DeviceSetupGuide {
             ),
             Step(
                 title: L("On this Mac: copy the key over"),
-                detail: L("Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it."),
+                detail: known == nil
+                    ? L("Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it.")
+                    : L("Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it."),
                 commands: [Command(label: nil, text: "ssh-copy-id \(destination)")],
                 isOptional: false
             ),
             Step(
                 title: L("On this Mac: check it"),
-                detail: L("If this returns without asking for anything, click Add device and fill in the same address and user name."),
+                detail: known == nil
+                    ? L("If this returns without asking for anything, click Add device and fill in the same address and user name.")
+                    : L("If this returns without asking for anything, click Add device."),
                 commands: [Command(label: nil, text: "ssh -o BatchMode=yes \(destination) true")],
                 isOptional: false
             ),
