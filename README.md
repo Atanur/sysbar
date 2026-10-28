@@ -166,6 +166,10 @@ Diagnostic flags, handy when checking a new Mac or server:
 npx wrangler deploy
 ```
 
+## Contributing
+
+Bug reports, translations and pull requests are welcome; [CONTRIBUTING.md](CONTRIBUTING.md) explains how to build, test and translate a change. Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md). Please report security problems privately, as described in the [security policy](.github/SECURITY.md), and accessibility barriers as described in [ACCESSIBILITY.md](ACCESSIBILITY.md).
+
 ## License
 
 [MIT](LICENSE)
