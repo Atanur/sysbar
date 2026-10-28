@@ -31,19 +31,19 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.5.7</string>
+	<string>0.5.8</string>
 	<key>CFBundleVersion</key>
-	<string>40</string>
+	<string>43</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
 	<key>LSUIElement</key>
-	<true/>
-	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_ssh._tcp</string>
 	</array>
+	<key>NSHighResolutionCapable</key>
+	<true/>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Sysbar uses the local network to find Macs with Remote Login on and to monitor devices you add over SSH.</string>
 </dict>
