@@ -3,6 +3,13 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.5.9 — 2026-10-29
+
+- VoiceOver names every switch, menu and slider in Settings after its setting, and moves between pages and groups by their headings. Popover cards and each row of the apps table are read as one item, with rates in words, and the results of checking a device or copying a command are announced.
+- Reduce Motion now also stops the values counting up in the popover and the pulse of a live device's dot. With Differentiate Without Color on, a device's status dot draws a different symbol for each state.
+- Text fields in Settings take the usual ⌘C, ⌘V, ⌘A and ⌘Z, and ⌘W closes the window.
+- [ACCESSIBILITY.md](https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md) describes what works and what is still missing, and security problems can be reported privately on GitHub.
+
 ## 0.5.8 — 2026-10-29
 
 - Settings is laid out around your devices. The sidebar lists this Mac and every remote device, each with a page of its own, and the + beside Devices adds one by hand or from those found on your network. Menu Bar and Window are split into short pages, and Temperature and fans and Keep awake have their own under Tools.
