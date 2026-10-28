@@ -399,3 +399,17 @@
 "Icon" = "Simge";
 "Cloud server" = "Bulut sunucu";
 "Laptop" = "Dizüstü";
+"%@ per second" = "saniyede %@";
+"Close" = "Kapat";
+"Collapsed" = "Daraltılmış";
+"Copy command" = "Komutu kopyala";
+"Cut" = "Kes";
+"Expanded" = "Genişletilmiş";
+"Fan speed" = "Fan hızı";
+"Minimize" = "Küçült";
+"Paste" = "Yapıştır";
+"Redo" = "Yinele";
+"Select All" = "Tümünü Seç";
+"Undo" = "Geri Al";
+"download %1$@, upload %2$@" = "indirme %1$@, yükleme %2$@";
+"read %1$@, write %2$@" = "okuma %1$@, yazma %2$@";

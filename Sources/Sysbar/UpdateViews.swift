@@ -75,6 +75,7 @@ struct UpdateBanner: View {
         }
         .buttonStyle(.link)
         .font(.caption)
+        .accessibilityValue(release.notes.isEmpty ? "" : (showsNotes ? L("Expanded") : L("Collapsed")))
         .motion(.snappy(duration: 0.2), value: showsNotes)
     }
 }

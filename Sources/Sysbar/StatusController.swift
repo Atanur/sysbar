@@ -114,8 +114,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
         viewModel?.history = history
         refreshMenuBar(snapshot)
         updateDescription(snapshot)
-        // Only the open popover animates; with it closed the reading is taken over at once.
-        animator.push(snapshot, over: service?.interval ?? preferences.samplingInterval, animated: viewModel != nil)
+        // Only the open popover animates; with it closed, or with Reduce Motion on, the reading is
+        // taken over at once, so VoiceOver also hears one value per sample.
+        let animates = viewModel != nil && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        animator.push(snapshot, over: service?.interval ?? preferences.samplingInterval, animated: animates)
     }
 
     /// Tooltip and VoiceOver text describe the newest sample; they change once per sample, not
@@ -129,7 +131,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
         let description = [readouts, heat].compactMap { $0 }.joined(separator: " · ")
         guard description != button.toolTip else { return }
         button.toolTip = description
-        button.setAccessibilityLabel(description)
+        // The name stays "Sysbar"; the readings are its value, so VoiceOver says both.
+        button.setAccessibilityValue(description)
     }
 
     private func preferencesDidChange() {

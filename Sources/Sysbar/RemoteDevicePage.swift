@@ -28,6 +28,9 @@ struct RemoteDevicePage: View {
             removeGroup
         }
         .onAppear { statuses.check(device) }
+        .onChange(of: statuses.status(of: device.id)) { _, status in
+            if let message = status?.message { announce(message) }
+        }
         .sheet(isPresented: $editing) {
             DeviceEditor(
                 device: device,
@@ -140,7 +143,7 @@ struct RemoteDevicePage: View {
             }
             RowDivider()
             SettingsRow(symbol: "clock.arrow.circlepath", title: L("Keep monitoring after closing")) {
-                Picker("", selection: Binding(get: { device.keepMonitoring }, set: { save(keepMonitoring: $0) })) {
+                Picker(L("Keep monitoring after closing"), selection: Binding(get: { device.keepMonitoring }, set: { save(keepMonitoring: $0) })) {
                     ForEach(KeepMonitoring.choices, id: \.self) { Text(Self.title(of: $0)).tag($0) }
                 }
                 .labelsHidden()

@@ -399,3 +399,17 @@
 "Icon" = "Icono";
 "Cloud server" = "Servidor en la nube";
 "Laptop" = "Portátil";
+"%@ per second" = "%@ por segundo";
+"Close" = "Cerrar";
+"Collapsed" = "Contraído";
+"Copy command" = "Copiar comando";
+"Cut" = "Cortar";
+"Expanded" = "Expandido";
+"Fan speed" = "Velocidad del ventilador";
+"Minimize" = "Minimizar";
+"Paste" = "Pegar";
+"Redo" = "Rehacer";
+"Select All" = "Seleccionar todo";
+"Undo" = "Deshacer";
+"download %1$@, upload %2$@" = "descarga %1$@, subida %2$@";
+"read %1$@, write %2$@" = "lectura %1$@, escritura %2$@";

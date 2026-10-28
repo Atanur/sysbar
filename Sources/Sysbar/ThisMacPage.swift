@@ -130,6 +130,7 @@ struct ThisMacPage: View {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(summary, forType: .string)
         copied = true
+        announce(L("Copied"))
         Task {
             try? await Task.sleep(for: .seconds(2))
             copied = false

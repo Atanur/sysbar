@@ -399,3 +399,17 @@
 "Icon" = "الأيقونة";
 "Cloud server" = "خادم سحابي";
 "Laptop" = "حاسوب محمول";
+"%@ per second" = "%@ في الثانية";
+"Close" = "إغلاق";
+"Collapsed" = "مطوي";
+"Copy command" = "نسخ الأمر";
+"Cut" = "قص";
+"Expanded" = "موسّع";
+"Fan speed" = "سرعة المراوح";
+"Minimize" = "تصغير";
+"Paste" = "لصق";
+"Redo" = "إعادة";
+"Select All" = "تحديد الكل";
+"Undo" = "تراجع";
+"download %1$@, upload %2$@" = "تنزيل %1$@، رفع %2$@";
+"read %1$@, write %2$@" = "قراءة %1$@، كتابة %2$@";

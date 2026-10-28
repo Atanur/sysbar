@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusController: StatusController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.mainMenu = MainMenu.make()
         statusController = StatusController()
         if CommandLine.arguments.contains("--open-popover") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in

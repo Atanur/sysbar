@@ -399,3 +399,17 @@
 "Icon" = "アイコン";
 "Cloud server" = "クラウドサーバー";
 "Laptop" = "ノートパソコン";
+"%@ per second" = "毎秒 %@";
+"Close" = "閉じる";
+"Collapsed" = "折りたたみ";
+"Copy command" = "コマンドをコピー";
+"Cut" = "カット";
+"Expanded" = "展開";
+"Fan speed" = "ファンの速度";
+"Minimize" = "しまう";
+"Paste" = "ペースト";
+"Redo" = "やり直す";
+"Select All" = "すべてを選択";
+"Undo" = "取り消す";
+"download %1$@, upload %2$@" = "ダウンロード %1$@、アップロード %2$@";
+"read %1$@, write %2$@" = "読み込み %1$@、書き込み %2$@";

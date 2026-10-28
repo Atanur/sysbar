@@ -16,7 +16,7 @@ struct GeneralSettingsPage: View {
         SettingsPageScaffold(page: .general) {
             SettingsGroup(title: L("Language")) {
                 SettingsRow(symbol: "globe", title: L("Language")) {
-                    Picker("", selection: Binding(get: { language }, set: { language = $0; AppLanguage.select($0) })) {
+                    Picker(L("Language"), selection: Binding(get: { language }, set: { language = $0; AppLanguage.select($0) })) {
                         ForEach(AppLanguage.allCases) { Text($0.nativeName).tag($0) }
                     }
                     .labelsHidden()

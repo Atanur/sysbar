@@ -399,3 +399,17 @@
 "Icon" = "Symbool";
 "Cloud server" = "Cloudserver";
 "Laptop" = "Laptop";
+"%@ per second" = "%@ per seconde";
+"Close" = "Sluit";
+"Collapsed" = "Samengevouwen";
+"Copy command" = "Kopieer opdracht";
+"Cut" = "Knip";
+"Expanded" = "Uitgevouwen";
+"Fan speed" = "Ventilatorsnelheid";
+"Minimize" = "Minimaliseer";
+"Paste" = "Plak";
+"Redo" = "Opnieuw";
+"Select All" = "Selecteer alles";
+"Undo" = "Herstel";
+"download %1$@, upload %2$@" = "download %1$@, upload %2$@";
+"read %1$@, write %2$@" = "lezen %1$@, schrijven %2$@";

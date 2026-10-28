@@ -20,7 +20,7 @@ struct FansPage: View {
 
             SettingsGroup(title: L("Units")) {
                 SettingsRow(symbol: "thermometer.medium", title: L("Temperature")) {
-                    Picker("", selection: $preferences.temperatureUnit) {
+                    Picker(L("Temperature"), selection: $preferences.temperatureUnit) {
                         Text(L("Celsius")).tag(TemperatureUnit.celsius)
                         Text(L("Fahrenheit")).tag(TemperatureUnit.fahrenheit)
                     }

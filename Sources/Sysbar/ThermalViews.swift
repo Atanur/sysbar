@@ -145,13 +145,15 @@ struct ThermalPanel: View {
                 Text(L("Min")).font(.caption2).foregroundStyle(.secondary)
                 Slider(value: Binding(get: { fraction }, set: { fans.setManual($0) }), in: 0...1)
                     .controlSize(.small)
+                    .accessibilityLabel(L("Fan speed"))
+                    .accessibilityValue(Format.percent(fraction))
                 Text(L("Max")).font(.caption2).foregroundStyle(.secondary)
                 Text(Format.percent(fraction)).font(.caption).monospacedDigit().frame(minWidth: 34, alignment: .trailing)
                     .contentTransition(.numericText())
                     .motion(value: Format.percent(fraction))
             }
             Text(L("Back to automatic when Sysbar quits or the Mac sleeps."))
-                .font(.caption2).foregroundStyle(.tertiary)
+                .font(.caption2).foregroundStyle(.secondary)
         }
     }
 

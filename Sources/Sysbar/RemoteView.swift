@@ -120,6 +120,7 @@ struct RemoteView: View {
         return card(
             title: L("Network"), symbol: "arrow.up.arrow.down",
             value: latest.network.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "–", unit: "/s",
+            spokenValue: latest.network.map { L("download %1$@, upload %2$@", spokenRate($0.inbound), spokenRate($0.outbound)) },
             note: "", help: L("↓ Download · ↑ Upload"),
             series: flow.map(\.inbound), secondary: flow.map(\.outbound),
             readouts: flowReadouts(latest.network), range: nil, load: nil, tint: FlowColors.inbound
@@ -131,6 +132,7 @@ struct RemoteView: View {
         return card(
             title: L("Disk"), symbol: "internaldrive",
             value: latest.disk.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "–", unit: "/s",
+            spokenValue: latest.disk.map { L("read %1$@, write %2$@", spokenRate($0.inbound), spokenRate($0.outbound)) },
             note: "", help: L("↓ Read · ↑ Write"),
             series: flow.map(\.inbound), secondary: flow.map(\.outbound),
             readouts: flowReadouts(latest.disk), range: nil, load: nil, tint: FlowColors.inbound
@@ -158,12 +160,13 @@ struct RemoteView: View {
     }
 
     private func card(
-        title: String, symbol: String, value: String, unit: String = "", note: String, help: String,
+        title: String, symbol: String, value: String, unit: String = "", spokenValue: String? = nil,
+        note: String, help: String,
         series: [Double], secondary: [Double]? = nil, readouts: [Readout] = [],
         range: ClosedRange<Double>?, load: LoadLevel?, tint: Color? = nil
     ) -> some View {
         MetricCard(
-            title: title, symbol: symbol, value: value, unit: unit, note: note,
+            title: title, symbol: symbol, value: value, unit: unit, spokenValue: spokenValue, note: note,
             series: series, secondary: secondary, readouts: readouts,
             capacity: monitor.history.capacity, range: range,
             tint: tint ?? load?.cardColor ?? FlowColors.inbound, help: help

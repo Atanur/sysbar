@@ -399,3 +399,17 @@
 "Icon" = "아이콘";
 "Cloud server" = "클라우드 서버";
 "Laptop" = "노트북";
+"%@ per second" = "초당 %@";
+"Close" = "닫기";
+"Collapsed" = "접힘";
+"Copy command" = "명령어 복사";
+"Cut" = "오려두기";
+"Expanded" = "펼쳐짐";
+"Fan speed" = "팬 속도";
+"Minimize" = "최소화";
+"Paste" = "붙여넣기";
+"Redo" = "실행 복귀";
+"Select All" = "전체 선택";
+"Undo" = "실행 취소";
+"download %1$@, upload %2$@" = "다운로드 %1$@, 업로드 %2$@";
+"read %1$@, write %2$@" = "읽기 %1$@, 쓰기 %2$@";

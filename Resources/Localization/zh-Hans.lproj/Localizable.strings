@@ -399,3 +399,17 @@
 "Icon" = "图标";
 "Cloud server" = "云服务器";
 "Laptop" = "笔记本电脑";
+"%@ per second" = "每秒 %@";
+"Close" = "关闭";
+"Collapsed" = "已折叠";
+"Copy command" = "拷贝命令";
+"Cut" = "剪切";
+"Expanded" = "已展开";
+"Fan speed" = "风扇速度";
+"Minimize" = "最小化";
+"Paste" = "粘贴";
+"Redo" = "重做";
+"Select All" = "全选";
+"Undo" = "撤销";
+"download %1$@, upload %2$@" = "下载 %1$@，上传 %2$@";
+"read %1$@, write %2$@" = "读取 %1$@，写入 %2$@";

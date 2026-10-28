@@ -376,6 +376,7 @@ struct PopoverView: View {
         return card(
             .disk, title: L("Disk"), symbol: "internaldrive",
             value: latest?.disk.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "–", unit: "/s",
+            spokenValue: latest?.disk.map { L("read %1$@, write %2$@", spokenRate($0.inbound), spokenRate($0.outbound)) },
             note: space.map { L("%@ free", Format.diskSize($0.availableBytes)) } ?? "",
             noteColor: space.flatMap(Self.noteColor(for:)),
             help: [L("↓ Read · ↑ Write"), spaceHelp].compactMap { $0 }.joined(separator: "\n"),
@@ -398,6 +399,7 @@ struct PopoverView: View {
         return card(
             .network, title: L("Network"), symbol: "arrow.up.arrow.down",
             value: latest?.network.map { "↓\(Format.rate($0.inbound)) ↑\(Format.rate($0.outbound))" } ?? "–", unit: "/s",
+            spokenValue: latest?.network.map { L("download %1$@, upload %2$@", spokenRate($0.inbound), spokenRate($0.outbound)) },
             note: latest?.networkLink.flatMap(Self.name(of:)) ?? "",
             help: L("↓ Download · ↑ Upload"),
             series: flow.map(\.inbound), secondary: flow.map(\.outbound),
@@ -416,13 +418,13 @@ struct PopoverView: View {
 
     private func card(
         _ metric: MenuBarMetric, title: String, symbol: String, value: String, unit: String = "",
-        note: String, noteColor: Color? = nil, noteSymbol: NoteSymbol? = nil, help: String, series: [Double],
+        spokenValue: String? = nil, note: String, noteColor: Color? = nil, noteSymbol: NoteSymbol? = nil, help: String, series: [Double],
         secondary: [Double]? = nil, secondaryTint: Color = FlowColors.outbound, readouts: [Readout] = [],
         range: ClosedRange<Double>?, load: LoadLevel?, tint: Color? = nil
     ) -> some View {
         MetricCard(
-            title: title, symbol: symbol, value: value, unit: unit, note: note, noteColor: noteColor,
-            noteSymbol: noteSymbol,
+            title: title, symbol: symbol, value: value, unit: unit, spokenValue: spokenValue, note: note,
+            noteColor: noteColor, noteSymbol: noteSymbol,
             series: series, secondary: secondary, secondaryTint: secondaryTint, readouts: readouts,
             capacity: model.history.capacity, range: range,
             tint: tint ?? load?.cardColor ?? FlowColors.inbound,
@@ -494,13 +496,14 @@ enum SessionStatus: Equatable {
 /// live dot does not make the popover redraw every frame. With Reduce Motion it stays still.
 private struct SessionDot: View {
     let status: SessionStatus
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Image(systemName: "circle.fill")
             .font(.system(size: 6))
             .foregroundStyle(status.color)
-            .symbolEffect(.pulse, options: .repeating.speed(0.5), isActive: status == .live)
-            .symbolEffect(.pulse, options: .repeating.speed(1.6), isActive: status == .connecting)
+            .symbolEffect(.pulse, options: .repeating.speed(0.5), isActive: status == .live && !reduceMotion)
+            .symbolEffect(.pulse, options: .repeating.speed(1.6), isActive: status == .connecting && !reduceMotion)
             .accessibilityHidden(true)
     }
 }

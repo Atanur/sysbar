@@ -11,7 +11,7 @@ struct WindowLayoutPage: View {
         SettingsPageScaffold(page: .windowLayout) {
             SettingsGroup {
                 SettingsRow(symbol: "square.grid.2x2", title: L("Card layout"), subtitle: layoutDetail) {
-                    Picker("", selection: $preferences.cardLayout) {
+                    Picker(L("Card layout"), selection: $preferences.cardLayout) {
                         ForEach(CardLayoutMode.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
                     .labelsHidden()
@@ -53,6 +53,8 @@ struct AppsTablePage: View {
                         Text("\(preferences.appRows)").monospacedDigit().frame(minWidth: 20, alignment: .trailing)
                     }
                     .disabled(!preferences.showsApps)
+                    .accessibilityLabel(L("Row count"))
+                    .accessibilityValue("\(preferences.appRows)")
                 }
             }
 

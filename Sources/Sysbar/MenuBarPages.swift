@@ -31,7 +31,7 @@ struct MenuBarReadoutsPage: View {
                     footer: L("Shown only while running on battery. It stays neutral, then turns amber and red as the charge runs low.")
                 ) {
                     SettingsRow(symbol: "battery.50", title: L("Battery charge")) {
-                        Picker("", selection: $preferences.batteryMenuBarThreshold) {
+                        Picker(L("Battery charge"), selection: $preferences.batteryMenuBarThreshold) {
                             ForEach(BatteryMenuBar.thresholds, id: \.self) { Text(Self.thresholdTitle($0)).tag($0) }
                         }
                         .labelsHidden()
@@ -62,7 +62,7 @@ struct MenuBarAppearancePage: View {
 
             SettingsGroup {
                 SettingsRow(symbol: "rectangle.split.3x1", title: L("Style")) {
-                    Picker("", selection: $preferences.menuBarStyle) {
+                    Picker(L("Style"), selection: $preferences.menuBarStyle) {
                         ForEach(MenuBarStyle.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
                     .labelsHidden()
@@ -136,7 +136,12 @@ struct MenuBarPreview: View {
             Spacer()
         }
         .padding(.vertical, 18)
+        // Read as one element, with the sample readings, rather than as an image and a mock clock.
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(L("Menu bar preview"))
+        .accessibilityValue(Format.statusTitle(
+            Self.sample(batteryThreshold: threshold), metrics: preferences.menuBarMetrics, batteryThreshold: threshold
+        ))
     }
 }
 

@@ -26,6 +26,8 @@ struct MetricCard: View {
     let symbol: String
     let value: String
     var unit = ""
+    /// What VoiceOver says for the value when the drawn text does not read well, such as arrows.
+    var spokenValue: String?
     /// A few characters at the top right, such as the average or the total.
     var note = ""
     var noteColor: Color?
@@ -87,8 +89,12 @@ struct MetricCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.primary.opacity(isHovering ? 0.10 : 0.06), in: RoundedRectangle(cornerRadius: 10))
         .contentShape(RoundedRectangle(cornerRadius: 10))
-        .accessibilityElement(children: .combine)
-        .accessibilityValue("\(value)\(unit)")
+        // One element per card: its title, then the value and the note in words.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(
+            [spokenValue ?? "\(value)\(unit)", note, noteSymbol?.label ?? ""].filter { !$0.isEmpty }.joined(separator: ", ")
+        )
         .accessibilityHint(onTap == nil ? "" : L("Opens details"))
     }
 

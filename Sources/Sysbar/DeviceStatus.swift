@@ -23,6 +23,14 @@ enum DeviceStatus: Hashable {
         }
     }
 
+    /// The result in words, once there is one.
+    var message: String? {
+        switch self {
+        case .checking: nil
+        case .connected(let text), .failed(let text): text
+        }
+    }
+
     /// One sample's result as a status.
     static func from(_ result: Result<String, SSHRunnerError>) -> DeviceStatus {
         switch result {
@@ -66,15 +74,29 @@ final class DeviceStatusStore: ObservableObject {
     }
 }
 
-/// Green when the device answered, red when it did not, grey while checking.
+/// Green when the device answered, red when it did not, grey while checking. With Differentiate
+/// Without Color on, each state has its own symbol as well.
 struct StatusDot: View {
     let status: DeviceStatus
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var withoutColor
 
     var body: some View {
-        Circle()
-            .fill(color)
-            .frame(width: 7, height: 7)
-            .accessibilityLabel(label)
+        Group {
+            if withoutColor {
+                Image(systemName: symbol).font(.system(size: 10, weight: .semibold)).foregroundStyle(color)
+            } else {
+                Circle().fill(color).frame(width: 7, height: 7)
+            }
+        }
+        .accessibilityLabel(label)
+    }
+
+    private var symbol: String {
+        switch status {
+        case .checking: "ellipsis.circle"
+        case .connected: "checkmark.circle.fill"
+        case .failed: "xmark.circle.fill"
+        }
     }
 
     private var color: Color {

@@ -113,6 +113,7 @@ struct AboutPage: View {
     private func copyDiagnostics() {
         copy(DiagnosticInfo.text(info: info, preferences: preferences, updater: updater))
         copiedDiagnostics = true
+        announce(L("Copied"))
         Task {
             try? await Task.sleep(for: .seconds(2))
             copiedDiagnostics = false

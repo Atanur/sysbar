@@ -23,7 +23,7 @@ struct AppsTable: View {
         let rows = AppUsageCalculator.top(apps, by: effectiveSort, limit: rowLimit)
 
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.headline)
+            Text(title).font(.headline).accessibilityAddTraits(.isHeader)
             header
             if rows.isEmpty {
                 Text(L("Measuring…")).font(.caption).foregroundStyle(.secondary)
@@ -49,6 +49,7 @@ struct AppsTable: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(column == effectiveSort ? Color.primary : Color.secondary)
                 .accessibilityLabel(L("Sort by %@ column", column.columnTitle))
+                .accessibilityAddTraits(column == effectiveSort ? .isSelected : [])
             }
         }
         .font(.caption)
@@ -65,6 +66,12 @@ struct AppsTable: View {
             }
         }
         .font(.system(size: 11.5).monospacedDigit())
+        // One element per app: "Safari", then "CPU 12%, Memory 340M".
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(app.name)
+        .accessibilityValue(
+            columns.map { "\($0.columnTitle) \(Self.text(of: $0, for: app))" }.joined(separator: ", ")
+        )
     }
 
     /// Zero GPU and power show as a dash so the columns stay readable.

@@ -151,6 +151,7 @@ struct KeepAwakePanel: View {
         .menuIndicator(.hidden)
         .buttonStyle(.plain)
         .accessibilityLabel(KeepAwakeController.title)
+        .accessibilityValue(options.first { $0.value == selection }?.title ?? "")
     }
 
     private func choose(_ choice: Choice) {
@@ -205,7 +206,7 @@ struct KeepAwakePanel: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(L("Choose an app")).font(.caption).foregroundStyle(.secondary)
             if openApps.isEmpty {
-                Text(L("No other apps are open.")).font(.caption).foregroundStyle(.tertiary)
+                Text(L("No other apps are open.")).font(.caption).foregroundStyle(.secondary)
             } else {
                 // A fixed height: the popover sizes itself to its content, and a scroll view alone would collapse.
                 ScrollView {

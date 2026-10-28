@@ -399,3 +399,17 @@
 "Icon" = "Symbol";
 "Cloud server" = "Cloud-Server";
 "Laptop" = "Laptop";
+"%@ per second" = "%@ pro Sekunde";
+"Close" = "Schließen";
+"Collapsed" = "Eingeklappt";
+"Copy command" = "Befehl kopieren";
+"Cut" = "Ausschneiden";
+"Expanded" = "Ausgeklappt";
+"Fan speed" = "Lüftergeschwindigkeit";
+"Minimize" = "Im Dock ablegen";
+"Paste" = "Einsetzen";
+"Redo" = "Wiederholen";
+"Select All" = "Alles auswählen";
+"Undo" = "Widerrufen";
+"download %1$@, upload %2$@" = "Download %1$@, Upload %2$@";
+"read %1$@, write %2$@" = "Lesen %1$@, Schreiben %2$@";

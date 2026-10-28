@@ -43,11 +43,12 @@ struct DeviceSetupGuideView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityValue(isOpen ? L("Expanded") : L("Collapsed"))
     }
 
     private var content: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Picker("", selection: $system) {
+            Picker(L("System"), selection: $system) {
                 Text(verbatim: "Mac").tag(DeviceSetupGuide.System.mac)
                 Text(verbatim: "Linux").tag(DeviceSetupGuide.System.linux)
             }
@@ -130,8 +131,8 @@ private struct GuideCommand: View {
                         .frame(width: 14, height: 14)
                 }
                 .buttonStyle(.borderless)
-                .help(L("Copy"))
-                .accessibilityLabel(L("Copy"))
+                .help(L("Copy command"))
+                .accessibilityLabel(L("Copy command"))
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
@@ -143,6 +144,7 @@ private struct GuideCommand: View {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(command.text, forType: .string)
         copied = true
+        announce(L("Copied"))
         Task {
             try? await Task.sleep(for: Self.copiedFeedback)
             copied = false

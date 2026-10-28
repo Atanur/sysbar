@@ -144,7 +144,9 @@ struct DeviceEditor: View {
             await runner.closeConnection(device)
             let result = await runner.run(device)
             await runner.closeConnection(device)
-            test = DeviceStatus.from(result)
+            let status = DeviceStatus.from(result)
+            test = status
+            if let message = status.message { announce(message) }
         }
     }
 
@@ -188,7 +190,7 @@ struct DeviceIconPicker: View {
                     Image(systemName: icon.symbol)
                         .font(.system(size: 14))
                         .frame(width: 30, height: 26)
-                        .foregroundStyle(icon == selection ? Color.white : Color.secondary)
+                        .foregroundStyle(icon == selection ? Color(nsColor: .alternateSelectedControlTextColor) : Color.secondary)
                         .background(
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
                                 .fill(icon == selection ? Color.accentColor : Color.clear)

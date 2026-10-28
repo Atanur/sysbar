@@ -11,6 +11,7 @@
 "%@ cycles" = "%@ cycles";
 "%@ free" = "%@ free";
 "%@ hidden" = "%@ hidden";
+"%@ per second" = "%@ per second";
 "%@ rpm" = "%@ rpm";
 "%@ s" = "%@ s";
 "%@\nClick to show details" = "%@\nClick to show details";
@@ -71,7 +72,9 @@
 "Choose…" = "Choose…";
 "Chosen for each device" = "Chosen for each device";
 "Click to copy the version" = "Click to copy the version";
+"Close" = "Close";
 "Cloud server" = "Cloud server";
+"Collapsed" = "Collapsed";
 "Colored bars" = "Colored bars";
 "Connected" = "Connected";
 "Connected, but this system is not supported. Only Linux and macOS can be monitored." = "Connected, but this system is not supported. Only Linux and macOS can be monitored.";
@@ -84,6 +87,7 @@
 "Copied" = "Copied";
 "Copy" = "Copy";
 "Copy as text" = "Copy as text";
+"Copy command" = "Copy command";
 "Copy diagnostic info" = "Copy diagnostic info";
 "Cores" = "Cores";
 "Could not change the setting: %@" = "Could not change the setting: %@";
@@ -92,6 +96,7 @@
 "Could not set up the helper: %@" = "Could not set up the helper: %@";
 "Could not start ssh: %@" = "Could not start ssh: %@";
 "Critical" = "Critical";
+"Cut" = "Cut";
 "Cycle count" = "Cycle count";
 "Data sources" = "Data sources";
 "Default 22" = "Default 22";
@@ -107,10 +112,12 @@
 "Ethernet" = "Ethernet";
 "Every release, on the website" = "Every release, on the website";
 "Everything is running cool." = "Everything is running cool.";
+"Expanded" = "Expanded";
 "Fahrenheit" = "Fahrenheit";
 "Fan %1$@: %2$@ rpm" = "Fan %1$@: %2$@ rpm";
 "Fan control needs a signed copy of Sysbar." = "Fan control needs a signed copy of Sysbar.";
 "Fan control needs a small helper, set up once with your administrator approval." = "Fan control needs a small helper, set up once with your administrator approval.";
+"Fan speed" = "Fan speed";
 "Fans" = "Fans";
 "Fans automatic" = "Fans automatic";
 "Fans manual" = "Fans manual";
@@ -188,6 +195,7 @@
 "Menu bar preview" = "Menu bar preview";
 "Menu bar, window, sampling and update settings go back to their defaults." = "Menu bar, window, sampling and update settings go back to their defaults.";
 "Min" = "Min";
+"Minimize" = "Minimize";
 "Model" = "Model";
 "Moderate" = "Moderate";
 "Most servers already run it, and running this again does no harm." = "Most servers already run it, and running this again does no harm.";
@@ -226,6 +234,7 @@
 "Opens details" = "Opens details";
 "Optional" = "Optional";
 "Optional, e.g. ~/.ssh/id_ed25519" = "Optional, e.g. ~/.ssh/id_ed25519";
+"Paste" = "Paste";
 "Peak %@" = "Peak %@";
 "Per-app values" = "Per-app values";
 "Port" = "Port";
@@ -243,6 +252,7 @@
 "Quits the app; the menu bar readout disappears too" = "Quits the app; the menu bar readout disappears too";
 "RAM" = "RAM";
 "Readouts" = "Readouts";
+"Redo" = "Redo";
 "Refresh rate" = "Refresh rate";
 "Release notes" = "Release notes";
 "Remote devices" = "Remote devices";
@@ -266,6 +276,7 @@
 "Sampling" = "Sampling";
 "Save" = "Save";
 "Search" = "Search";
+"Select All" = "Select All";
 "Server" = "Server";
 "Set up Sysbar's helper?" = "Set up Sysbar's helper?";
 "Set up again" = "Set up again";
@@ -349,6 +360,7 @@
 "Two columns" = "Two columns";
 "Two columns for an even number of cards, one for an odd number" = "Two columns for an even number of cards, one for an odd number";
 "Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it.";
+"Undo" = "Undo";
 "Units" = "Units";
 "Unknown" = "Unknown";
 "Unknown error (code %@)." = "Unknown error (code %@).";
@@ -382,6 +394,7 @@
 "charging +%@ W" = "charging +%@ W";
 "critical" = "critical";
 "development" = "development";
+"download %1$@, upload %2$@" = "download %1$@, upload %2$@";
 "e.g. My server" = "e.g. My server";
 "e.g. vps.example.com or an ssh alias" = "e.g. vps.example.com or an ssh alias";
 "full in %@" = "full in %@";
@@ -394,6 +407,7 @@
 "normal" = "normal";
 "offline" = "offline";
 "on power" = "on power";
+"read %1$@, write %2$@" = "read %1$@, write %2$@";
 "ssh-agent or the default key" = "ssh-agent or the default key";
 "up %@" = "up %@";
 "~%@ W from the wall" = "~%@ W from the wall";

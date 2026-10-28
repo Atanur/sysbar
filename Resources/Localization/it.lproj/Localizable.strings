@@ -399,3 +399,17 @@
 "Icon" = "Icona";
 "Cloud server" = "Server cloud";
 "Laptop" = "Portatile";
+"%@ per second" = "%@ al secondo";
+"Close" = "Chiudi";
+"Collapsed" = "Compresso";
+"Copy command" = "Copia comando";
+"Cut" = "Taglia";
+"Expanded" = "Espanso";
+"Fan speed" = "Velocità delle ventole";
+"Minimize" = "Contrai";
+"Paste" = "Incolla";
+"Redo" = "Ripeti";
+"Select All" = "Seleziona tutto";
+"Undo" = "Annulla";
+"download %1$@, upload %2$@" = "download %1$@, upload %2$@";
+"read %1$@, write %2$@" = "lettura %1$@, scrittura %2$@";

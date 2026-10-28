@@ -46,6 +46,7 @@ struct SettingsPageScaffold<Content: View, Accessory: View>: View {
                     IconTile(symbol: symbol, size: 36)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title).font(.title2.weight(.semibold)).lineLimit(1)
+                            .accessibilityAddTraits(.isHeader)
                         if !subtitle.isEmpty {
                             Text(subtitle).font(.callout).foregroundStyle(.secondary)
                         }
@@ -88,6 +89,7 @@ struct SettingsGroup<Content: View>: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .padding(.leading, 4)
+                    .accessibilityAddTraits(.isHeader)
             }
             VStack(spacing: 0) { content }
                 .settingsCard()
@@ -119,12 +121,19 @@ struct SettingsRow<Accessory: View>: View {
                 }
             }
             Spacer(minLength: 12)
-            accessory
+            accessory.environment(\.settingsRowTitle, title)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .frame(minHeight: 42)
     }
+}
+
+extension EnvironmentValues {
+    /// The title of the row a control sits in. A row's switch or slider has no visible label of its
+    /// own, so it takes this one as its accessibility name: VoiceOver says "Launch at login, switch",
+    /// not just "switch".
+    @Entry var settingsRowTitle = ""
 }
 
 /// Hairline between rows, starting after the tile.
@@ -139,9 +148,10 @@ struct RowDivider: View {
 /// A compact switch for the right side of a row.
 struct RowToggle: View {
     @Binding var isOn: Bool
+    @Environment(\.settingsRowTitle) private var title
 
     var body: some View {
-        Toggle("", isOn: $isOn).labelsHidden().toggleStyle(.switch).controlSize(.small)
+        Toggle(title, isOn: $isOn).labelsHidden().toggleStyle(.switch).controlSize(.small)
     }
 }
 
@@ -158,11 +168,13 @@ struct IntervalSlider: View {
 
     @State private var draft: TimeInterval?
     @State private var pending: Task<Void, Never>?
+    @Environment(\.settingsRowTitle) private var title
 
     var body: some View {
         HStack(spacing: 10) {
             Slider(value: Binding(get: { draft ?? value }, set: update), in: range, step: step)
                 .frame(width: 180)
+                .accessibilityLabel(title)
                 .accessibilityValue(L("%@ s", SamplingInterval.text(draft ?? value)))
             Text(L("%@ s", SamplingInterval.text(draft ?? value)))
                 .monospacedDigit()
@@ -229,6 +241,7 @@ struct ArrangedMetricRows<Accessory: View>: View {
                     .accessibilityHidden(true)
             }
             .contentShape(Rectangle())
+            .accessibilityElement(children: .contain)
             .draggable(metric.rawValue) {
                 Text(metric.displayName).padding(.horizontal, 10).padding(.vertical, 6)
             }
