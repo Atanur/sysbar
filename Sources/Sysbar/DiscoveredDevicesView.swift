@@ -1,8 +1,31 @@
 import SysbarCore
 import SwiftUI
 
+/// Opened from the add button of the devices section: what Sysbar found nearby, and the commands
+/// to connect any other device.
+struct FindDevicesPage: View {
+    @ObservedObject var preferences: Preferences
+    /// Called with the device to open in the editor.
+    let onAdd: (RemoteDevice) -> Void
+
+    var body: some View {
+        SettingsPageScaffold(page: .findDevices, animating: AnyHashable(preferences.devices.map(\.id))) {
+            DiscoveredDevicesView(preferences: preferences, onAdd: onAdd)
+            DeviceSetupGuideView()
+            HStack {
+                Spacer()
+                Button {
+                    onAdd(.blank)
+                } label: {
+                    Label(L("Add manually…"), systemImage: "plus")
+                }
+            }
+        }
+    }
+}
+
 /// Devices Sysbar found on this network and in Tailscale, each with a button that walks through
-/// connecting it. Shown under the device list in Settings › Devices.
+/// connecting it.
 struct DiscoveredDevicesView: View {
     @ObservedObject var preferences: Preferences
     /// Called with the device to open in the editor, prefilled from what was found.
@@ -93,7 +116,7 @@ struct DiscoveredDevicesView: View {
     }
 
     private static func symbol(of device: DeviceDiscovery.Found) -> String {
-        device.system == .linux ? "server.rack" : "laptopcomputer"
+        (device.system == .linux ? DeviceIcon.server : .laptop).symbol
     }
 
     /// "Tailscale 100.64.0.3 · Air.local", with "offline" when Tailscale says so.
@@ -170,7 +193,10 @@ struct ConnectFoundDeviceSheet: View {
                 Spacer()
                 Button(L("Cancel"), action: onCancel).keyboardShortcut(.cancelAction)
                 Button(L("Add device")) {
-                    onAdd(RemoteDevice(name: found.name, host: host, user: trimmedUser, port: nil, identityFile: ""))
+                    onAdd(RemoteDevice(
+                        name: found.name, host: host, user: trimmedUser, port: nil, identityFile: "",
+                        icon: system == .linux ? .server : .laptop
+                    ))
                 }
                 .keyboardShortcut(.defaultAction)
             }

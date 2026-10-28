@@ -15,23 +15,43 @@ struct IconTile: View {
     }
 }
 
-/// A settings page: a header with the page's tile, title and one line of description, then content.
-struct SettingsPageScaffold<Content: View>: View {
-    let page: SettingsPage
+/// A settings page: a header with a tile, title, one line of description and an optional control
+/// at the right, then content.
+struct SettingsPageScaffold<Content: View, Accessory: View>: View {
+    let symbol: String
+    let title: String
+    let subtitle: String
     /// Whatever, when it changes, reshapes the page (rows appearing, a group replaced), so that
     /// change is animated.
     var animating: AnyHashable = 0
-    @ViewBuilder let content: Content
+    let accessory: Accessory
+    let content: Content
+
+    init(
+        symbol: String, title: String, subtitle: String, animating: AnyHashable = 0,
+        @ViewBuilder accessory: () -> Accessory, @ViewBuilder content: () -> Content
+    ) {
+        self.symbol = symbol
+        self.title = title
+        self.subtitle = subtitle
+        self.animating = animating
+        self.accessory = accessory()
+        self.content = content()
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 HStack(spacing: 14) {
-                    IconTile(symbol: page.symbol, size: 36)
+                    IconTile(symbol: symbol, size: 36)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(page.title).font(.title2.weight(.semibold))
-                        Text(page.subtitle).font(.callout).foregroundStyle(.secondary)
+                        Text(title).font(.title2.weight(.semibold)).lineLimit(1)
+                        if !subtitle.isEmpty {
+                            Text(subtitle).font(.callout).foregroundStyle(.secondary)
+                        }
                     }
+                    Spacer(minLength: 12)
+                    accessory
                 }
                 content
             }
@@ -42,6 +62,16 @@ struct SettingsPageScaffold<Content: View>: View {
             .frame(maxWidth: 640, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
+    }
+}
+
+extension SettingsPageScaffold where Accessory == EmptyView {
+    /// A fixed page, with the page's own title, description and symbol.
+    init(page: SettingsPage, animating: AnyHashable = 0, @ViewBuilder content: () -> Content) {
+        self.init(
+            symbol: page.symbol, title: page.title, subtitle: page.subtitle, animating: animating,
+            accessory: { EmptyView() }, content: content
+        )
     }
 }
 

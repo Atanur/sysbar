@@ -322,3 +322,44 @@ proc=1.0 3000 ps
         #expect(try #require(RemoteMetricsParser.parse("os=Linux")).cpuTemperature == nil)
     }
 }
+
+@Suite struct DeviceIconTests {
+    private let stored = #"{"id":"6F9619FF-8B86-D011-B42D-00C04FC964FF","name":"VPS","host":"vps","user":"","identityFile":""}"#
+
+    @Test func devicesStoredBeforeIconsExistedAreServers() throws {
+        let device = try JSONDecoder().decode(RemoteDevice.self, from: Data(stored.utf8))
+
+        #expect(device.icon == .server)
+    }
+
+    @Test func newDevicesAreServersUnlessToldOtherwise() {
+        #expect(RemoteDevice(name: "VPS", host: "vps", user: "", port: nil, identityFile: "").icon == .server)
+    }
+
+    @Test func aChosenIconSurvivesEncodingAndDecoding() throws {
+        let device = RemoteDevice(name: "Studio", host: "studio.local", user: "", port: nil, identityFile: "", icon: .macStudio)
+
+        let decoded = try JSONDecoder().decode(RemoteDevice.self, from: JSONEncoder().encode(device))
+
+        #expect(decoded.icon == .macStudio)
+    }
+
+    @Test func anUnknownStoredIconFallsBackToServer() throws {
+        let json = #"{"id":"6F9619FF-8B86-D011-B42D-00C04FC964FF","name":"VPS","host":"vps","user":"","identityFile":"","icon":"toaster"}"#
+
+        #expect(try JSONDecoder().decode(RemoteDevice.self, from: Data(json.utf8)).icon == .server)
+    }
+
+    @Test func everyIconHasItsOwnSymbol() {
+        let symbols = DeviceIcon.allCases.map(\.symbol)
+        #expect(Set(symbols).count == symbols.count)
+        #expect(!symbols.contains(""))
+    }
+
+    @Test func iconsCanBeChangedWithoutReconnecting() {
+        let device = RemoteDevice(name: "nas", host: "nas.local", user: "", port: nil, identityFile: "")
+        let restyled = RemoteDevice(id: device.id, name: "nas", host: "nas.local", user: "", port: nil, identityFile: "", icon: .nas)
+
+        #expect(!restyled.connectsDifferently(from: device))
+    }
+}

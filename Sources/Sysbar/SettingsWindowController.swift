@@ -1,4 +1,5 @@
 import AppKit
+import SysbarCore
 import SwiftUI
 
 /// Owns the settings window. The window and its SwiftUI content exist only while it is open, and

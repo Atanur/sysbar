@@ -3,6 +3,13 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.5.8 — 2026-10-29
+
+- Settings is laid out around your devices. The sidebar lists this Mac and every remote device, each with a page of its own, and the + beside Devices adds one by hand or from those found on your network. Menu Bar and Window are split into short pages, and Temperature and fans and Keep awake have their own under Tools.
+- A device's page checks it as it opens and shows whether it answers, with a green or red dot in the sidebar. Its cards, refresh rate and keep-monitoring time are set right there, and you can give it an icon: server, cloud, NAS, PC or a Mac.
+- This Mac's page shows what the Mac is, which cards its tab shows and how often it is sampled.
+- Sysbar suggests devices to add: Macs with Remote Login on in this network, and your Macs and Linux machines in Tailscale, each with the commands to connect it filled in.
+
 ## 0.5.7 — 2026-10-28
 
 - This Mac is listed first in Settings › Devices, and you can rename it: its tab in the popover shows the name you give it instead of This Mac. Leave the name empty to go back.

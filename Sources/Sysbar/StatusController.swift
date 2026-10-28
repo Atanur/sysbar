@@ -303,7 +303,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
             try? await Task.sleep(for: .seconds(3))
             print("start: \(Self.footprintMegabytes()) MB")
             for cycle in 1...max(times, 1) {
-                for page in SettingsPage.allCases {
+                for page in SettingsPage.all(deviceIDs: preferences.devices.map(\.id)) {
                     settingsWindow.show(page: page)
                     try? await Task.sleep(for: .milliseconds(700))
                 }

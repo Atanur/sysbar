@@ -39,6 +39,25 @@ public enum KeepMonitoring: Equatable, Hashable, Sendable {
     }
 }
 
+/// How a device is drawn in Settings, chosen by the user. Stored by name, so new kinds can be added.
+public enum DeviceIcon: String, CaseIterable, Sendable {
+    case server, cloud, nas, pc, laptop, iMac, macMini, macStudio
+
+    /// The SF Symbol drawn for it.
+    public var symbol: String {
+        switch self {
+        case .server: "server.rack"
+        case .cloud: "cloud"
+        case .nas: "externaldrive.connected.to.line.below"
+        case .pc: "pc"
+        case .laptop: "laptopcomputer"
+        case .iMac: "desktopcomputer"
+        case .macMini: "macmini"
+        case .macStudio: "macstudio"
+        }
+    }
+}
+
 /// A machine reachable over SSH. It holds no secrets: authentication uses the user's own keys or
 /// ssh-agent, and the identity is only a path.
 public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
@@ -54,13 +73,15 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
     /// Seconds between samples while this device is shown, within `SamplingInterval.remoteRange`.
     public var interval: TimeInterval
     public var keepMonitoring: KeepMonitoring
+    public var icon: DeviceIcon
 
     public init(
         id: UUID = UUID(), name: String, host: String, user: String, port: Int?, identityFile: String,
         cards: [RemoteCard] = RemoteCard.allCases, interval: TimeInterval = SamplingInterval.remoteDefaultSeconds,
-        keepMonitoring: KeepMonitoring = .default
+        keepMonitoring: KeepMonitoring = .default, icon: DeviceIcon = .server
     ) {
         self.keepMonitoring = keepMonitoring
+        self.icon = icon
         self.id = id
         self.name = name
         self.host = host
@@ -72,7 +93,7 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, host, user, port, identityFile, cards, interval, keepMonitoring
+        case id, name, host, user, port, identityFile, cards, interval, keepMonitoring, icon
     }
 
     /// Devices saved before cards could be chosen have no `cards` entry and show all of them. Cards
@@ -91,6 +112,8 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
         // Sysbar poll a server faster than allowed.
         interval = SamplingInterval.normalizedRemote(try container.decodeIfPresent(Double.self, forKey: .interval) ?? 0)
         keepMonitoring = KeepMonitoring(storedValue: try? container.decodeIfPresent(String.self, forKey: .keepMonitoring))
+        // Devices saved before icons existed, or with an icon this version does not know, are servers.
+        icon = (try? container.decodeIfPresent(String.self, forKey: .icon)).flatMap(DeviceIcon.init(rawValue:)) ?? .server
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -104,6 +127,7 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
         try container.encode(OrderedSelection.storedValue(of: cards), forKey: .cards)
         try container.encode(interval, forKey: .interval)
         try container.encode(keepMonitoring.storedValue, forKey: .keepMonitoring)
+        try container.encode(icon.rawValue, forKey: .icon)
     }
 
     public enum Problem: Equatable, Sendable {
@@ -123,6 +147,12 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
     }
 
     /// "user@host:port" with the parts that are set.
+    /// True when ssh would reach the other device differently: another address, user, port or key.
+    /// A new name alone keeps the connection.
+    public func connectsDifferently(from other: RemoteDevice) -> Bool {
+        host != other.host || user != other.user || port != other.port || identityFile != other.identityFile
+    }
+
     public var address: String {
         let base = user.isEmpty ? host : "\(user)@\(host)"
         return port.map { "\(base):\($0)" } ?? base
