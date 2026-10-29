@@ -43,7 +43,7 @@
 - Disk, Network and Power draw two lines either side of a zero line on one scale: read and write, download and upload, and what the Mac uses and what goes into the battery while it charges. The Disk card's corner shows the room left (amber under 15 %, red under 5 %), the Network card's shows Wi-Fi or Ethernet.
 - Click a card to open the matching tab in Activity Monitor (or Battery settings). Right-click the menu bar item for Settings, Check for updates, About and Quit.
 - Power reacts to how the Mac is powered: charge and time left on battery; on the adapter, the bolt in the corner and the adapter and wall draw in its tooltip.
-- **Top apps** table with CPU, memory, GPU and estimated energy per app; helper processes fold into their app. CPU is a share of the whole Mac, like the CPU card, so the rows never add up to more than the total (one decimal under 10%). Columns are configurable.
+- **Top apps** table with CPU, memory, GPU, network and estimated energy per app; helper processes fold into their app. CPU is a share of the whole Mac, like the CPU card, so the rows never add up to more than the total (one decimal under 10%). Columns are configurable.
 
 **Temperature and fans**
 - The fan button above the cards opens a panel that names what is warming the Mac: processor work, graphics work (language models, rendering, games), heavy work, cooling down, warm at rest, cooling at its limit, or macOS slowing down to cool. It shows CPU, GPU, memory and battery temperatures, each the mean of the hotter half of that part's sensors.
@@ -121,9 +121,9 @@ Set `SIGN_IDENTITY` (a Developer ID Application certificate) and `NOTARY_PROFILE
 | Total power | the System Management Controller |
 | GPU and Neural Engine power | energy counters |
 | Battery | the battery's registry entry |
-| Per-app values | the kernel, for your own user's processes |
+| Per-app values | the kernel, and `nettop` for network, for your own user's processes |
 
-On current macOS, CPU and memory power counters cannot be read without root, so Sysbar does not show them rather than guess. Per-app energy is the system's own estimate and is lower than total power.
+On current macOS, CPU and memory power counters cannot be read without root, so Sysbar does not show them rather than guess. Per-app energy is the system's own estimate and is lower than total power. Per-app network covers TCP and UDP sockets; local loopback traffic is left out, and a VPN can make an app's figure differ from the Network card.
 
 ## Development
 

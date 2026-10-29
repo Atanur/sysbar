@@ -72,6 +72,7 @@
 "Model" = "型号";
 "Moderate" = "中等";
 "Name" = "名称";
+"Net" = "网络";
 "Network" = "网络";
 "Nothing is selected to show. Open the Window page in Settings." = "未选择任何要显示的内容。请在“设置”中打开“窗口”页面。";
 "On this macOS version it cannot be read without privileges, so it is not shown" = "在此 macOS 版本上，若没有特殊权限则无法读取，因此不予显示";

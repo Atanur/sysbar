@@ -208,8 +208,9 @@ if let flag = CommandLine.arguments.first(where: { $0.hasPrefix("--probe") }) {
     for key in AppSortKey.allCases {
         print("top by \(key):")
         AppUsageCalculator.top(apps, by: key, limit: 5).forEach {
-            print(String(format: "  %-28@ cpu %5.1f%%  mem %@  gpu %4.1f%%  power %.2f W",
-                         $0.name as NSString, $0.cpu * 100, Format.memory($0.memoryBytes), $0.gpu * 100, $0.powerWatts))
+            print(String(format: "  %-28@ cpu %5.1f%%  mem %@  gpu %4.1f%%  power %.2f W  net %@",
+                         $0.name as NSString, $0.cpu * 100, Format.memory($0.memoryBytes), $0.gpu * 100, $0.powerWatts,
+                         $0.networkTotal.map(Format.rate) ?? "unavailable"))
         }
     }
 

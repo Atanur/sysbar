@@ -33,13 +33,50 @@ private let gib = 1_073_741_824.0
         #expect(Format.rate(1.5 * gib) == "1.5G")
     }
 
-    @Test func memorySizesUseMegabytesBelowOneGigabyte() {
-        #expect(Format.memory(340 * 1_048_576) == "340M")
-        #expect(Format.memory(UInt64(1.5 * gib)) == "1.5G")
-        // Never four digits of megabytes: from 1000M up it is gigabytes.
-        #expect(Format.memory(999 * 1_048_576) == "999M")
+    @Test func compactMemoryUsesGigabytesFromOneHundredMegabytes() {
+        #expect(Format.memory(25 * 1_048_576) == "25M")
+        #expect(Format.memory(99 * 1_048_576) == "99M")
+        #expect(Format.memory(100 * 1_048_576) == "0.1G")
+        #expect(Format.memory(340 * 1_048_576) == "0.3G")
+        #expect(Format.memory(383 * 1_048_576) == "0.4G")
+        #expect(Format.memory(499 * 1_048_576) == "0.5G")
+        #expect(Format.memory(500 * 1_048_576) == "0.5G")
+        #expect(Format.memory(700 * 1_048_576) == "0.7G")
+        #expect(Format.memory(999 * 1_048_576) == "1.0G")
         #expect(Format.memory(1_000 * 1_048_576) == "1.0G")
         #expect(Format.memory(1_023 * 1_048_576) == "1.0G")
+        #expect(Format.memory(UInt64(1.5 * gib)) == "1.5G")
+        #expect(Format.memory(UInt64(11.2 * gib)) == "11G")
+    }
+
+    @Test func detailedMemoryWaitsUntilOneThousandMegabytes() {
+        #expect(Format.memory(340 * 1_048_576, compact: false) == "340M")
+        #expect(Format.memory(700 * 1_048_576, compact: false) == "700M")
+        #expect(Format.memory(999 * 1_048_576, compact: false) == "999M")
+        #expect(Format.memory(1_000 * 1_048_576, compact: false) == "1.0G")
+        #expect(Format.memory(UInt64(1.5 * gib), compact: false) == "1.5G")
+    }
+
+    @Test func appPowerKeepsTheColumnShort() {
+        #expect(Format.compactPower(0.004) == "–")
+        #expect(Format.compactPower(0.005) == "5mW")
+        #expect(Format.compactPower(0.038) == "38mW")
+        #expect(Format.compactPower(0.099) == "99mW")
+        #expect(Format.compactPower(0.1) == "0.1W")
+        #expect(Format.compactPower(0.15) == "0.2W")
+        #expect(Format.compactPower(0.743) == "0.7W")
+        #expect(Format.compactPower(0.995) == "1.0W")
+        #expect(Format.compactPower(1.2) == "1.2W")
+        #expect(Format.compactPower(12.34) == "12.3W")
+        #expect(Format.compactPower(100) == "100W")
+    }
+
+    @Test func detailedPowerKeepsMilliwattsWhenThereIsRoom() {
+        #expect(Format.detailedPower(0.004) == "–")
+        #expect(Format.detailedPower(0.038) == "38mW")
+        #expect(Format.detailedPower(0.15) == "150mW")
+        #expect(Format.detailedPower(0.743) == "743mW")
+        #expect(Format.detailedPower(1.2) == "1.2W")
     }
 
     @Test func appCPUSharesKeepOneDecimalBelowTenPercent() {
@@ -76,9 +113,13 @@ private let gib = 1_073_741_824.0
 
 @Suite struct AppUsageTests {
     private func counters(
-        _ group: String, cpu: UInt64 = 0, energy: UInt64 = 0, memory: UInt64 = 0, gpu: UInt64 = 0
+        _ group: String, cpu: UInt64 = 0, energy: UInt64 = 0, memory: UInt64 = 0, gpu: UInt64 = 0,
+        network: ByteCounters? = nil, networkIsNew: Bool = false
     ) -> ProcessCounters {
-        ProcessCounters(group: group, cpuNanoseconds: cpu, energyNanojoules: energy, footprintBytes: memory, gpuNanoseconds: gpu)
+        ProcessCounters(
+            group: group, cpuNanoseconds: cpu, energyNanojoules: energy, footprintBytes: memory,
+            gpuNanoseconds: gpu, network: network, networkIsNew: networkIsNew
+        )
     }
 
     @Test func sumsRatesAcrossProcessesOfTheSameApp() {
@@ -118,16 +159,86 @@ private let gib = 1_073_741_824.0
         #expect(usage.first?.cpu == 0)
     }
 
+    @Test func sumsNetworkRatesAcrossProcessesOfTheSameApp() {
+        let previous: [Int32: ProcessCounters] = [
+            1: counters("Chrome", network: ByteCounters(received: 1_000, sent: 2_000)),
+            2: counters("Chrome", network: ByteCounters(received: 0, sent: 0)),
+        ]
+        let current: [Int32: ProcessCounters] = [
+            1: counters("Chrome", network: ByteCounters(received: 3_000, sent: 4_000)),
+            2: counters("Chrome", network: ByteCounters(received: 1_000, sent: 1_000)),
+        ]
+
+        let usage = AppUsageCalculator.usage(previous: previous, current: current, seconds: 2, cores: 1)
+
+        #expect(usage.first?.networkInbound == 1_500)
+        #expect(usage.first?.networkOutbound == 1_500)
+        #expect(usage.first?.networkTotal == 3_000)
+    }
+
+    @Test func aNewProcessStartsWithZeroNetworkRate() {
+        let usage = AppUsageCalculator.usage(
+            previous: [:],
+            current: [7: counters("Fresh", network: ByteCounters(received: 9_000, sent: 3_000))],
+            seconds: 2, cores: 1
+        )
+
+        #expect(usage.first?.networkInbound == 0)
+        #expect(usage.first?.networkOutbound == 0)
+    }
+
+    @Test func aProcessesFirstNetworkReadingIsABaselineNotASpike() {
+        // The process had no sockets in the previous sample, so its counter was zero. Its first
+        // reported counter includes everything since it started; that must not become one rate.
+        let usage = AppUsageCalculator.usage(
+            previous: [7: counters("Safari", network: ByteCounters(received: 0, sent: 0))],
+            current: [
+                7: counters(
+                    "Safari", network: ByteCounters(received: 5_000_000, sent: 1_000), networkIsNew: true
+                )
+            ],
+            seconds: 1, cores: 1
+        )
+
+        #expect(usage.first?.networkInbound == 0)
+        #expect(usage.first?.networkOutbound == 0)
+    }
+
+    @Test func networkStaysUnknownWhenNettopCouldNotBeRead() {
+        let usage = AppUsageCalculator.usage(
+            previous: [7: counters("Safari")], current: [7: counters("Safari")], seconds: 2, cores: 1
+        )
+
+        #expect(usage.first?.networkInbound == nil)
+        #expect(usage.first?.networkTotal == nil)
+    }
+
+    @Test func networkCounterThatWentBackwardsCountsAsZero() {
+        let usage = AppUsageCalculator.usage(
+            previous: [7: counters("Safari", network: ByteCounters(received: 9_000, sent: 3_000))],
+            current: [7: counters("Safari", network: ByteCounters(received: 10, sent: 5))],
+            seconds: 1, cores: 1
+        )
+
+        #expect(usage.first?.networkInbound == 0)
+        #expect(usage.first?.networkOutbound == 0)
+    }
+
     @Test func topSortsDescendingByKeyThenNameAndHonoursLimit() {
         let apps = [
             AppUsage(name: "B", cpu: 0.5, memoryBytes: 10, gpu: 0, powerWatts: 1),
             AppUsage(name: "A", cpu: 0.5, memoryBytes: 30, gpu: 0, powerWatts: 3),
             AppUsage(name: "C", cpu: 0.9, memoryBytes: 20, gpu: 0, powerWatts: 2),
+            AppUsage(
+                name: "D", cpu: 0.1, memoryBytes: 15, gpu: 0, powerWatts: 0,
+                networkInbound: 600, networkOutbound: 400
+            ),
         ]
 
         #expect(AppUsageCalculator.top(apps, by: .cpu, limit: 3).map(\.name) == ["C", "A", "B"])
         #expect(AppUsageCalculator.top(apps, by: .memory, limit: 2).map(\.name) == ["A", "C"])
         #expect(AppUsageCalculator.top(apps, by: .power, limit: 1).map(\.name) == ["A"])
+        #expect(AppUsageCalculator.top(apps, by: .network, limit: 2).map(\.name) == ["D", "A"])
     }
 }
 

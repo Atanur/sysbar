@@ -72,6 +72,7 @@
 "Model" = "الطراز";
 "Moderate" = "متوسط";
 "Name" = "الاسم";
+"Net" = "الشبكة";
 "Network" = "الشبكة";
 "Nothing is selected to show. Open the Window page in Settings." = "لا يوجد ما يمكن عرضه لأنه لم يُحدَّد شيء. افتح صفحة النافذة في الإعدادات.";
 "On this macOS version it cannot be read without privileges, so it is not shown" = "في إصدار macOS هذا لا يمكن قراءته دون صلاحيات، لذلك لا يُعرض";

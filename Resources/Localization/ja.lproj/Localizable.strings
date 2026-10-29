@@ -72,6 +72,7 @@
 "Model" = "モデル";
 "Moderate" = "中";
 "Name" = "名前";
+"Net" = "ネット";
 "Network" = "ネットワーク";
 "Nothing is selected to show. Open the Window page in Settings." = "表示する項目が選択されていません。設定の「ウインドウ」ページを開いてください。";
 "On this macOS version it cannot be read without privileges, so it is not shown" = "この macOS バージョンでは、特別な権限がないと読み取れないため表示されません";

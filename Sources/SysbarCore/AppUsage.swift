@@ -7,16 +7,25 @@ public struct ProcessCounters: Equatable, Sendable {
     public let energyNanojoules: UInt64
     public let footprintBytes: UInt64
     public let gpuNanoseconds: UInt64
+    /// Cumulative bytes this process has received and sent, or nil when `nettop` could not be
+    /// read on this sample.
+    public let network: ByteCounters?
+    /// True when this is the first network reading for the process. It is a baseline, not a
+    /// delta: the counters include bytes from before Sysbar started watching.
+    public let networkIsNew: Bool
 
     public init(
         group: String, cpuNanoseconds: UInt64, energyNanojoules: UInt64,
-        footprintBytes: UInt64, gpuNanoseconds: UInt64
+        footprintBytes: UInt64, gpuNanoseconds: UInt64, network: ByteCounters? = nil,
+        networkIsNew: Bool = false
     ) {
         self.group = group
         self.cpuNanoseconds = cpuNanoseconds
         self.energyNanojoules = energyNanojoules
         self.footprintBytes = footprintBytes
         self.gpuNanoseconds = gpuNanoseconds
+        self.network = network
+        self.networkIsNew = networkIsNew
     }
 }
 
@@ -29,18 +38,32 @@ public struct AppUsage: Equatable, Sendable {
     /// Share of GPU time.
     public let gpu: Double
     public let powerWatts: Double
+    /// Bytes per second, or nil when per-app network reading is unavailable.
+    public let networkInbound: Double?
+    public let networkOutbound: Double?
 
-    public init(name: String, cpu: Double, memoryBytes: UInt64, gpu: Double, powerWatts: Double) {
+    public init(
+        name: String, cpu: Double, memoryBytes: UInt64, gpu: Double, powerWatts: Double,
+        networkInbound: Double? = nil, networkOutbound: Double? = nil
+    ) {
         self.name = name
         self.cpu = cpu
         self.memoryBytes = memoryBytes
         self.gpu = gpu
         self.powerWatts = powerWatts
+        self.networkInbound = networkInbound
+        self.networkOutbound = networkOutbound
+    }
+
+    /// Both directions together, which is what the table's compact Network column shows.
+    public var networkTotal: Double? {
+        guard let networkInbound, let networkOutbound else { return nil }
+        return networkInbound + networkOutbound
     }
 }
 
 public enum AppSortKey: String, CaseIterable, Sendable {
-    case cpu, memory, gpu, power
+    case cpu, memory, gpu, power, network
 
     func value(of usage: AppUsage) -> Double {
         switch self {
@@ -48,6 +71,7 @@ public enum AppSortKey: String, CaseIterable, Sendable {
         case .memory: Double(usage.memoryBytes)
         case .gpu: usage.gpu
         case .power: usage.powerWatts
+        case .network: usage.networkTotal ?? 0
         }
     }
 }
@@ -77,21 +101,39 @@ public enum AppUsageCalculator {
         let coreCount = Double(max(cores, 1))
         let perProcess = current.map { pid, now in
             let before = previous[pid]
+            let network = now.network
             return AppUsage(
                 name: now.group,
                 cpu: rate(before?.cpuNanoseconds, now.cpuNanoseconds, seconds) / coreCount,
                 memoryBytes: now.footprintBytes,
                 gpu: rate(before?.gpuNanoseconds, now.gpuNanoseconds, seconds),
-                powerWatts: rate(before?.energyNanojoules, now.energyNanojoules, seconds)
+                powerWatts: rate(before?.energyNanojoules, now.energyNanojoules, seconds),
+                networkInbound: network.map {
+                    if now.networkIsNew { return 0 }
+                    return CounterRate.perSecond(
+                        previous: before?.network?.received ?? $0.received, current: $0.received,
+                        seconds: seconds
+                    )
+                },
+                networkOutbound: network.map {
+                    if now.networkIsNew { return 0 }
+                    return CounterRate.perSecond(
+                        previous: before?.network?.sent ?? $0.sent, current: $0.sent, seconds: seconds
+                    )
+                }
             )
         }
         return Dictionary(grouping: perProcess, by: \.name).map { name, items in
-            AppUsage(
+            let inbound = items.compactMap(\.networkInbound)
+            let outbound = items.compactMap(\.networkOutbound)
+            return AppUsage(
                 name: name,
                 cpu: items.map(\.cpu).reduce(0, +),
                 memoryBytes: items.map(\.memoryBytes).reduce(0, +),
                 gpu: items.map(\.gpu).reduce(0, +),
-                powerWatts: items.map(\.powerWatts).reduce(0, +)
+                powerWatts: items.map(\.powerWatts).reduce(0, +),
+                networkInbound: inbound.isEmpty ? nil : inbound.reduce(0, +),
+                networkOutbound: outbound.isEmpty ? nil : outbound.reduce(0, +)
             )
         }
     }

@@ -308,6 +308,12 @@ extension AppSortKey {
         case .memory: L("RAM")
         case .gpu: L("GPU")
         case .power: L("Power")
+        case .network: L("Network")
         }
+    }
+
+    /// A narrower heading for the table, where "Network" plus the sort mark does not fit.
+    var headerTitle: String {
+        self == .network ? L("Net") : columnTitle
     }
 }

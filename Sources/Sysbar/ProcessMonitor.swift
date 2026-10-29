@@ -16,9 +16,9 @@ final class ProcessMonitor {
         stop()
     }
 
-    func start(interval: TimeInterval) {
+    func start(interval: TimeInterval, readsNetwork: Bool) {
         guard timer == nil else { return }
-        let sampler = ProcessSampler()
+        let sampler = ProcessSampler(readsNetwork: readsNetwork)
         queue.async { sampler.prime() }
 
         let timer = DispatchSource.makeTimerSource(queue: queue)

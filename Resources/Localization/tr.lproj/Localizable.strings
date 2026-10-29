@@ -72,6 +72,7 @@
 "Model" = "Model";
 "Moderate" = "Orta";
 "Name" = "Ad";
+"Net" = "Ağ";
 "Network" = "Ağ";
 "Nothing is selected to show. Open the Window page in Settings." = "Gösterilecek bir şey seçilmedi. Ayarlar'da Pencere sayfasını açın.";
 "On this macOS version it cannot be read without privileges, so it is not shown" = "Bu macOS sürümünde ayrıcalık gerektirmeden okunamadığı için gösterilmiyor";

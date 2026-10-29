@@ -72,6 +72,7 @@
 "Model" = "Modelo";
 "Moderate" = "Moderada";
 "Name" = "Nombre";
+"Net" = "Red";
 "Network" = "Red";
 "Nothing is selected to show. Open the Window page in Settings." = "No hay nada seleccionado para mostrar. Abre la página Ventana en Ajustes.";
 "On this macOS version it cannot be read without privileges, so it is not shown" = "En esta versión de macOS no se puede leer sin privilegios, así que no se muestra";

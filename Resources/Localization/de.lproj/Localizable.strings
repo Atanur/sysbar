@@ -72,6 +72,7 @@
 "Model" = "Modell";
 "Moderate" = "Mittel";
 "Name" = "Name";
+"Net" = "Netz";
 "Network" = "Netzwerk";
 "Nothing is selected to show. Open the Window page in Settings." = "Es ist nichts zur Anzeige ausgewählt. Öffnen Sie die Seite „Fenster“ in den Einstellungen.";
 "On this macOS version it cannot be read without privileges, so it is not shown" = "Unter dieser macOS-Version kann er nicht ohne Berechtigungen gelesen werden, daher wird er nicht angezeigt";

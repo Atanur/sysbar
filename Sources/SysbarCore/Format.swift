@@ -71,11 +71,34 @@ public enum Format {
         return decimal(bytesPerSecond / kibibyte, digits: 0) + "K"
     }
 
-    /// Per-app memory: "340M" up to 999M, then "1.0G", "1.5G".
-    public static func memory(_ bytes: UInt64) -> String {
+    /// Per-app memory in the table. Compact keeps every value short: from 100 MB up it is
+    /// gigabytes with one decimal ("0.4G", "1.9G", "11G"); smaller values stay in megabytes so
+    /// they never round to "0.0G". The detailed form waits until 1000 MB.
+    public static func memory(_ bytes: UInt64, compact: Bool = true) -> String {
         let value = Double(bytes)
-        // From what would round to 1000M up, gigabytes: "1023M" is wider and harder to read than "1.0G".
-        return value / mebibyte >= 999.5 ? scaled(value / gibibyte, "G") : decimal(value / mebibyte, digits: 0) + "M"
+        let switchAt = compact ? 100.0 : 999.5
+        if value / mebibyte >= switchAt {
+            return scaled(value / gibibyte, "G")
+        }
+        return decimal(value / mebibyte, digits: 0) + "M"
+    }
+
+    /// Per-app power in the compact table: "38mW", "0.2W", "0.7W", "1.2W", "12W". Below a tenth
+    /// of a watt it stays in milliwatts; above that, one decimal keeps the value to two digits and
+    /// a symbol.
+    public static func compactPower(_ watts: Double) -> String {
+        guard watts >= 0.005 else { return "–" }
+        if watts >= 1 { return compactWatts(watts) }
+        let milliwatts = (watts * 1_000).rounded()
+        if milliwatts < 100 { return "\(Int(milliwatts))mW" }
+        return decimal((watts * 10).rounded() / 10, digits: 1) + "W"
+    }
+
+    /// The table's power when there is room for more detail: "743mW", "150mW", "1.2W".
+    public static func detailedPower(_ watts: Double) -> String {
+        guard watts >= 0.005 else { return "–" }
+        if watts >= 1 { return compactWatts(watts) }
+        return "\(Int((watts * 1_000).rounded()))mW"
     }
 
     /// Short duration for tight spaces: "4h 27m", "45m", "1h".

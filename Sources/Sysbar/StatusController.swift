@@ -267,7 +267,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
 
     private func startLocalProcessMonitor() {
         if preferences.showsApps {
-            processMonitor?.start(interval: SamplingInterval.processInterval(for: preferences.samplingInterval))
+            processMonitor?.start(
+                interval: SamplingInterval.processInterval(for: preferences.samplingInterval),
+                readsNetwork: preferences.isColumnVisible(.network)
+            )
         }
     }
 

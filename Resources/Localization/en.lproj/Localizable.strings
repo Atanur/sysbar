@@ -205,6 +205,7 @@
 "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility." = "Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility.";
 "Name" = "Name";
 "Needs a signed copy of Sysbar" = "Needs a signed copy of Sysbar";
+"Net" = "Net";
 "Network" = "Network";
 "No analytics, no account" = "No analytics, no account";
 "No other apps are open." = "No other apps are open.";

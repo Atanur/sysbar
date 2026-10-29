@@ -282,6 +282,7 @@ extension AppSortKey {
         case .memory: "memorychip"
         case .gpu: "display"
         case .power: "bolt.fill"
+        case .network: "arrow.up.arrow.down"
         }
     }
 }

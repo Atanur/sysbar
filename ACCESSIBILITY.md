@@ -44,7 +44,8 @@ Apple's accessibility guidelines.
 These are known and planned; reports about any of them still help us decide what comes first.
 
 - Some details appear only as a tooltip on hover: peak values, memory pressure, the power
-  breakdown and each fan's speed. VoiceOver reads them, but a sighted keyboard user cannot see them.
+  breakdown, each fan's speed, and an app's download and upload split (the table's Network column
+  shows their sum). VoiceOver reads them, but a sighted keyboard user cannot see them.
 - Moving a metric with the keyboard needs its row's menu, which Full Keyboard Access cannot always
   open; the Move up and Move down actions work with VoiceOver.
 - Increase Contrast does not yet strengthen the card backgrounds or the custom colours of the
