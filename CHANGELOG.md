@@ -3,8 +3,10 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
-## 0.5.9 — 2026-10-29
+## 0.5.9 — 2026-10-30
 
+- The Top apps table has a **Net** column: each app's network use, with download and upload split in the tooltip and read by VoiceOver. Click the heading to sort by it.
+- With three or more table columns shown, memory and power stay short: `0.7G` rather than `700M`, and `0.7W` rather than `743mW`. With fewer columns the longer values come back.
 - VoiceOver names every switch, menu and slider in Settings after its setting, and moves between pages and groups by their headings. Popover cards and each row of the apps table are read as one item, with rates in words, and the results of checking a device or copying a command are announced.
 - Reduce Motion now also stops the values counting up in the popover and the pulse of a live device's dot. With Differentiate Without Color on, a device's status dot draws a different symbol for each state.
 - Text fields in Settings take the usual ⌘C, ⌘V, ⌘A and ⌘Z, and ⌘W closes the window.
