@@ -3,6 +3,12 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.5.10 — 2026-10-30
+
+- The Settings sidebar is translucent, so the desktop shows through it as in System Settings.
+- Each sidebar group has a chevron that is always visible: click it or the group's name to fold the group away. The add button beside Devices no longer moves when the pointer passes over it.
+- The bottom of the sidebar shows Quit and the version on one line.
+
 ## 0.5.9 — 2026-10-30
 
 - The Top apps table has a **Net** column: each app's network use, with download and upload split in the tooltip and read by VoiceOver. Click the heading to sort by it.
