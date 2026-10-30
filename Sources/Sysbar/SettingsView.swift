@@ -198,7 +198,10 @@ struct SettingsView: View {
                 .background(Circle().fill(Color.primary.opacity(addHovered ? 0.10 : 0.04)))
                 .contentShape(Circle())
         }
-        .menuStyle(.borderlessButton)
+        // The button style draws the label as SwiftUI does, in its secondary colour in both
+        // appearances; `.borderlessButton` turned it into a fixed image, black in dark mode.
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .fixedSize()
         .onHover { addHovered = $0 }
