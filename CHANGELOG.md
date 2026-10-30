@@ -3,6 +3,10 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.5.11 — 2026-10-30
+
+- The add button beside Devices in Settings is grey in dark mode too, instead of black, and shows its round background.
+
 ## 0.5.10 — 2026-10-30
 
 - The Settings sidebar is translucent, so the desktop shows through it as in System Settings.
