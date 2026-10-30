@@ -87,6 +87,7 @@
 "Power per app" = "Энергопотребление по приложениям";
 "Preview" = "Предпросмотр";
 "Processor (CPU)" = "Процессор (CPU)";
+"Quit" = "Завершить";
 "Quit Sysbar" = "Завершить Sysbar";
 "Quits the app; the menu bar readout disappears too" = "Завершает приложение; показатель в строке меню тоже исчезнет";
 "RAM" = "RAM";

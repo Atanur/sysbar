@@ -43,6 +43,10 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.toolbarStyle = .unified
+        // The sidebar's material blends with the desktop, as in System Settings; the detail page
+        // paints its own opaque background over this.
+        window.isOpaque = false
+        window.backgroundColor = .clear
         window.setContentSize(Self.contentSize)
         window.center()
         window.delegate = self

@@ -89,7 +89,7 @@ struct AboutPage: View {
                 .accessibilityHidden(true)
             Text("Sysbar").font(.title.weight(.semibold))
             Button { copy("Sysbar \(AppIdentity.versionText)") } label: {
-                Text(versionLine).foregroundStyle(.secondary)
+                Text(AppIdentity.versionLine).foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
             .help(L("Click to copy the version"))
@@ -98,12 +98,6 @@ struct AboutPage: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 22)
         .settingsCard()
-    }
-
-    /// "Version 0.1.1 (6) · Homebrew"
-    private var versionLine: String {
-        let version = L("Version %@", AppIdentity.versionText)
-        return AppIdentity.isHomebrewInstall ? "\(version) · Homebrew" : version
     }
 
     private var macText: String {
@@ -153,6 +147,12 @@ enum AppIdentity {
     static var versionText: String {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         return build.map { "\(shortVersion) (\($0))" } ?? shortVersion
+    }
+
+    /// "Version 0.1.1 (6) · Homebrew"
+    static var versionLine: String {
+        let version = L("Version %@", versionText)
+        return isHomebrewInstall ? "\(version) · Homebrew" : version
     }
 
     static var isHomebrewInstall: Bool {

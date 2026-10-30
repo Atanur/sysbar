@@ -87,6 +87,7 @@
 "Power per app" = "Uygulama başına güç";
 "Preview" = "Önizleme";
 "Processor (CPU)" = "İşlemci (CPU)";
+"Quit" = "Çık";
 "Quit Sysbar" = "Sysbar'dan çık";
 "Quits the app; the menu bar readout disappears too" = "Uygulamadan çıkar; menü çubuğundaki gösterge de kaybolur";
 "RAM" = "RAM";

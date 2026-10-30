@@ -248,6 +248,7 @@
 "Processor (CPU)" = "Processor (CPU)";
 "Processor work" = "Processor work";
 "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it." = "Put what step 2 printed in place of USER@ADDRESS. Type yes to trust the device, then its password, once. The password goes from Terminal to the device; Sysbar never sees it.";
+"Quit" = "Quit";
 "Quit Sysbar" = "Quit Sysbar";
 "Quit and reopen Sysbar to finish updating." = "Quit and reopen Sysbar to finish updating.";
 "Quits the app; the menu bar readout disappears too" = "Quits the app; the menu bar readout disappears too";

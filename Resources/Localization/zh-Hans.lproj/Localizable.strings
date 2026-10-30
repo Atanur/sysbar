@@ -87,6 +87,7 @@
 "Power per app" = "各应用的功耗";
 "Preview" = "预览";
 "Processor (CPU)" = "处理器 (CPU)";
+"Quit" = "退出";
 "Quit Sysbar" = "退出 Sysbar";
 "Quits the app; the menu bar readout disappears too" = "退出应用，菜单栏中的显示也会一并消失";
 "RAM" = "RAM";

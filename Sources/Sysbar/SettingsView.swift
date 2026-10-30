@@ -83,6 +83,10 @@ struct SettingsView: View {
     @StateObject private var statuses = DeviceStatusStore()
     /// A new device in the editor, before it is saved.
     @State private var adding: RemoteDevice?
+    /// The add button's hover highlight, so its small symbol has a clear, comfortable target.
+    @State private var addHovered = false
+    /// Sidebar sections folded away by their chevron.
+    @State private var collapsed: Set<SettingsSection> = []
 
     private var deviceIDs: [UUID] { preferences.devices.map(\.id) }
 
@@ -91,26 +95,35 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $navigation.selection) {
-                ForEach(SettingsSection.allCases, id: \.self) { section in
-                    Section {
-                        ForEach(section.pages(deviceIDs: deviceIDs), id: \.self) { page in
-                            sidebarRow(page).tag(page)
-                        }
-                    } header: {
+            VStack(spacing: 0) {
+                List(selection: $navigation.selection) {
+                    // Headers are plain rows rather than `Section` headers: the native ones show
+                    // their chevron only on hover and push the add button aside to make room.
+                    ForEach(SettingsSection.allCases, id: \.self) { section in
                         sectionHeader(section)
+                            .selectionDisabled()
+                            .listRowSeparator(.hidden)
+                        if !collapsed.contains(section) {
+                            ForEach(section.pages(deviceIDs: deviceIDs), id: \.self) { page in
+                                sidebarRow(page).tag(page)
+                            }
+                        }
                     }
                 }
+                .listStyle(.sidebar)
+                .scrollContentBackground(.hidden)
+                .motion(.easeInOut(duration: 0.18), value: collapsed)
+                sidebarFooter
             }
-            .listStyle(.sidebar)
-            .safeAreaInset(edge: .bottom) { quitButton }
-            .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+            .background(SidebarMaterial().ignoresSafeArea())
+            .navigationSplitViewColumnWidth(min: 220, ideal: 240, max: 300)
         } detail: {
             // A soft cross-fade between pages.
             ZStack {
                 page.id(shown).transition(.opacity)
             }
             .motion(.easeInOut(duration: 0.18), value: shown)
+            .background(Color(nsColor: .windowBackgroundColor).ignoresSafeArea())
         }
         .frame(minWidth: 760, minHeight: 520)
         // A removed device's page gives way to this Mac's, in the sidebar too.
@@ -128,16 +141,48 @@ struct SettingsView: View {
         }
     }
 
-    @ViewBuilder
+    /// A section's title, with the add button (Devices only) and an always-visible chevron at fixed
+    /// widths on the right, so nothing moves when the pointer passes over them.
     private func sectionHeader(_ section: SettingsSection) -> some View {
-        if section == .devices {
-            HStack {
+        let isExpanded = !collapsed.contains(section)
+        return HStack(spacing: 6) {
+            Button {
+                toggle(section)
+            } label: {
                 Text(section.title)
-                Spacer()
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(section.title)
+            .accessibilityValue(isExpanded ? L("Expanded") : L("Collapsed"))
+            .accessibilityAddTraits(.isHeader)
+            if section == .devices {
                 addMenu
             }
+            Button {
+                toggle(section)
+            } label: {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+                    .rotationEffect(.degrees(isExpanded ? 0 : -90))
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHidden(true)
+        }
+        .padding(.top, section == SettingsSection.allCases.first ? 0 : 8)
+    }
+
+    private func toggle(_ section: SettingsSection) {
+        if collapsed.contains(section) {
+            collapsed = collapsed.subtracting([section])
         } else {
-            Text(section.title)
+            collapsed = collapsed.union([section])
         }
     }
 
@@ -147,10 +192,17 @@ struct SettingsView: View {
             Button(L("Find on this network…")) { navigation.selection = .findDevices }
         } label: {
             Image(systemName: "plus")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 24, height: 24)
+                .background(Circle().fill(Color.primary.opacity(addHovered ? 0.10 : 0.04)))
+                .contentShape(Circle())
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
+        .onHover { addHovered = $0 }
+        .motion(.easeOut(duration: 0.12), value: addHovered)
         .help(L("Add device"))
         .accessibilityLabel(L("Add device"))
     }
@@ -190,20 +242,27 @@ struct SettingsView: View {
         }
     }
 
-    private var quitButton: some View {
+    /// Quit and the version, on one line at the bottom of the sidebar.
+    private var sidebarFooter: some View {
         VStack(spacing: 0) {
             Divider()
-            Button {
-                NSApp.terminate(nil)
-            } label: {
-                Label(L("Quit Sysbar"), systemImage: "power")
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
+            HStack(spacing: 12) {
+                Button {
+                    NSApp.terminate(nil)
+                } label: {
+                    Label(L("Quit"), systemImage: "power")
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(L("Quits the app; the menu bar readout disappears too"))
+                Spacer(minLength: 0)
+                Text("v\(AppIdentity.shortVersion)")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
             }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .help(L("Quits the app; the menu bar readout disappears too"))
         }
     }
 
@@ -226,4 +285,18 @@ struct SettingsView: View {
         case .about: AboutPage(updater: updater, preferences: preferences)
         }
     }
+}
+
+/// The native sidebar material, drawn behind the header, list and footer. The window is made
+/// non-opaque so the desktop shows through it, as it does in System Settings.
+private struct SidebarMaterial: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = .sidebar
+        view.blendingMode = .behindWindow
+        view.state = .followsWindowActiveState
+        return view
+    }
+
+    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
 }

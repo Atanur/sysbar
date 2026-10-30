@@ -87,6 +87,7 @@
 "Power per app" = "アプリごとの電力";
 "Preview" = "プレビュー";
 "Processor (CPU)" = "プロセッサ (CPU)";
+"Quit" = "終了";
 "Quit Sysbar" = "Sysbar を終了";
 "Quits the app; the menu bar readout disappears too" = "アプリを終了します。メニューバーの表示も消えます";
 "RAM" = "RAM";

@@ -87,6 +87,7 @@
 "Power per app" = "Puissance par app";
 "Preview" = "Aperçu";
 "Processor (CPU)" = "Processeur (CPU)";
+"Quit" = "Quitter";
 "Quit Sysbar" = "Quitter Sysbar";
 "Quits the app; the menu bar readout disappears too" = "Quitte l'app ; l'indicateur de la barre des menus disparaît aussi";
 "RAM" = "RAM";

@@ -87,6 +87,7 @@
 "Power per app" = "앱별 전력";
 "Preview" = "미리보기";
 "Processor (CPU)" = "프로세서 (CPU)";
+"Quit" = "종료";
 "Quit Sysbar" = "Sysbar 종료";
 "Quits the app; the menu bar readout disappears too" = "앱을 종료하며, 메뉴 막대의 표시도 사라집니다";
 "RAM" = "RAM";
