@@ -48,6 +48,26 @@ proc=1.0 3000 ps
 """
 
 @Suite struct RemoteParserTests {
+    @Test func parsesChipPowerFromMilliwatts() throws {
+        let power = try #require(RemoteMetricsParser.parse(macOutput + "\npower=1103 250 0\n")?.power)
+
+        #expect(power == PowerReading(cpu: 1.103, gpu: 0.25, ane: 0, ram: nil))
+        #expect(RemoteMetricsParser.parse(macOutput + "\npower=0 0 0\n")?.power == nil)
+        #expect(RemoteMetricsParser.parse(macOutput)?.power == nil)
+    }
+
+    @Test func parsesTheBatteryFromABase64PropertyList() throws {
+        let plist: [[String: Any]] = [[
+            "CurrentCapacity": 50, "MaxCapacity": 100, "ExternalConnected": true, "IsCharging": true,
+        ]]
+        let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+        let raw = try #require(RemoteMetricsParser.parse(macOutput + "\nbattery=\(data.base64EncodedString())\n"))
+
+        #expect(raw.battery?.fraction == 0.5)
+        #expect(raw.battery?.isCharging == true)
+        #expect(RemoteMetricsParser.parse(macOutput + "\nbattery=garbage\n")?.battery == nil)
+    }
+
     @Test func parsesLinuxOutput() throws {
         let raw = try #require(RemoteMetricsParser.parse(linuxOutput))
 
@@ -300,8 +320,17 @@ proc=1.0 3000 ps
         let mac = macTracker.ingest(try #require(RemoteMetricsParser.parse(macOutput)), atNanos: 0, date: .distantPast)
 
         // Disk is reported on the very first sample even though its rate needs a second one.
-        #expect(RemoteCard.available(in: [linux]) == RemoteCard.allCases)
+        #expect(RemoteCard.available(in: [linux]) == [.cpu, .memory, .load, .network, .disk, .gpu])
         #expect(RemoteCard.available(in: [mac]) == [.cpu, .memory, .load, .network])
+    }
+
+    @Test func powerIsAvailableOnlyWhenTheMacReportsIt() throws {
+        var tracker = RemoteTracker()
+        let raw = try #require(RemoteMetricsParser.parse(macOutput + "\npower=1103 0 0\n"))
+        let mac = tracker.ingest(raw, atNanos: 0, date: .distantPast)
+
+        #expect(mac.headlinePower == 1.103)
+        #expect(RemoteCard.available(in: [mac]) == [.cpu, .memory, .load, .network, .power])
     }
 }
 

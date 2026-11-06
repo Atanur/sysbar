@@ -220,6 +220,7 @@ extension RemoteCard {
         case .network: L("Network")
         case .disk: L("Disk")
         case .gpu: L("Graphics (GPU)")
+        case .power: L("Power")
         }
     }
 
@@ -231,6 +232,7 @@ extension RemoteCard {
         case .network: "arrow.up.arrow.down"
         case .disk: "internaldrive"
         case .gpu: "display"
+        case .power: "bolt"
         }
     }
 }

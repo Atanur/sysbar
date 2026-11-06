@@ -303,59 +303,15 @@ struct PopoverView: View {
     }
 
     private func powerCard(_ samples: [Snapshot], _ latest: Snapshot?) -> some View {
-        let series = samples.compactMap(\.headlinePower)
-        let battery = latest?.battery
-        // On the adapter the corner shows a bolt, as the menu bar's battery does: green while
-        // charging, plain once the battery is full or held. A Mac without a battery always shows the
-        // plain bolt. On battery it shows the charge and the time left.
-        let note: String
-        let noteSymbol: NoteSymbol?
-        switch PowerSource(battery: battery) {
-        case .battery:
-            note = PowerSummary.headline(battery: battery) ?? ""
-            noteSymbol = nil
-        case .charging:
-            note = battery.map { Format.percent($0.fraction) } ?? ""
-            noteSymbol = NoteSymbol(systemName: "bolt.fill", color: FlowColors.charge, label: L("charging"))
-        case .pluggedIn:
-            note = battery.map { Format.percent($0.fraction) } ?? ""
-            noteSymbol = NoteSymbol(systemName: "bolt.fill", color: .primary, label: L("on power"))
-        case .mains:
-            note = ""
-            noteSymbol = NoteSymbol(systemName: "bolt.fill", color: .primary, label: L("on power"))
-        }
-        // With the charger in, what goes into the battery hangs below what the Mac itself uses.
-        let charge = samples.compactMap { sample in sample.headlinePower.map { _ in Self.chargeWatts(sample.battery) } }
-        let showsCharge = charge.contains { $0 > 0 }
-        let system = latest?.headlinePower
-        let load = system.map { LoadLevel(fraction: $0 / MenuBarReadouts.powerFullScaleWatts) }
-        let nowCharging = Self.chargeWatts(battery)
-        var readouts: [Readout] = []
-        if let system, nowCharging > 0 {
-            readouts = [
-                Readout(text: Format.watts(system), color: FlowColors.draw),
-                Readout(text: "+" + Format.watts(nowCharging), color: FlowColors.charge),
-            ]
-        }
-        // The corner shows the battery state; adapter and wall details are in the tooltip.
-        let tooltip = [
-            PowerSummary.detail(battery: battery, systemPower: system),
-            latest?.power.map(componentText),
-            showsCharge ? L("Above the line: what the Mac uses · Below: going into the battery") : nil,
-        ].compactMap { $0 }.joined(separator: "\n")
-        return card(
-            .power, title: L("Power"), symbol: powerSymbol(battery),
-            value: system.map(Format.watts) ?? "–",
-            note: note, noteSymbol: noteSymbol, help: tooltip.isEmpty ? statsHelp(series, Format.watts) : tooltip,
-            series: series, secondary: showsCharge ? charge : nil, secondaryTint: FlowColors.charge,
-            readouts: readouts, range: nil, load: load, tint: showsCharge ? FlowColors.draw : nil
+        let content = PowerCardContent(
+            samples: samples.map { PowerCardSample(headline: $0.headlinePower, battery: $0.battery, components: $0.power) }
         )
-    }
-
-    /// Watts going into the battery; zero on battery power or while it is not taking charge.
-    private static func chargeWatts(_ battery: BatteryInfo?) -> Double {
-        guard let battery, battery.isPluggedIn, let watts = battery.batteryWatts, watts >= 0.5 else { return 0 }
-        return watts
+        return card(
+            .power, title: L("Power"), symbol: content.symbol, value: content.value,
+            note: content.note, noteSymbol: content.noteSymbol, help: content.help,
+            series: content.series, secondary: content.secondary, secondaryTint: FlowColors.charge,
+            readouts: content.readouts, range: nil, load: content.load, tint: content.tint
+        )
     }
 
     /// The two figures of a card with a direction each: in (read, download) and out (write, upload).
@@ -438,26 +394,6 @@ struct PopoverView: View {
     private func statsHelp(_ series: [Double], _ format: (Double) -> String) -> String {
         guard let stats = SeriesStats.of(series) else { return "" }
         return L("Peak %@", format(stats.max))
-    }
-
-    /// The icon follows the situation: a charge level on battery, a plug on an adapter.
-    private func powerSymbol(_ battery: BatteryInfo?) -> String {
-        guard let battery else { return "bolt" }
-        if battery.isPluggedIn { return battery.isCharging ? "battery.100percent.bolt" : "powerplug" }
-        switch battery.fraction {
-        case 0.88...: return "battery.100percent"
-        case 0.63...: return "battery.75percent"
-        case 0.38...: return "battery.50percent"
-        case 0.13...: return "battery.25percent"
-        default: return "battery.0percent"
-        }
-    }
-
-    /// Only components with a trustworthy sensor are listed.
-    private func componentText(_ power: PowerReading) -> String {
-        [(L("CPU"), power.cpu), (L("GPU"), power.gpu), (L("ANE"), power.ane), (L("RAM"), power.ram)]
-            .compactMap { name, watts in watts.map { L("%1$@ %2$@", name, Format.watts($0)) } }
-            .joined(separator: " · ")
     }
 
     private func pressureText(_ pressure: MemoryPressure) -> String {

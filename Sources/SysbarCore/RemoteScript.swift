@@ -54,6 +54,12 @@ public enum RemoteScript {
       echo "load=$(sysctl -n vm.loadavg </dev/null | tr -d '{}')"
       echo "boottime=$(sysctl -n kern.boottime </dev/null | sed 's/^{ sec = \([0-9]*\),.*/\1/')"
       echo "now=$(date +%s)"
+      # Chip power in mW (CPU, GPU, ANE) needs root; only read when sudo works without a password.
+      pw=$(sudo -n powermetrics --samplers cpu_power -i 300 -n 1 </dev/null 2>/dev/null | awk '/^CPU Power:/ {c=$3} /^GPU Power:/ {g=$3} /^ANE Power:/ {a=$3} END {if (c != "") print c, g + 0, a + 0}')
+      if [ -n "$pw" ]; then echo "power=$pw"; fi
+      # The battery's registry entry as a base64 property list; absent on a Mac without a battery.
+      bat=$(ioreg -arn AppleSmartBattery </dev/null 2>/dev/null | base64 | tr -d '\n')
+      if [ -n "$bat" ]; then echo "battery=$bat"; fi
       netstat -ibn </dev/null | awk '$1 ~ /^en[0-9]+$/ && $3 ~ /^<Link/ {rx+=$(NF-4); tx+=$(NF-1)} END {printf "net=%.0f %.0f\n", rx, tx}'
       groups=$({ ps -Ao pid=,comm= </dev/null 2>/dev/null; echo '--'; printf '%s\n' "$t" | awk '/^PID/ {n++; next} n == 2'; } | awk '
         $0 == "--" { s = 1; next }

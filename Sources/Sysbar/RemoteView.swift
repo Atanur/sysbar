@@ -78,6 +78,7 @@ struct RemoteView: View {
         case .network: networkCard(samples, latest)
         case .disk: diskCard(samples, latest)
         case .gpu: gpuCard(samples, latest)
+        case .power: powerCard(samples, latest)
         }
     }
 
@@ -159,15 +160,28 @@ struct RemoteView: View {
         )
     }
 
+    private func powerCard(_ samples: [RemoteSnapshot], _ latest: RemoteSnapshot) -> some View {
+        let content = PowerCardContent(
+            samples: samples.map { PowerCardSample(headline: $0.headlinePower, battery: $0.battery, components: $0.power) }
+        )
+        return card(
+            title: L("Power"), symbol: content.symbol, value: content.value,
+            note: content.note, noteSymbol: content.noteSymbol, help: content.help,
+            series: content.series, secondary: content.secondary, secondaryTint: FlowColors.charge,
+            readouts: content.readouts, range: nil, load: content.load, tint: content.tint
+        )
+    }
+
     private func card(
         title: String, symbol: String, value: String, unit: String = "", spokenValue: String? = nil,
-        note: String, help: String,
-        series: [Double], secondary: [Double]? = nil, readouts: [Readout] = [],
+        note: String, noteSymbol: NoteSymbol? = nil, help: String,
+        series: [Double], secondary: [Double]? = nil, secondaryTint: Color = FlowColors.outbound, readouts: [Readout] = [],
         range: ClosedRange<Double>?, load: LoadLevel?, tint: Color? = nil
     ) -> some View {
         MetricCard(
             title: title, symbol: symbol, value: value, unit: unit, spokenValue: spokenValue, note: note,
-            series: series, secondary: secondary, readouts: readouts,
+            noteSymbol: noteSymbol,
+            series: series, secondary: secondary, secondaryTint: secondaryTint, readouts: readouts,
             capacity: monitor.history.capacity, range: range,
             tint: tint ?? load?.cardColor ?? FlowColors.inbound, help: help
         )

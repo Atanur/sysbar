@@ -45,6 +45,10 @@ public struct RemoteRawSample: Equatable, Sendable {
     public var gpuUsage: Double?
     /// CPU temperature in °C, when the machine exposes a sensor (most virtual servers do not).
     public var cpuTemperature: Double?
+    /// Chip power per component, from Macs that allow passwordless `sudo` for `powermetrics`.
+    public var power: PowerReading?
+    /// The battery of a Mac laptop; nil for a Mac without one.
+    public var battery: BatteryInfo?
     public var processes: [RemoteProcess] = []
 }
 
@@ -56,7 +60,7 @@ public enum RemoteMetricsParser {
     private static let maxProcesses = 16
     /// Tools the script itself runs; they would otherwise show up as busy processes.
     private static let scriptToolNames: Set<String> = [
-        "ps", "sh", "top", "awk", "sed", "sort", "head", "tail", "grep", "tr", "netstat", "vm_stat", "sysctl", "uname",
+        "ps", "sh", "sudo", "powermetrics", "ioreg", "base64", "top", "awk", "sed", "sort", "head", "tail", "grep", "tr", "netstat", "vm_stat", "sysctl", "uname",
     ]
 
     public static func parse(_ output: String) -> RemoteRawSample? {
@@ -80,6 +84,8 @@ public enum RemoteMetricsParser {
         sample.gpuUsage = fields["gpu"]?.first.flatMap { Double($0.trimmingCharacters(in: .whitespaces)) }
             .map { min(max($0 / 100, 0), 1) }
         sample.cpuTemperature = fields["temp"]?.first.flatMap(temperature)
+        sample.power = fields["power"]?.first.flatMap(chipPower)
+        sample.battery = fields["battery"]?.first.flatMap(battery)
         sample.processes = Array((fields["proc"] ?? []).compactMap(process).prefix(maxProcesses))
         return sample
     }
@@ -101,6 +107,23 @@ public enum RemoteMetricsParser {
         guard let raw = Double(value.trimmingCharacters(in: .whitespaces)) else { return nil }
         let celsius = raw > 1_000 ? raw / 1_000 : raw
         return (1.0...130.0).contains(celsius) ? celsius : nil
+    }
+
+    /// The script prints "<cpu> <gpu> <ane>" in milliwatts. A CPU figure of zero means no reading.
+    private static func chipPower(_ value: String) -> PowerReading? {
+        let milliwatts = words(value).compactMap { Double($0) }
+        guard milliwatts.count == 3, milliwatts[0] > 0, milliwatts.allSatisfy({ $0 < 2_000_000 }) else { return nil }
+        return PowerReading(cpu: milliwatts[0] / 1_000, gpu: milliwatts[1] / 1_000, ane: milliwatts[2] / 1_000, ram: nil)
+    }
+
+    /// `ioreg -a` prints an array of property lists; the script sends it base64 encoded.
+    private static func battery(_ value: String) -> BatteryInfo? {
+        guard
+            let data = Data(base64Encoded: value.trimmingCharacters(in: .whitespaces)),
+            let list = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil),
+            let properties = (list as? [[String: Any]])?.first
+        else { return nil }
+        return BatteryProbe.parse(properties)
     }
 
     private static func ticks(_ value: String) -> LinuxCPUTicks? {
@@ -214,7 +237,12 @@ public struct RemoteSnapshot: Equatable, Sendable {
     public let reportsDisk: Bool
     public let gpuUsage: Double?
     public let cpuTemperature: Double?
+    public let power: PowerReading?
+    public let battery: BatteryInfo?
     public let processes: [RemoteProcess]
+
+    /// Whole-machine power: a remote Mac reports the chip's draw, not the wall.
+    public var headlinePower: Double? { power?.packageTotal }
 
     /// One-minute load per core: 1 means every core is busy on average.
     public var loadFraction: Double? {
@@ -225,7 +253,7 @@ public struct RemoteSnapshot: Equatable, Sendable {
 
 /// The cards a remote machine can show, in display order. Each device keeps its own choice.
 public enum RemoteCard: String, CaseIterable, Sendable {
-    case cpu, memory, load, network, disk, gpu
+    case cpu, memory, load, network, disk, gpu, power
 
     /// Cards that have something to show for these samples. Disk and GPU exist only on machines
     /// that report them (Linux servers report disk, those with an NVIDIA card report GPU).
@@ -234,6 +262,7 @@ public enum RemoteCard: String, CaseIterable, Sendable {
             switch card {
             case .disk: samples.contains { $0.reportsDisk }
             case .gpu: samples.contains { $0.gpuUsage != nil }
+            case .power: samples.contains { $0.headlinePower != nil || $0.battery != nil }
             case .cpu, .memory, .load, .network: true
             }
         }
@@ -266,7 +295,8 @@ public struct RemoteTracker {
         return RemoteSnapshot(
             timestamp: date, os: raw.os, cores: raw.cores, cpuUsage: cpu, memory: memory, load: raw.load,
             uptime: raw.uptime, network: network, disk: disk, reportsDisk: raw.disk != nil,
-            gpuUsage: raw.gpuUsage, cpuTemperature: raw.cpuTemperature, processes: raw.processes
+            gpuUsage: raw.gpuUsage, cpuTemperature: raw.cpuTemperature, power: raw.power, battery: raw.battery,
+            processes: raw.processes
         )
     }
 
