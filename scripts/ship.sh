@@ -148,7 +148,7 @@ NOTES="build/notes-$VERSION.md"
 
 CURRENT_STEP="committing and pushing v$VERSION"
 git commit -m "chore: release $VERSION" Resources/Info.plist packaging/homebrew/Casks/sysbar.rb docs/index.html
-git tag "v$VERSION"
+git tag -a "v$VERSION" -m "Sysbar $VERSION"
 git push --follow-tags
 
 CURRENT_STEP="creating the GitHub release"
