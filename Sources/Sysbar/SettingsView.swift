@@ -16,6 +16,7 @@ extension SettingsPage {
         case .appsTable: L("Apps table")
         case .fans: L("Temperature and fans")
         case .keepAwake: L("Keep awake")
+        case .shelf: L("File shelf")
         case .general: L("General")
         case .about: L("About")
         }
@@ -31,6 +32,7 @@ extension SettingsPage {
         case .appsTable: L("The busiest apps, under the cards in the popover")
         case .fans: L("Temperature readings and fan control in the popover")
         case .keepAwake: L("Keeps the Mac from sleeping, from the popover")
+        case .shelf: L("Holds files while you drag them")
         case .general: L("Language, startup and reset")
         case .about: L("Version, data sources and limits")
         }
@@ -47,6 +49,7 @@ extension SettingsPage {
         case .appsTable: "list.bullet.rectangle"
         case .fans: "fan"
         case .keepAwake: KeepAwakeController.hasLid ? "laptopcomputer" : "cup.and.saucer"
+        case .shelf: "tray.and.arrow.down"
         case .general: "gearshape"
         case .about: "info.circle"
         }
@@ -284,6 +287,7 @@ struct SettingsView: View {
         case .appsTable: AppsTablePage(preferences: preferences)
         case .fans: FansPage(preferences: preferences, helper: helper)
         case .keepAwake: KeepAwakePage(preferences: preferences, helper: helper)
+        case .shelf: ShelfPage(preferences: preferences)
         case .general: GeneralSettingsPage(preferences: preferences, updater: updater)
         case .about: AboutPage(updater: updater, preferences: preferences)
         }

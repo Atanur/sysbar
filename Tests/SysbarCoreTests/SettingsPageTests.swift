@@ -29,7 +29,7 @@ import Testing
         #expect(Set(pages).count == pages.count)
         let expected: [SettingsPage] = [
             .thisMac, .device(first), .findDevices, .menuBarReadouts, .menuBarAppearance,
-            .windowLayout, .appsTable, .fans, .keepAwake, .general, .about,
+            .windowLayout, .appsTable, .fans, .keepAwake, .shelf, .general, .about,
         ]
         #expect(Set(pages) == Set(expected))
     }
