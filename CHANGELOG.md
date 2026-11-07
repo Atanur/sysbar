@@ -3,6 +3,10 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.5.13 — 2026-11-08
+
+- File shelves hold files while you move them between apps: shake the pointer during a drag to open one, then drop files on it and take them out in any other app.
+
 ## 0.5.12 — 2026-11-06
 
 - A remote Mac can show a **Power** card, built like this Mac's: the watts it draws with a graph, and for a laptop the charge, time left, adapter and what goes into the battery. The tooltip splits the draw into CPU, GPU and Neural Engine. It needs passwordless `sudo` for `powermetrics` on that Mac, and shows the chip's draw rather than the wall's. Turn it on in the device's page in Settings.
