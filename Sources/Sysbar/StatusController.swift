@@ -18,6 +18,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private let helper: HelperConnection
     private let fans: FanController
     private let keepAwake: KeepAwakeController
+    private let shelf: ShelfController
     private lazy var settingsWindow = SettingsWindowController(preferences: preferences, updater: updater, helper: helper)
     private var service: MonitorService?
     private var processMonitor: ProcessMonitor?
@@ -51,7 +52,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
         self.helper = helper
         fans = FanController(helper: helper)
         keepAwake = KeepAwakeController(helper: helper)
+        shelf = ShelfController(preferences: preferences)
         super.init()
+        shelf.openSettings = { [weak self] in self?.openSettings(page: .shelf) }
         configureButton()
 
         processMonitor = ProcessMonitor { [weak self] usage in
@@ -74,10 +77,12 @@ final class StatusController: NSObject, NSPopoverDelegate {
             MainActor.assumeIsolated {
                 self?.remoteMonitor.closeConnections()
                 self?.keepAwake.appWillTerminate()
+                self?.shelf.appWillTerminate()
             }
         }
 
         updater.start()
+        shelf.sync()
         // A setting an earlier run left behind is turned off, or shown if someone else set it.
         keepAwake.refreshFromSystem()
         Task { [weak self] in
@@ -143,6 +148,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
         // A hidden button leaves no way to see or end what it started, so that ends with it.
         if !preferences.showsFanButton, fans.mode.isManual { fans.setAutomatic() }
         if !preferences.showsKeepAwakeButton, case .on = keepAwake.state { keepAwake.stop() }
+        shelf.sync()
         lastSignature = nil
         if let lastSnapshot {
             refreshMenuBar(lastSnapshot)

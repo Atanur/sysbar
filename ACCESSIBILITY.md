@@ -36,6 +36,7 @@ Apple's accessibility guidelines.
 - **Keyboard**: every control is a standard button, menu, switch or slider. Reordering metrics,
   besides dragging, is offered as Move up and Move down in each row's menu and as VoiceOver
   actions. Text fields support the usual ⌘C, ⌘V, ⌘A and ⌘Z, and ⌘W closes the settings window.
+- **The file shelf** can be used without dragging: New Shelf From Clipboard in its menu bar icon (or a shortcut you record) puts copied files on a shelf, the stack and every file are buttons that VoiceOver can press, and Open, Quick Look, Show in Finder, Share and Remove are in each file's menu and in the stack's Actions button. Files are named, and in the list also with their kind and size. A shelf folded into a tab is one button, named with its file count, that opens it.
 - **Disclosures**, such as the connection guide and an update's What's new, say whether they are
   expanded or collapsed.
 
@@ -48,6 +49,7 @@ These are known and planned; reports about any of them still help us decide what
   shows their sum). VoiceOver reads them, but a sighted keyboard user cannot see them.
 - Moving a metric with the keyboard needs its row's menu, which Full Keyboard Access cannot always
   open; the Move up and Move down actions work with VoiceOver.
+- The file shelf is summoned by a mouse gesture, a held modifier key or dropping on the notch. Without a pointer, use its menu bar icon or a global shortcut instead; adding files to a shelf still needs copying them in Finder first.
 - Increase Contrast does not yet strengthen the card backgrounds or the custom colours of the
   load levels.
 - A few small buttons, such as the settings gear in the popover and the copy buttons, have a click

@@ -26,6 +26,19 @@ final class Preferences: ObservableObject {
         static let remoteDevices = "remoteDevices"
         static let showsFanButton = "showsFanButton"
         static let showsKeepAwakeButton = "showsKeepAwakeButton"
+        static let shelfEnabled = "shelfEnabled"
+        static let showsShelfIcon = "showsShelfIcon"
+        static let shelfShake = "shelfShake"
+        static let shelfSensitivity = "shelfSensitivity"
+        static let shelfModifierEnabled = "shelfModifierEnabled"
+        static let shelfModifier = "shelfModifier"
+        static let shelfShortcuts = "shelfShortcuts"
+        static let shelfNotchEnabled = "shelfNotchEnabled"
+        static let shelfNotchStyle = "shelfNotchStyle"
+        static let shelfPlacement = "shelfPlacement"
+        static let shelfAddBehavior = "shelfAddBehavior"
+        static let shelfIgnoredApps = "shelfIgnoredApps"
+        static let shelfHistory = "shelfHistory"
         static let thisMacName = "thisMacName"
         static let searchesLocalNetwork = "searchesLocalNetwork"
         static let hiddenSuggestions = "hiddenSuggestions"
@@ -94,6 +107,63 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(showsKeepAwakeButton, forKey: Key.showsKeepAwakeButton) }
     }
 
+    /// The floating file shelf that appears while files are dragged. Off until the user turns it on.
+    @Published var shelfEnabled: Bool {
+        didSet { defaults.set(shelfEnabled, forKey: Key.shelfEnabled) }
+    }
+
+    /// The shelf's own menu bar icon, with its menu of new and recent shelves. Only shown while the shelf is on.
+    @Published var showsShelfIcon: Bool {
+        didSet { defaults.set(showsShelfIcon, forKey: Key.showsShelfIcon) }
+    }
+
+    /// Shaking the pointer during a file drag summons the shelf, and how hard that shake must be.
+    @Published var shelfShake: Bool {
+        didSet { defaults.set(shelfShake, forKey: Key.shelfShake) }
+    }
+    @Published var shelfSensitivity: DragShake.Sensitivity {
+        didSet { defaults.set(shelfSensitivity.rawValue, forKey: Key.shelfSensitivity) }
+    }
+
+    /// Holding a key during a file drag summons the shelf, and which key.
+    @Published var shelfModifierEnabled: Bool {
+        didSet { defaults.set(shelfModifierEnabled, forKey: Key.shelfModifierEnabled) }
+    }
+    @Published var shelfModifier: ShelfModifier {
+        didSet { defaults.set(shelfModifier.rawValue, forKey: Key.shelfModifier) }
+    }
+
+    /// Global shortcuts by action: "new" and "clipboard".
+    @Published var shelfShortcuts: [String: KeyShortcut] {
+        didSet { defaults.set(try? JSONEncoder().encode(shelfShortcuts), forKey: Key.shelfShortcuts) }
+    }
+
+    /// Dropping files on the notch makes a shelf, and when the drop zone shows.
+    @Published var shelfNotchEnabled: Bool {
+        didSet { defaults.set(shelfNotchEnabled, forKey: Key.shelfNotchEnabled) }
+    }
+    @Published var shelfNotchStyle: ShelfNotchStyle {
+        didSet { defaults.set(shelfNotchStyle.rawValue, forKey: Key.shelfNotchStyle) }
+    }
+
+    /// Where a shelf not summoned by a shake appears, and what files from the clipboard or the notch do.
+    @Published var shelfPlacement: ShelfPlacement {
+        didSet { defaults.set(shelfPlacement.rawValue, forKey: Key.shelfPlacement) }
+    }
+    @Published var shelfAddBehavior: ShelfAddBehavior {
+        didSet { defaults.set(shelfAddBehavior.rawValue, forKey: Key.shelfAddBehavior) }
+    }
+
+    /// Bundle identifiers of apps whose drags never summon the shelf.
+    @Published var shelfIgnoredApps: [String] {
+        didSet { defaults.set(shelfIgnoredApps, forKey: Key.shelfIgnoredApps) }
+    }
+
+    /// Shelves put away, newest first. Only file paths are kept.
+    @Published var shelfHistory: [ShelfRecord] {
+        didSet { defaults.set(try? JSONEncoder().encode(shelfHistory), forKey: Key.shelfHistory) }
+    }
+
     /// The name the user gave this Mac; empty shows "This Mac". See `thisMacTitle`.
     @Published var thisMacName: String {
         didSet {
@@ -145,6 +215,21 @@ final class Preferences: ObservableObject {
         setupCompleted = defaults.bool(forKey: Key.setupCompleted)
         showsFanButton = defaults.object(forKey: Key.showsFanButton) as? Bool ?? true
         showsKeepAwakeButton = defaults.object(forKey: Key.showsKeepAwakeButton) as? Bool ?? true
+        shelfEnabled = defaults.bool(forKey: Key.shelfEnabled)
+        showsShelfIcon = defaults.object(forKey: Key.showsShelfIcon) as? Bool ?? true
+        shelfShake = defaults.object(forKey: Key.shelfShake) as? Bool ?? true
+        shelfSensitivity = defaults.string(forKey: Key.shelfSensitivity).flatMap(DragShake.Sensitivity.init(rawValue:)) ?? .standard
+        shelfModifierEnabled = defaults.object(forKey: Key.shelfModifierEnabled) as? Bool ?? true
+        shelfModifier = defaults.string(forKey: Key.shelfModifier).flatMap(ShelfModifier.init(rawValue:)) ?? .shift
+        shelfShortcuts = defaults.data(forKey: Key.shelfShortcuts)
+            .flatMap { try? JSONDecoder().decode([String: KeyShortcut].self, from: $0) } ?? [:]
+        shelfNotchEnabled = defaults.object(forKey: Key.shelfNotchEnabled) as? Bool ?? true
+        shelfNotchStyle = defaults.string(forKey: Key.shelfNotchStyle).flatMap(ShelfNotchStyle.init(rawValue:)) ?? .hover
+        shelfPlacement = defaults.string(forKey: Key.shelfPlacement).flatMap(ShelfPlacement.init(rawValue:)) ?? .topRight
+        shelfAddBehavior = defaults.string(forKey: Key.shelfAddBehavior).flatMap(ShelfAddBehavior.init(rawValue:)) ?? .newShelf
+        shelfIgnoredApps = defaults.stringArray(forKey: Key.shelfIgnoredApps) ?? []
+        shelfHistory = defaults.data(forKey: Key.shelfHistory)
+            .flatMap { try? JSONDecoder().decode([ShelfRecord].self, from: $0) } ?? []
         thisMacName = LocalDeviceName.normalized(defaults.string(forKey: Key.thisMacName) ?? "")
         searchesLocalNetwork = defaults.bool(forKey: Key.searchesLocalNetwork)
         hiddenSuggestions = defaults.stringArray(forKey: Key.hiddenSuggestions) ?? []
@@ -228,6 +313,18 @@ final class Preferences: ObservableObject {
         temperatureUnit = .regionDefault
         showsFanButton = true
         showsKeepAwakeButton = true
+        shelfEnabled = false
+        showsShelfIcon = true
+        shelfShake = true
+        shelfSensitivity = .standard
+        shelfModifierEnabled = true
+        shelfModifier = .shift
+        shelfShortcuts = [:]
+        shelfNotchEnabled = true
+        shelfNotchStyle = .hover
+        shelfPlacement = .topRight
+        shelfAddBehavior = .newShelf
+        shelfIgnoredApps = []
         if !keepingDevices {
             thisMacName = ""
             searchesLocalNetwork = false

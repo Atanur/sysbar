@@ -9,7 +9,7 @@ public enum SettingsPage: Hashable, Sendable {
     case findDevices
     case menuBarReadouts, menuBarAppearance
     case windowLayout, appsTable
-    case fans, keepAwake
+    case fans, keepAwake, shelf
     case general, about
 
     /// Where the settings window opens when no page is asked for.
@@ -36,7 +36,7 @@ public enum SettingsSection: CaseIterable, Sendable {
         case .devices: [.thisMac] + deviceIDs.map(SettingsPage.device)
         case .menuBar: [.menuBarReadouts, .menuBarAppearance]
         case .window: [.windowLayout, .appsTable]
-        case .tools: [.fans, .keepAwake]
+        case .tools: [.fans, .keepAwake, .shelf]
         case .app: [.general, .about]
         }
     }

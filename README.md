@@ -59,6 +59,13 @@
 - A closed Mac in a bag can get warm; that is why it is never permanent.
 - On a Mac without a lid (a Mac mini, Studio or iMac) the same menu keeps it from going to sleep while idle, with the same choices except "while charging". It needs no helper.
 
+**File shelf** (off until you turn it on in Settings › Tools)
+- Small floating shelves that hold files while you move them between apps. Open as many as you like; each new one appears beside the others, and Close All Shelves in the menu bar icon puts them away. Bring it up by shaking the pointer during a file drag, by holding a modifier key (⇧ by default) during one, by dropping files on the notch, from its own menu bar icon, or with global shortcuts you record yourself.
+- Drag a shelf against the left or right edge of the screen and it folds into a tab there, with a chevron and the number of files; click the tab to open it again, or drop files on it. The tab is not offered on an edge shared with another display.
+- Collapsed it is a stack of the newest files: drag the stack to take every file at once, or click it for a list or a gallery where each file can be dragged out, opened, previewed with Quick Look, shown in Finder or shared. Files can be dropped on the stack at any time.
+- The shelf only remembers where files are; nothing is copied. A file leaves the shelf once you drag it out and drop it. Shelves you close, or leave open when you quit, are kept as paths in the menu bar icon's Recent Shelves, which you can clear there.
+- Choose how sensitive the shake is, which key summons the shelf, where shelves that were not summoned by a shake appear, whether files from the clipboard or the notch go to a new shelf or the one you used last, and which apps never bring it up. Shaking and the modifier key read mouse events only, so the shelf needs no permission.
+
 **Updates**
 - Checks GitHub for a new release once a day and offers it in the popover, where **What's new** unfolds its notes. Updating downloads the release, installs it only if it is signed by the same developer, and relaunches.
 - Settings › About shows what is new in the version you run, from the [changelog](CHANGELOG.md) built into the app; every release is on the website.
