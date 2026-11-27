@@ -3,6 +3,17 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.6.1 — 2026-11-27
+
+- Resting the pointer on the notch opens it again when it is set to open on hover, on the tab of the item under the pointer.
+- From the menu bar, the panel opens in place at its full size, and grows or shrinks with the page you switch to or the panel you unfold.
+- Keep awake has one menu: choose how long to start it, or Off to stop it. The separate switch and its "When switched on" setting are gone.
+- Fans set by hand show a fan beside the notch, like Keep awake does, and fans that are not turning say Stopped instead of 0 rpm.
+- Clipboard history keeps images of any size. Its rows are one line each, with the whole text in the tooltip, and lists end on a whole row.
+- The notch's background is black, glass, or automatic; the transparent option is gone.
+- The Notch settings page shows a true-to-scale miniature of the top of your screen, closed or open.
+- General and About are at the top of the Settings sidebar.
+
 ## 0.6.0 — 2026-11-27
 
 - Sysbar can live **around the notch** instead of in the menu bar (Settings › Menu Bar › Appearance › Location). The readings sit beside the notch and the features as icons; click one and a panel grows down from under the notch, on that page. Displays without a notch get a small capsule in the middle of the menu bar that works the same way.
