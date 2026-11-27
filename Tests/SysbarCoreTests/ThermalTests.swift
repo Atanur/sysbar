@@ -91,6 +91,13 @@ import Testing
         #expect(result.source == .cpu)
     }
 
+    @Test func aSingleReadingIsColouredByItsTemperature() {
+        #expect(ThermalAssessment.heatLevel(celsius: 40) == .low)
+        #expect(ThermalAssessment.heatLevel(celsius: 65) == .moderate)
+        #expect(ThermalAssessment.heatLevel(celsius: 85) == .high)
+        #expect(ThermalAssessment.heatLevel(celsius: 97) == .critical)
+    }
+
     @Test func idleAndCoolIsCool() throws {
         let result = try #require(ThermalAssessment.assess(samples(fanFraction: nil) { _ in [.cpu: 40, .gpu: 38, .battery: 30] }))
         #expect(result.cause == .cool)
@@ -112,6 +119,29 @@ import Testing
         #expect(!mildAtRest.needsAttention)
         let hotAtRest = try #require(ThermalAssessment.assess(samples(cpu: 0.05) { _ in [.cpu: 74] }))
         #expect(hotAtRest.needsAttention)
+    }
+
+    @Test func theHeatWarningCanBeEarlierLaterOrOff() throws {
+        let hot88 = try #require(ThermalAssessment.assess(samples(cpu: 0.9) { _ in [.cpu: 88] }))
+        #expect(hot88.needsAttention(.early))
+        #expect(!hot88.needsAttention(.standard))
+        #expect(!hot88.needsAttention(.late))
+        let hot96 = try #require(ThermalAssessment.assess(samples(cpu: 0.9) { _ in [.cpu: 96] }))
+        #expect(hot96.needsAttention(.standard))
+        #expect(!hot96.needsAttention(.late))
+        let throttling = try #require(ThermalAssessment.assess(samples(pressure: .serious) { _ in [.cpu: 70] }))
+        #expect(throttling.needsAttention(.late))
+        #expect(!throttling.needsAttention(.off))
+        let warmAtRest = try #require(ThermalAssessment.assess(samples(cpu: 0.05) { _ in [.cpu: 64] }))
+        #expect(warmAtRest.needsAttention(.early))
+        #expect(!warmAtRest.needsAttention(.standard))
+        #expect(hot96.needsAttention == hot96.needsAttention(.standard))
+    }
+
+    @Test func aStoredHeatWarningIsReadBackOrStandard() {
+        #expect(HeatWarning.normalized("late") == .late)
+        #expect(HeatWarning.normalized("sometimes") == .standard)
+        #expect(HeatWarning.normalized(nil) == .standard)
     }
 
     @Test func batteryIsNamedOnlyWhenItIsTheOnlySensor() {

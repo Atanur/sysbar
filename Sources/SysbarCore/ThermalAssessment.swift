@@ -63,11 +63,16 @@ public struct ThermalAssessment: Equatable, Sendable {
     /// True when the heat is out of the ordinary and worth a look at the fans: macOS is slowing
     /// down, the cooling cannot keep up, a part is very hot, or the Mac stays warm while idle. A
     /// busy chip running in the 80s is ordinary for Apple silicon and does not count.
-    public var needsAttention: Bool {
+    public var needsAttention: Bool { needsAttention(.standard) }
+
+    /// `needsAttention` at the chosen sensitivity: macOS slowing down and cooling that cannot keep up
+    /// always count, unless the warning is off; the temperatures that count move with it.
+    public func needsAttention(_ warning: HeatWarning) -> Bool {
+        guard warning != .off else { return false }
         switch cause {
-        case .throttling, .cannotCool: true
-        case .warmAtRest: celsius >= Self.warmAtRestAttentionFrom
-        default: celsius >= Self.veryHotFrom
+        case .throttling, .cannotCool: return true
+        case .warmAtRest: return celsius >= Self.warmAtRestAttentionFrom + warning.offset
+        default: return celsius >= Self.veryHotFrom + warning.offset
         }
     }
 
@@ -128,14 +133,19 @@ public struct ThermalAssessment: Equatable, Sendable {
             .map { ($0.key, $0.value) }
     }
 
-    static func level(cause: ThermalCause, celsius: Double) -> LoadLevel {
-        if cause == .throttling { return .critical }
-        let byTemperature: LoadLevel = switch celsius {
+    /// How hot a part is by its temperature alone, for colouring a single reading.
+    public static func heatLevel(celsius: Double) -> LoadLevel {
+        switch celsius {
         case ..<warmFrom: .low
         case ..<hotFrom: .moderate
         case ..<veryHotFrom: .high
         default: .critical
         }
+    }
+
+    static func level(cause: ThermalCause, celsius: Double) -> LoadLevel {
+        if cause == .throttling { return .critical }
+        let byTemperature = heatLevel(celsius: celsius)
         if cause == .cannotCool, byTemperature == .low || byTemperature == .moderate { return .high }
         return byTemperature
     }
@@ -170,5 +180,23 @@ public struct ThermalAssessment: Equatable, Sendable {
         let variance = points.map { ($0.0 - meanX) * ($0.0 - meanX) }.reduce(0, +)
         guard variance > 0 else { return nil }
         return covariance / variance * 60
+    }
+}
+
+/// How early the heat warning (the menu bar's flag and the fan panel opening) comes.
+public enum HeatWarning: String, CaseIterable, Sendable {
+    case off, early, standard, late
+
+    /// °C added to the temperatures that count as out of the ordinary.
+    var offset: Double {
+        switch self {
+        case .early: -10
+        case .late: 5
+        case .standard, .off: 0
+        }
+    }
+
+    public static func normalized(_ value: String?) -> HeatWarning {
+        value.flatMap(HeatWarning.init(rawValue:)) ?? .standard
     }
 }

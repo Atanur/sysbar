@@ -1,46 +1,50 @@
 import SysbarCore
 import SwiftUI
 
-/// The top bar's temperature and fan button: just a fan, since the panel it opens has the
-/// numbers. The fan shows what the fans are doing and how hard (see `FanIcon`), and takes the
-/// warning colour while the heat needs attention.
+/// The top row's temperature and fan button: just a fan, since the panel it opens has the numbers. The
+/// fan shows what the fans are doing and how hard (see `FanIcon`), and takes the warning colour while
+/// the heat needs attention.
 struct ThermalButton: View {
     let assessment: ThermalAssessment?
     let unit: TemperatureUnit
     let fanState: FanState
     /// How hard the fans work, 0...1.
     let fanLoad: Double
+    /// The heat needs attention: the fan takes the warning colour.
+    let isHeatWarning: Bool
     let isOpen: Bool
+    /// The button's side: an icon of the island's strip under the notch, a little less in the popover.
+    var side: CGFloat = 22
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            FanIcon(
-                state: fanState, load: fanLoad, automaticStyle: automaticStyle,
-                isHeatWarning: assessment?.needsAttention == true
-            )
-                .frame(width: 22, height: 22)
+            FanIcon(state: fanState, load: fanLoad, automaticStyle: automaticStyle, isHeatWarning: isHeatWarning)
+                .frame(width: side, height: side)
                 .background(Circle().fill(Color.primary.opacity(isOpen ? 0.12 : 0)))
                 .contentShape(Circle())
         }
         .buttonStyle(PressScaleButtonStyle())
-        .help([fanState.accessibilityText, heat].compactMap { $0 }.joined(separator: " · "))
+        .help(state)
         .accessibilityLabel(L("Temperature and fans"))
-        .accessibilityValue([fanState.accessibilityText, heat].compactMap { $0 }.joined(separator: ", "))
+        .accessibilityValue(state)
+        .accessibilityAddTraits(isOpen ? .isSelected : [])
     }
+
+    private var state: String { [fanState.accessibilityText, heat].compactMap { $0 }.joined(separator: ", ") }
 
     private var heat: String? {
         assessment.map { "\($0.cause.title) · \($0.source.title) \(unit.format(celsius: $0.celsius))" }
     }
 
     private var automaticStyle: AnyShapeStyle {
-        if let assessment, assessment.needsAttention { return AnyShapeStyle(assessment.level.color) }
+        if let assessment, isHeatWarning { return AnyShapeStyle(assessment.level.color) }
         return AnyShapeStyle(.secondary)
     }
 }
 
-/// Opens under the top bar: what is warming the Mac and why, each part's temperature, and the
-/// fans with their automatic or manual control.
+/// Opens under the top row: what is warming the Mac and why, each part's temperature, and the fans
+/// with their automatic or manual control.
 struct ThermalPanel: View {
     let assessment: ThermalAssessment?
     let reading: ThermalReading?
@@ -114,9 +118,23 @@ struct ThermalPanel: View {
             ModeSwitch(isManual: modeBinding(reading))
                 .disabled(helper.state != .ready)
         }
+        helperContent
+    }
+
+    /// What the fan section adds below its switch: the speed slider while manual, or the note that
+    /// says what control needs, and the last error.
+    @ViewBuilder
+    private var helperContent: some View {
+        if helper.state == .ready, case .manual(let fraction) = fans.mode { slider(fraction) }
+        helperNotes
+    }
+
+    /// The note that says what fan control needs, and the last error.
+    @ViewBuilder
+    private var helperNotes: some View {
         switch helper.state {
         case .ready:
-            if case .manual(let fraction) = fans.mode { slider(fraction) }
+            EmptyView()
         case .needsApproval:
             HelperNote(text: L("Allow Sysbar in System Settings → General → Login Items to control the fans.")) {
                 Button(L("Open System Settings")) { helper.openApprovalSettings() }
@@ -197,6 +215,15 @@ private struct ModeSwitch: View {
 }
 
 extension ThermalSource {
+    var symbol: String {
+        switch self {
+        case .cpu: "cpu"
+        case .gpu: "display"
+        case .memory: "memorychip"
+        case .battery: "battery.100"
+        }
+    }
+
     var title: String {
         switch self {
         case .cpu: L("CPU")

@@ -7,9 +7,9 @@ public enum SettingsPage: Hashable, Sendable {
     case device(UUID)
     /// Devices found on this network and in Tailscale, opened from the devices section's add button.
     case findDevices
-    case menuBarReadouts, menuBarAppearance
+    case menuBarReadouts, menuBarAppearance, notch
     case windowLayout, appsTable
-    case fans, keepAwake, shelf
+    case fans, keepAwake, shelf, clipboard
     case general, about
 
     /// Where the settings window opens when no page is asked for.
@@ -34,9 +34,9 @@ public enum SettingsSection: CaseIterable, Sendable {
     public func pages(deviceIDs: [UUID]) -> [SettingsPage] {
         switch self {
         case .devices: [.thisMac] + deviceIDs.map(SettingsPage.device)
-        case .menuBar: [.menuBarReadouts, .menuBarAppearance]
+        case .menuBar: [.menuBarReadouts, .menuBarAppearance, .notch]
         case .window: [.windowLayout, .appsTable]
-        case .tools: [.fans, .keepAwake, .shelf]
+        case .tools: [.fans, .keepAwake, .shelf, .clipboard]
         case .app: [.general, .about]
         }
     }

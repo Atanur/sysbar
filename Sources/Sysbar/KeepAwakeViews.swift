@@ -1,18 +1,20 @@
 import SysbarCore
 import SwiftUI
 
-/// The top bar's keep-awake button: a laptop that takes the accent colour while the Mac is kept
-/// awake with its lid closed.
+/// The top row's keep-awake button: a laptop that takes the accent colour while the Mac is kept awake
+/// with its lid closed.
 struct KeepAwakeButton: View {
     let isActive: Bool
     let isOpen: Bool
+    /// The button's side: an icon of the island's strip under the notch, a little less in the popover.
+    var side: CGFloat = 22
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             KeepAwakeIcon(isKeptAwake: isActive)
                 .foregroundStyle(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
-                .frame(width: 22, height: 22)
+                .frame(width: side, height: side)
                 .background(Circle().fill(Color.primary.opacity(isOpen ? 0.12 : 0)))
                 .contentShape(Circle())
         }
@@ -20,6 +22,7 @@ struct KeepAwakeButton: View {
         .help(KeepAwakeController.title)
         .accessibilityLabel(KeepAwakeController.title)
         .accessibilityValue(accessibilityValue)
+        .accessibilityAddTraits(isOpen ? .isSelected : [])
     }
 
     private var accessibilityValue: String {
@@ -28,11 +31,12 @@ struct KeepAwakeButton: View {
     }
 }
 
-/// Opens under the top bar: for how long, or while which app is open, to keep the Mac awake with
-/// its lid closed.
+/// Opens under the top row: for how long, or while which app is open, to keep the Mac awake with its
+/// lid closed.
 struct KeepAwakePanel: View {
     @ObservedObject var keepAwake: KeepAwakeController
     @ObservedObject var helper: HelperConnection
+    @ObservedObject var preferences: Preferences
     /// Whether the list of open apps is shown, and the apps in it as of when it was opened.
     @State private var choosingApp = false
     @State private var openApps: [KeepAwakeController.WatchedApp] = []
@@ -55,38 +59,72 @@ struct KeepAwakePanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(KeepAwakeController.title).font(.callout.weight(.medium)).help(explanation)
+            HStack(spacing: 8) {
+                Text(KeepAwakeController.title).font(.callout.weight(.medium)).help(explanation)
+                Spacer(minLength: 0)
+                Toggle(KeepAwakeController.title, isOn: switchBinding)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .disabled(KeepAwakeController.hasLid && helper.state != .ready)
+            }
             dropdown
                 .disabled(KeepAwakeController.hasLid && helper.state != .ready)
             if choosingTime { timeChooser }
             if choosingApp { appList }
-            Toggle(L("Move the mouse when idle"), isOn: $keepAwake.movesMouse)
-                .toggleStyle(.switch)
-                .controlSize(.small)
-                .font(.caption)
-                .help(L("While you are away, the cursor moves a little about once a minute, so apps see you as active."))
-            if keepAwake.movesMouse, !keepAwake.hasMouseAccess {
-                HelperNote(text: L("Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility.")) {
-                    Button(L("Open System Settings")) { keepAwake.openMouseAccessSettings() }
-                }
-            }
+            mouseToggle
             status
-            // Only the lid needs the helper.
-            if KeepAwakeController.hasLid { helperState }
-            if let error = keepAwake.lastError ?? (KeepAwakeController.hasLid ? helper.setupError : nil) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(error).font(.caption).foregroundStyle(LoadLevel.high.color)
-                    Spacer(minLength: 0)
-                    if helper.isUnresponsive {
-                        Button(L("Set up again")) { Task { await helper.reinstall() } }.controlSize(.small)
-                    }
-                }
-            }
+            notes
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
         .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.05)))
         .onAppear { keepAwake.refreshMouseAccess() }
+    }
+
+    private var mouseToggle: some View {
+        Toggle(L("Move the mouse when idle"), isOn: $keepAwake.movesMouse)
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .font(.caption)
+            .help(L("While you are away, the cursor moves a little, so apps see you as active. Settings says how soon."))
+    }
+
+    /// What needs attention: the missing mouse access, the helper's setup, the last error.
+    @ViewBuilder
+    private var notes: some View {
+        if keepAwake.movesMouse, !keepAwake.hasMouseAccess {
+            HelperNote(text: L("Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility.")) {
+                Button(L("Open System Settings")) { keepAwake.openMouseAccessSettings() }
+            }
+        }
+        // Only the lid needs the helper.
+        if KeepAwakeController.hasLid { helperState }
+        if let error = keepAwake.lastError ?? (KeepAwakeController.hasLid ? helper.setupError : nil) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(error).font(.caption).foregroundStyle(LoadLevel.high.color)
+                Spacer(minLength: 0)
+                if helper.isUnresponsive {
+                    Button(L("Set up again")) { Task { await helper.reinstall() } }.controlSize(.small)
+                }
+            }
+        }
+    }
+
+    /// On keeps the Mac awake for the duration Settings chose (until it is turned off, unless changed); off
+    /// stops whatever plan is running.
+    private var switchBinding: Binding<Bool> {
+        Binding(
+            get: { keepAwake.isActive },
+            set: { on in
+                closeChoosers()
+                if on {
+                    keepAwake.start(.duration(preferences.keepAwakeSwitchDefault.duration(last: preferences.keepAwakeLastDuration)))
+                } else {
+                    keepAwake.stop()
+                }
+            }
+        )
     }
 
     private var explanation: String {
@@ -161,6 +199,7 @@ struct KeepAwakePanel: View {
             keepAwake.stop()
         case .duration(let duration):
             closeChoosers()
+            preferences.keepAwakeLastDuration = duration
             keepAwake.start(.duration(duration))
         case .whileCharging:
             closeChoosers()

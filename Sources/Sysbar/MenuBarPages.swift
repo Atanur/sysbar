@@ -1,3 +1,4 @@
+import AppKit
 import SysbarCore
 import SwiftUI
 
@@ -60,6 +61,18 @@ struct MenuBarAppearancePage: View {
         SettingsPageScaffold(page: .menuBarAppearance) {
             SettingsGroup(title: L("Preview")) { MenuBarPreview(preferences: preferences) }
 
+            SettingsGroup(title: L("Location"), footer: Self.placementFooter) {
+                SettingsRow(symbol: Self.hasNotch ? "macbook" : "menubar.rectangle", title: L("Show Sysbar in")) {
+                    Picker(L("Show Sysbar in"), selection: $preferences.sysbarPlacement) {
+                        Text(L("Menu bar")).tag(SysbarPlacement.menuBar)
+                        Text(Self.hasNotch ? L("Notch") : L("Top of screen")).tag(SysbarPlacement.notch)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .fixedSize()
+                }
+            }
+
             SettingsGroup {
                 SettingsRow(symbol: "rectangle.split.3x1", title: L("Style")) {
                     Picker(L("Style"), selection: $preferences.menuBarStyle) {
@@ -79,6 +92,14 @@ struct MenuBarAppearancePage: View {
             }
         }
     }
+
+    private static var hasNotch: Bool { NSScreen.screens.contains { $0.safeAreaInsets.top > 0 } }
+
+    private static var placementFooter: String {
+        hasNotch
+            ? L("Around the notch, the readouts sit either side of it and the panel opens when the pointer rests there. Sysbar then leaves the menu bar. On a display without a notch it shows as a small capsule at the top.")
+            : L("At the top of the screen, Sysbar is a small capsule in the middle of the menu bar that opens when the pointer rests on it. Sysbar then leaves the menu bar.")
+    }
 }
 
 /// The menu bar readout as it will look, drawn from fixed sample values, beside a mock clock.
@@ -90,7 +111,7 @@ struct MenuBarPreview: View {
 
     /// Fixed sample values, so the preview shows every metric the way it will look. The battery
     /// sample sits under the chosen threshold, so the preview shows it whenever it is turned on.
-    private static func sample(batteryThreshold: Int) -> Snapshot {
+    static func sample(batteryThreshold: Int) -> Snapshot {
         let charge = batteryThreshold >= 50 ? 0.42 : 0.15
         return Snapshot(
             timestamp: Date(), cpuUsage: 0.23,

@@ -16,14 +16,10 @@ final class PopoverViewModel: ObservableObject {
     @Published var apps: [AppUsage] = []
     @Published var sort: AppSortKey = .cpu
     @Published var selection: DeviceSelection = .thisMac
-    /// The panel under the top bar; at most one is open.
+    /// The tab shown; one that is not offered (see `PopoverView.sections`) shows the system.
+    @Published var section: PopoverSection = .system
+    /// The panel unfolded under the System page's top row; at most one is open.
     @Published var panel: PopoverPanel?
-
-    /// The temperature and fan panel.
-    var showsThermal: Bool {
-        get { panel == .thermal }
-        set { panel = newValue ? .thermal : nil }
-    }
 
     init(history: BoundedHistory<Snapshot>) {
         self.history = history
@@ -31,10 +27,39 @@ final class PopoverViewModel: ObservableObject {
 
 }
 
-/// What the top bar's buttons open under it.
+/// The tabs across the top, in order. The fans and keep awake are not tabs: they are buttons of the
+/// System page, which unfold a panel under its top row.
+@MainActor
+enum PopoverSection: CaseIterable {
+    case system, stash, clipboard
+
+    var title: String {
+        switch self {
+        case .system: L("System")
+        case .stash: Stash.title
+        case .clipboard: L("Clipboard")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .system: "gauge.with.dots.needle.33percent"
+        case .stash: Stash.symbol
+        case .clipboard: "doc.on.clipboard"
+        }
+    }
+}
+
+/// What the System page's top-row buttons unfold under it.
 enum PopoverPanel: Equatable {
     case thermal
     case keepAwake
+}
+
+/// What a panel is asked to open on: a tab, and on the System page one of its panels already unfolded.
+struct PanelTarget: Equatable {
+    var section: PopoverSection
+    var panel: PopoverPanel?
 }
 
 /// The reading being animated towards the newest sample.
@@ -59,6 +84,11 @@ private struct LiveSamples<Content: View>: View {
 
 struct PopoverView: View {
     static let width: CGFloat = 340
+    /// Under the notch there is room to spread out sideways, but not as much as the screen allows: the
+    /// panel is a popup hanging from the strip, three quarters as wide as it first was.
+    static let wideWidth: CGFloat = 570
+    /// What the wide panel keeps from its sides.
+    static let wideInset: CGFloat = 12
 
     /// Lets the selected tab's background slide to the next one.
     @Namespace private var tabSelection
@@ -70,53 +100,182 @@ struct PopoverView: View {
     @ObservedObject var fans: FanController
     @ObservedObject var keepAwake: KeepAwakeController
     @ObservedObject var helper: HelperConnection
+    @ObservedObject var shelf: ShelfController
+    let clipboard: ClipboardController
+    /// The island's strip, whose icon size the settings button shares; used while `isWide`.
+    @ObservedObject var topRow: NotchRowModel
     let onSelect: (DeviceSelection) -> Void
     let onRetry: () -> Void
     /// Opens the settings window, on a given page or on whichever was shown last.
     let onSettings: (SettingsPage?) -> Void
     let onOpenDetails: (MenuBarMetric) -> Void
+    /// Closes the popover, before something it started appears on screen.
+    let onClose: () -> Void
+    /// Wide and short under the notch; narrow and tall from the menu bar.
+    var isWide = false
 
     var body: some View {
+        if isWide {
+            // The strip above holds the ears, which are the tabs; this is the panel under it. Its first
+            // row has the machine tabs (or the tab's name), the fan and keep-awake buttons and Settings,
+            // and the page starts below. The panel is as tall as the page shown.
+            VStack(alignment: .leading, spacing: 8) {
+                wideHeader
+                pages
+            }
+            .padding(.horizontal, Self.wideInset)
+            .padding(.top, 8)
+            .padding(.bottom, Self.wideInset)
+            .frame(width: Self.wideWidth)
+            .background(GeometryReader { Color.clear.preference(key: PanelHeightKey.self, value: $0.size.height) })
+            .onPreferenceChange(PanelHeightKey.self) { topRow.report(height: $0) }
+            .frame(maxHeight: .infinity, alignment: .top)
+        } else {
+            VStack(alignment: .leading, spacing: 12) {
+                if showsSectionBar { sectionBar }
+                pages
+            }
+            .padding(12)
+            .frame(width: Self.width)
+            .frame(maxHeight: .infinity, alignment: .top)
+        }
+    }
+
+    /// The tab's page, with its own height: what is shown replaces the last page, and the window
+    /// follows the difference. A page with a list stops at `pageLimit` and scrolls.
+    @ViewBuilder
+    private var pages: some View {
+        switch shownSection {
+        case .system: systemContent
+        case .stash: StashPage(shelf: shelf, preferences: preferences, isWide: isWide, maxHeight: pageLimit, onClose: onClose)
+        case .clipboard: ClipboardPage(clipboard: clipboard, preferences: preferences, isWide: isWide, maxHeight: pageLimit, onClose: onClose)
+        }
+    }
+
+    /// The tallest a page with a list gets: the cap, lowered on a short screen.
+    private var pageLimit: CGFloat {
+        PageHeight.limit(visibleHeight: NSScreen.main?.visibleFrame.height ?? PageHeight.cap + PageHeight.screenMargin)
+    }
+
+    private var systemContent: some View {
         VStack(alignment: .leading, spacing: 12) {
-            topBar
-            if model.selection == .thisMac { panel }
+            if !isWide { topBar }
+            controlPanel
             if let release = updater.offered {
                 UpdateBanner(updater: updater, release: release)
             }
             content
         }
-        .padding(12)
-        .frame(width: Self.width)
     }
 
-    /// The open panel, unless its button has been hidden in Settings.
-    @ViewBuilder
-    private var panel: some View {
-        switch model.panel {
-        case .thermal where showsFanButton:
-            ThermalPanel(
-                assessment: assessment, reading: model.history.items.last?.thermal,
-                unit: preferences.temperatureUnit, fans: fans, helper: helper
-            )
-            .transition(.opacity)
-        case .keepAwake where showsKeepAwakeButton:
-            KeepAwakePanel(keepAwake: keepAwake, helper: helper)
-                .transition(.opacity)
-        default:
-            EmptyView()
-        }
+    /// The tabs on offer: the System page, the stash while it is on, and the clipboard while its
+    /// history is on.
+    private var sections: [PopoverSection] {
+        var sections: [PopoverSection] = [.system]
+        if preferences.shelfEnabled { sections.append(.stash) }
+        if preferences.clipboardHistoryEnabled { sections.append(.clipboard) }
+        return sections
     }
 
+    /// A tab that has gone away, such as the stash once it is turned off, shows the system instead.
+    private var shownSection: PopoverSection {
+        sections.contains(model.section) ? model.section : .system
+    }
+
+    private var showsSectionBar: Bool { sections.count > 1 }
+
+    /// The fan button is for Macs that can read their temperatures, and for this Mac only.
     private var showsFanButton: Bool {
-        preferences.showsFanButton && model.history.items.last?.thermal != nil
+        model.selection == .thisMac && preferences.showsFanButton && fanReading != nil
     }
 
     private var showsKeepAwakeButton: Bool {
-        preferences.showsKeepAwakeButton
+        model.selection == .thisMac && preferences.showsKeepAwakeButton
     }
 
-    private func togglePanel(_ panel: PopoverPanel) {
-        withAnimation(.easeOut(duration: 0.15)) { model.panel = model.panel == panel ? nil : panel }
+    // MARK: Tabs
+
+    /// The tabs, with Settings at the end. Only the selected one keeps its word, so the tabs fit, and
+    /// the others are icons with the word as their tooltip and spoken label.
+    private var sectionBar: some View {
+        HStack(spacing: 4) {
+            ForEach(sections, id: \.self) { sectionTab($0) }
+            Spacer(minLength: 8)
+            settingsButton
+        }
+        .motion(.snappy(duration: 0.22), value: model.section)
+    }
+
+    /// The panel's first row under the notch: on the System page the machine tabs, the buttons that
+    /// unfold the fans and keep awake, and Settings at the right end, as tall as an icon of the strip;
+    /// on another page the name of the tab and Settings.
+    private var wideHeader: some View {
+        HStack(spacing: 8) {
+            if shownSection == .system {
+                machineTabs
+                controlButtons
+            } else {
+                Text(shownSection.title).font(.callout.weight(.semibold)).foregroundStyle(.secondary)
+                    .padding(.horizontal, 10)
+                Spacer(minLength: 0)
+            }
+            settingsButton
+        }
+        .frame(minHeight: topRow.iconSide)
+    }
+
+    private func sectionTab(_ section: PopoverSection) -> some View {
+        let isSelected = shownSection == section
+        let badge = section == .stash && shelf.totalItemCount > 0 ? "\(shelf.totalItemCount)" : nil
+        let showsTitle = isSelected
+        return Button {
+            model.section = section
+        } label: {
+            HStack(spacing: 5) {
+                tabIcon(section).font(.callout)
+                if showsTitle { Text(section.title) }
+                if showsTitle, let badge {
+                    Text(badge).font(.caption2.weight(.semibold)).monospacedDigit()
+                        .padding(.horizontal, 5).padding(.vertical, 1)
+                        .background(Capsule().fill(Color.accentColor.opacity(0.25)))
+                }
+            }
+            .font(Font.callout.weight(isSelected ? .semibold : .regular))
+            .lineLimit(1)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background {
+                if isSelected {
+                    Capsule().fill(Color.primary.opacity(0.12)).matchedGeometryEffect(id: "section", in: tabSelection)
+                }
+            }
+            .contentShape(Capsule())
+        }
+        .buttonStyle(PressScaleButtonStyle(scale: 0.96))
+        .foregroundStyle(isSelected ? Color.primary : Color.secondary)
+        .help(section.title)
+        .accessibilityLabel(section.title)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityValue(badge.map { L("%@ items", $0) } ?? "")
+    }
+
+    private func tabIcon(_ section: PopoverSection) -> some View {
+        Image(systemName: section.symbol)
+    }
+
+    private var settingsButton: some View {
+        // Under the notch it is as big as an ear's icon; in the menu bar's popover it is a plain button.
+        let side: CGFloat? = isWide ? topRow.iconSide : nil
+        return Button { onSettings(nil) } label: {
+            Image(systemName: "gearshape")
+                .font(side.map { Font.system(size: $0 * 0.55) } ?? .body)
+                .frame(width: side, height: side)
+                .contentShape(Circle())
+        }
+        .buttonStyle(PressScaleButtonStyle())
+        .foregroundStyle(isWide ? Color.primary : Color.secondary)
+        .help(L("Settings"))
+        .accessibilityLabel(L("Settings"))
     }
 
     @ViewBuilder
@@ -133,37 +292,80 @@ struct PopoverView: View {
 
     // MARK: Top bar
 
-    /// One row: a tab per machine on the left, the settings button on the right. The active tab
-    /// has a solid background; the others are transparent until hovered.
+    /// One row: a tab per machine on the left, then the fan and keep-awake buttons, and the settings
+    /// button on the right. The active tab has a solid background; the others are transparent until
+    /// hovered.
     private var topBar: some View {
         HStack(spacing: 8) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 4) {
-                    tab(preferences.thisMacTitle, selection: .thisMac, status: nil)
-                    ForEach(preferences.devices) { tab($0.name, selection: .remote($0.id), status: status(of: $0)) }
-                }
-                .motion(.snappy(duration: 0.22), value: model.selection)
+            machineTabs
+            controlButtons
+            // With the tabs shown, Settings sits at their end instead.
+            if !showsSectionBar { settingsButton }
+        }
+    }
+
+    // MARK: Fans and keep awake
+
+    /// The buttons that unfold the fans and keep awake, left of Settings: for this Mac only, and each
+    /// unless hidden in Settings.
+    @ViewBuilder
+    private var controlButtons: some View {
+        // As big as an icon of the strip under the notch; a plain button in the menu bar's popover.
+        let side = isWide ? topRow.iconSide : Self.buttonSide
+        if showsFanButton {
+            ThermalButton(
+                assessment: assessment, unit: preferences.temperatureUnit, fanState: fanState,
+                fanLoad: fanReading?.fanFraction ?? 0,
+                isHeatWarning: assessment?.needsAttention(preferences.heatWarning) == true,
+                isOpen: openPanel == .thermal, side: side
+            ) { togglePanel(.thermal) }
+        }
+        if showsKeepAwakeButton {
+            KeepAwakeButton(isActive: keepAwake.isActive, isOpen: openPanel == .keepAwake, side: side) {
+                togglePanel(.keepAwake)
             }
-            if model.selection == .thisMac, showsFanButton {
-                ThermalButton(
-                    assessment: assessment, unit: preferences.temperatureUnit,
-                    fanState: fanState, fanLoad: fanReading?.fanFraction ?? 0, isOpen: model.panel == .thermal
-                ) {
-                    togglePanel(.thermal)
-                }
+        }
+    }
+
+    private static let buttonSide: CGFloat = 22
+
+    /// The panel unfolded now, unless its button is not on offer (hidden in Settings, or another Mac shown).
+    private var openPanel: PopoverPanel? {
+        switch model.panel {
+        case .thermal where showsFanButton: .thermal
+        case .keepAwake where showsKeepAwakeButton: .keepAwake
+        default: nil
+        }
+    }
+
+    /// Unfolds a panel under the top row, or folds it again; opening one closes the other. The window
+    /// follows the page's new height, and the panel is revealed as it grows.
+    private func togglePanel(_ panel: PopoverPanel) {
+        model.panel = model.panel == panel ? nil : panel
+    }
+
+    @ViewBuilder
+    private var controlPanel: some View {
+        switch openPanel {
+        case .thermal:
+            ThermalPanel(
+                assessment: assessment, reading: fanReading,
+                unit: preferences.temperatureUnit, fans: fans, helper: helper
+            )
+        case .keepAwake:
+            KeepAwakePanel(keepAwake: keepAwake, helper: helper, preferences: preferences)
+        case nil:
+            EmptyView()
+        }
+    }
+
+    private var machineTabs: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                tab(preferences.thisMacTitle, selection: .thisMac, status: nil)
+                ForEach(preferences.devices) { tab($0.name, selection: .remote($0.id), status: status(of: $0)) }
             }
-            if model.selection == .thisMac, showsKeepAwakeButton {
-                KeepAwakeButton(isActive: keepAwake.isActive, isOpen: model.panel == .keepAwake) {
-                    togglePanel(.keepAwake)
-                }
-            }
-            Button { onSettings(nil) } label: {
-                Image(systemName: "gearshape").font(.body)
-            }
-            .buttonStyle(PressScaleButtonStyle())
-            .foregroundStyle(.secondary)
-            .help(L("Settings"))
-            .accessibilityLabel(L("Settings"))
+            .motion(.snappy(duration: 0.22), value: model.selection)
         }
     }
 
@@ -245,7 +447,7 @@ struct PopoverView: View {
     private func gridColumns(count: Int) -> [GridItem] {
         Array(
             repeating: GridItem(.flexible(), spacing: 8),
-            count: CardLayout.columns(forCount: count, mode: preferences.cardLayout)
+            count: isWide ? CardLayout.wideColumns(forCount: count) : CardLayout.columns(forCount: count, mode: preferences.cardLayout)
         )
     }
 

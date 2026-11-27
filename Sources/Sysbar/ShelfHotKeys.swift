@@ -2,11 +2,13 @@ import AppKit
 import Carbon.HIToolbox
 import SysbarCore
 
-/// Global shortcuts for the shelf. Carbon hot keys need no permission and fire in any app.
+/// Global shortcuts for the stash and the clipboard history, registered together by the app. Carbon hot
+/// keys need no permission and fire in any app.
 @MainActor
 final class ShelfHotKeys {
     static let newShelf: UInt32 = 1
     static let newShelfFromClipboard: UInt32 = 2
+    static let clipboardHistory: UInt32 = 3
 
     private static weak var current: ShelfHotKeys?
 
@@ -42,7 +44,7 @@ final class ShelfHotKeys {
         }
         for (number, shortcut) in shortcuts {
             var ref: EventHotKeyRef?
-            // A shortcut another app already owns fails here; the shelf just does not get it.
+            // A shortcut another app already owns fails here; the feature just does not get it.
             RegisterEventHotKey(
                 UInt32(shortcut.keyCode), Self.carbonModifiers(shortcut.modifiers),
                 EventHotKeyID(signature: OSType(0x5342_5348), id: number), GetApplicationEventTarget(), 0, &ref

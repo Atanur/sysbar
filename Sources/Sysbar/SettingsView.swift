@@ -12,11 +12,13 @@ extension SettingsPage {
         case .findDevices: L("Find devices")
         case .menuBarReadouts: L("Readouts")
         case .menuBarAppearance: L("Appearance")
+        case .notch: L("Notch")
         case .windowLayout: L("Layout")
         case .appsTable: L("Apps table")
         case .fans: L("Temperature and fans")
         case .keepAwake: L("Keep awake")
-        case .shelf: L("File shelf")
+        case .shelf: Stash.title
+        case .clipboard: L("Clipboard")
         case .general: L("General")
         case .about: L("About")
         }
@@ -28,11 +30,13 @@ extension SettingsPage {
         case .findDevices: L("Macs on this network and machines in your Tailscale")
         case .menuBarReadouts: L("Which metrics appear in the menu bar, and in what order")
         case .menuBarAppearance: L("How the menu bar readout looks")
+        case .notch: L("The island at the top of the screen: displays, background, ears and icons")
         case .windowLayout: L("How cards are arranged in the popover")
         case .appsTable: L("The busiest apps, under the cards in the popover")
         case .fans: L("Temperature readings and fan control in the popover")
-        case .keepAwake: L("Keeps the Mac from sleeping, from the popover")
-        case .shelf: L("Holds files while you drag them")
+        case .keepAwake: L("Keeps the Mac from sleeping, from the System page")
+        case .shelf: L("Keeps files and copies close at hand")
+        case .clipboard: L("Keeps what you copy, on this Mac only")
         case .general: L("Language, startup and reset")
         case .about: L("Version, data sources and limits")
         }
@@ -45,11 +49,13 @@ extension SettingsPage {
         case .findDevices: "antenna.radiowaves.left.and.right"
         case .menuBarReadouts: "menubar.rectangle"
         case .menuBarAppearance: "paintpalette"
+        case .notch: "macbook"
         case .windowLayout: "square.grid.2x2"
         case .appsTable: "list.bullet.rectangle"
         case .fans: "fan"
         case .keepAwake: KeepAwakeController.hasLid ? "laptopcomputer" : "cup.and.saucer"
-        case .shelf: "tray.and.arrow.down"
+        case .shelf: Stash.symbol
+        case .clipboard: "doc.on.clipboard"
         case .general: "gearshape"
         case .about: "info.circle"
         }
@@ -82,6 +88,8 @@ struct SettingsView: View {
     @ObservedObject var preferences: Preferences
     let updater: UpdateChecker
     let helper: HelperConnection
+    let shelf: ShelfController
+    let clipboard: ClipboardController
     @ObservedObject var navigation: SettingsNavigation
     @StateObject private var statuses = DeviceStatusStore()
     /// A new device in the editor, before it is saved.
@@ -283,11 +291,13 @@ struct SettingsView: View {
         case .findDevices: FindDevicesPage(preferences: preferences) { adding = $0 }
         case .menuBarReadouts: MenuBarReadoutsPage(preferences: preferences)
         case .menuBarAppearance: MenuBarAppearancePage(preferences: preferences)
+        case .notch: NotchSettingsPage(preferences: preferences)
         case .windowLayout: WindowLayoutPage(preferences: preferences) { navigation.selection = .thisMac }
         case .appsTable: AppsTablePage(preferences: preferences)
         case .fans: FansPage(preferences: preferences, helper: helper)
         case .keepAwake: KeepAwakePage(preferences: preferences, helper: helper)
-        case .shelf: ShelfPage(preferences: preferences)
+        case .shelf: ShelfPage(preferences: preferences, shelf: shelf)
+        case .clipboard: ClipboardSettingsPage(preferences: preferences, clipboard: clipboard)
         case .general: GeneralSettingsPage(preferences: preferences, updater: updater)
         case .about: AboutPage(updater: updater, preferences: preferences)
         }

@@ -28,8 +28,8 @@ import Testing
         let pages = SettingsPage.all(deviceIDs: [first])
         #expect(Set(pages).count == pages.count)
         let expected: [SettingsPage] = [
-            .thisMac, .device(first), .findDevices, .menuBarReadouts, .menuBarAppearance,
-            .windowLayout, .appsTable, .fans, .keepAwake, .shelf, .general, .about,
+            .thisMac, .device(first), .findDevices, .menuBarReadouts, .menuBarAppearance, .notch,
+            .windowLayout, .appsTable, .fans, .keepAwake, .shelf, .clipboard, .general, .about,
         ]
         #expect(Set(pages) == Set(expected))
     }
@@ -37,6 +37,11 @@ import Testing
     @Test func findingDevicesIsReachedFromTheAddButtonNotTheSidebar() {
         let sidebar = SettingsSection.allCases.flatMap { $0.pages(deviceIDs: [first]) }
         #expect(!sidebar.contains(.findDevices))
+    }
+
+    @Test func theClipboardHasItsOwnPageNextToTheStash() {
+        let tools = SettingsSection.tools.pages(deviceIDs: [])
+        #expect(tools == [.fans, .keepAwake, .shelf, .clipboard])
     }
 
     @Test func theWindowOpensOnThisMac() {

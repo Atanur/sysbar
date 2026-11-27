@@ -36,23 +36,37 @@ enum MenuBarImage {
         return parts.joined(separator: "|") + (colored ? "#c" : "") + "#\(style.rawValue)" + (alert.map { "!\($0)" } ?? "")
     }
 
-    /// `alert` adds a thermometer in that level's colour after the readouts.
+    /// What sits between two readouts at normal size.
+    static func readoutGap(for style: MenuBarStyle) -> CGFloat { style == .barsOnly ? compactSlotGap : slotGap }
+
+    /// The width each readout takes at normal size, for fitting them in the island's ear.
+    static func slotWidths(_ readouts: [MenuBarReadout], style: MenuBarStyle) -> [CGFloat] {
+        readouts.map { slotWidth(for: $0, textWidth: max(width(of: $0.slot.widestText), width(of: $0.text)), style: style) }
+    }
+
+    /// `alert` adds a thermometer in that level's colour after the readouts. `scale` draws everything
+    /// larger or smaller; `monochrome` draws one ink, the battery too.
     static func make(
         _ readouts: [MenuBarReadout], colored: Bool, style: MenuBarStyle = .barsAndValues, alert: LoadLevel? = nil,
-        alertOpacity: CGFloat = 1
+        alertOpacity: CGFloat = 1, scale: CGFloat = 1, monochrome: Bool = false
     ) -> NSImage {
-        let isTemplate = !keepsColors(readouts, colored: colored) && alert == nil
+        let isTemplate = monochrome || (!keepsColors(readouts, colored: colored) && alert == nil)
         let slotTextWidths = readouts.map { max(width(of: $0.slot.widestText), width(of: $0.text)) }
         let slotWidths = zip(readouts, slotTextWidths).map { slotWidth(for: $0.0, textWidth: $0.1, style: style) }
-        let gap = style == .barsOnly ? compactSlotGap : slotGap
+        let gap = readoutGap(for: style)
         let readoutsWidth = slotWidths.reduce(0, +) + gap * CGFloat(max(readouts.count - 1, 0))
         let alertSpace = alert == nil ? 0 : (readouts.isEmpty ? 0 : gap) + alertWidth
         let totalWidth = readoutsWidth + alertSpace
 
-        let image = NSImage(size: NSSize(width: max(totalWidth, 1), height: height), flipped: false) { _ in
+        let size = NSSize(width: max(totalWidth, 1) * scale, height: height * scale)
+        let image = NSImage(size: size, flipped: false) { _ in
+            NSGraphicsContext.current?.cgContext.scaleBy(x: scale, y: scale)
             var x: CGFloat = 0
             for (readout, slotWidth) in zip(readouts, slotWidths) {
-                draw(readout, slotWidth: slotWidth, originX: x, colored: colored, style: style, isTemplate: isTemplate)
+                draw(
+                    readout, slotWidth: slotWidth, originX: x, colored: colored && !monochrome, style: style,
+                    isTemplate: isTemplate, monochrome: monochrome
+                )
                 x += slotWidth + gap
             }
             if let alert { drawAlert(alert, maxX: totalWidth, opacity: alertOpacity) }
@@ -84,11 +98,11 @@ enum MenuBarImage {
 
     private static func draw(
         _ readout: MenuBarReadout, slotWidth: CGFloat, originX: CGFloat, colored: Bool, style: MenuBarStyle,
-        isTemplate: Bool
+        isTemplate: Bool, monochrome: Bool
     ) {
         let ink = isTemplate ? NSColor.black : NSColor.labelColor
         let track = isTemplate ? NSColor.black.withAlphaComponent(0.28) : NSColor.tertiaryLabelColor
-        let isColored = colored || readout.isAlwaysColored
+        let isColored = colored || (readout.isAlwaysColored && !monochrome)
         // A metric with no "too much" (disk, network) stays neutral even in colour mode.
         let fill = isColored ? (readout.load?.nsColor ?? ink) : ink
 

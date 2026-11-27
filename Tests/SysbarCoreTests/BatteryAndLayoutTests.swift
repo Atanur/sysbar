@@ -150,4 +150,8 @@ private let chargingProperties: [String: Any] = [
         #expect([1, 2, 5].map { CardLayout.columns(forCount: $0, mode: .oneColumn) } == [1, 1, 1])
         #expect([1, 2, 5].map { CardLayout.columns(forCount: $0, mode: .twoColumns) } == [1, 2, 2])
     }
+
+    @Test func theWidePanelPutsUpToThreeCardsInARowAndFourInTwoRows() {
+        #expect([0, 1, 2, 3, 4, 5, 6].map { CardLayout.wideColumns(forCount: $0) } == [1, 1, 2, 3, 2, 3, 3])
+    }
 }

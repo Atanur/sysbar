@@ -37,12 +37,23 @@ struct AppsTable: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.headline).accessibilityAddTraits(.isHeader)
             header
-            if rows.isEmpty {
-                Text(L("Measuring…")).font(.caption).foregroundStyle(.secondary)
-            } else {
-                ForEach(rows, id: \.name) { row($0) }
+            // Always `rowLimit` lines tall, so the panel does not grow when the first measurement
+            // arrives or shrink when fewer apps are running.
+            ForEach(0..<max(rowLimit, 1), id: \.self) { index in
+                if rows.indices.contains(index) {
+                    row(rows[index])
+                } else {
+                    emptyRow.overlay(alignment: .leading) {
+                        if index == 0, rows.isEmpty { Text(L("Measuring…")).font(.caption).foregroundStyle(.secondary) }
+                    }
+                }
             }
         }
+    }
+
+    /// As tall as a row, and invisible.
+    private var emptyRow: some View {
+        Text(" ").font(.system(size: 11.5).monospacedDigit()).frame(maxWidth: .infinity).accessibilityHidden(true)
     }
 
     private var header: some View {

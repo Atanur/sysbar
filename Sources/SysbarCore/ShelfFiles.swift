@@ -1,16 +1,9 @@
 import CoreGraphics
 import Foundation
 
-/// Which dragged file URLs belong on the shelf, and where the shelf sits.
+/// Where a floating panel opens beside the pointer.
 public enum ShelfFiles {
-    /// File URLs worth adding, in the order given. Skips non-files, duplicates, and anything
-    /// already in `alreadyHeld`.
-    public static func worthShelving(_ urls: [URL], alreadyHeld: [URL]) -> [URL] {
-        var seen = Set(alreadyHeld.map(path(of:)))
-        return urls.filter { $0.isFileURL && seen.insert(path(of: $0)).inserted }
-    }
-
-    /// The shelf's bottom-left, in AppKit screen coordinates. Just below and to the right of the
+    /// The panel's bottom-left, in AppKit screen coordinates. Just below and to the right of the
     /// pointer, flipping to the other side when that would leave `visible`.
     public static func origin(size: CGSize, near cursor: CGPoint, visible: CGRect) -> CGPoint {
         let gap: CGFloat = 28
@@ -23,15 +16,11 @@ public enum ShelfFiles {
         let maxY = max(visible.minY, visible.maxY - size.height)
         return CGPoint(x: min(max(x, visible.minX), maxX), y: min(max(y, visible.minY), maxY))
     }
-
-    private static func path(of url: URL) -> String {
-        url.standardizedFileURL.resolvingSymlinksInPath().path
-    }
 }
 
 /// A short back-and-forth while a file drag is in progress. A straight drag does not count.
 public enum DragShake {
-    /// Reversals along one axis before the shelf appears. Three is a small shake, not a turn.
+    /// Reversals along one axis before the stash picker opens. Three is a small shake, not a turn.
     public static let reversalsNeeded = 3
     /// How far each swing must go, in points. Eight is a flick of the wrist.
     public static let minTravel: CGFloat = 8

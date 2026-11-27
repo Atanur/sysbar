@@ -33,46 +33,20 @@ extension DragShake.Sensitivity {
     }
 }
 
-extension ShelfPlacement {
-    var title: String {
-        switch self {
-        case .topRight: L("Top right corner")
-        case .topLeft: L("Top left corner")
-        case .bottomRight: L("Bottom right corner")
-        case .bottomLeft: L("Bottom left corner")
-        case .center: L("Center")
-        }
-    }
-}
-
-extension ShelfAddBehavior {
-    var title: String {
-        switch self {
-        case .newShelf: L("Show in new shelf")
-        case .currentShelf: L("Add to current shelf")
-        }
-    }
-}
-
-extension ShelfNotchStyle {
-    var title: String {
-        switch self {
-        case .hover: L("Highlight when hovering over the notch")
-        case .always: L("Always show while dragging")
-        }
-    }
-}
-
 /// Records a global shortcut: click, then press the keys. Escape cancels; Delete clears.
-private struct ShortcutRecorder: View {
+struct ShortcutRecorder: View {
     @Binding var shortcut: KeyShortcut?
     @State private var recording = false
     @State private var monitor: Any?
+    @Environment(\.settingsRowTitle) private var title
 
     var body: some View {
         Button(recording ? L("Type shortcut…") : shortcut?.display ?? L("Record shortcut")) {
             recording ? stop() : start()
         }
+        // Named after what it sets; the key combination is its value.
+        .accessibilityLabel(title.isEmpty ? L("Record shortcut") : title)
+        .accessibilityValue(shortcut?.display ?? "")
         .onDisappear(perform: stop)
     }
 
@@ -119,7 +93,7 @@ private struct ShortcutRecorder: View {
     }
 }
 
-/// The two global shortcuts, each recorded here.
+/// The stash's global shortcuts, each recorded here. The clipboard history's is on its own page.
 struct ShelfShortcutsSheet: View {
     @ObservedObject var preferences: Preferences
     let onDone: () -> Void
@@ -129,8 +103,8 @@ struct ShelfShortcutsSheet: View {
             Text(L("Keyboard shortcuts")).font(.headline)
             Text(L("Click a shortcut, then press the keys. Press Delete to clear it."))
                 .font(.callout).foregroundStyle(.secondary)
-            row(L("New Shelf"), key: "new")
-            row(L("New Shelf From Clipboard"), key: "clipboard")
+            row(L("New Stash"), key: "new")
+            row(L("Add Clipboard to Stash"), key: "clipboard")
             HStack {
                 Spacer()
                 Button(L("Done"), action: onDone).keyboardShortcut(.defaultAction)
@@ -148,29 +122,31 @@ struct ShelfShortcutsSheet: View {
                 get: { preferences.shelfShortcuts[key] },
                 set: { preferences.shelfShortcuts[key] = $0 }
             ))
+            .environment(\.settingsRowTitle, title)
         }
     }
 }
 
-/// Apps whose drags never bring up the shelf.
-struct ShelfIgnoredAppsSheet: View {
-    @ObservedObject var preferences: Preferences
+/// Apps the stash or the clipboard history leaves alone, by bundle identifier.
+struct IgnoredAppsSheet: View {
+    @Binding var apps: [String]
+    let message: String
     let onDone: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(L("Ignored applications")).font(.headline)
-            Text(L("Dragging files from these apps does not bring up the shelf."))
+            Text(message)
                 .font(.callout).foregroundStyle(.secondary)
             List {
-                ForEach(preferences.shelfIgnoredApps, id: \.self) { identifier in
+                ForEach(apps, id: \.self) { identifier in
                     HStack {
                         let app = Self.location(of: identifier)
                         Image(nsImage: app.map { NSWorkspace.shared.icon(forFile: $0.path) } ?? NSImage())
                             .resizable().frame(width: 20, height: 20)
                         Text(app.map { FileManager.default.displayName(atPath: $0.path) } ?? identifier)
                         Spacer()
-                        Button(L("Remove")) { preferences.shelfIgnoredApps.removeAll { $0 == identifier } }
+                        Button(L("Remove")) { apps.removeAll { $0 == identifier } }
                     }
                 }
             }
@@ -197,8 +173,8 @@ struct ShelfIgnoredAppsSheet: View {
         guard panel.runModal() == .OK else { return }
         for url in panel.urls {
             guard let identifier = Bundle(url: url)?.bundleIdentifier,
-                  !preferences.shelfIgnoredApps.contains(identifier) else { continue }
-            preferences.shelfIgnoredApps.append(identifier)
+                  !apps.contains(identifier) else { continue }
+            apps.append(identifier)
         }
     }
 }

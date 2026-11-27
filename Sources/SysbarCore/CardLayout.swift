@@ -17,4 +17,10 @@ public enum CardLayout {
         case .twoColumns: count > 1 ? 2 : 1
         }
     }
+
+    /// The wide panel under the notch: up to three cards side by side, four in two rows of two, more in
+    /// rows of three, so no card gets too narrow for its figures.
+    public static func wideColumns(forCount count: Int) -> Int {
+        count == 4 ? 2 : min(max(count, 1), 3)
+    }
 }

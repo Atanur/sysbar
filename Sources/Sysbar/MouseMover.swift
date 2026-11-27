@@ -3,7 +3,8 @@ import ApplicationServices
 import OSLog
 import SysbarCore
 
-/// Moves the mouse cursor a little, about once a minute, while nobody has touched the Mac, so chat
+/// Moves the mouse cursor a little, once the Mac has been left alone for the time Settings gives
+/// (a minute by default), so chat
 /// apps that read the system's idle clock do not show "away". It runs only while keep awake is on.
 ///
 /// Posting input events needs the Accessibility permission; without it nothing happens.
@@ -17,6 +18,8 @@ final class MouseMover {
     private static let anyInputEvent = CGEventType(rawValue: 0xFFFF_FFFF)!
 
     private var task: Task<Void, Never>?
+    /// How long the Mac must be left alone before the cursor moves.
+    var wait: () -> Double = { MouseWander.idleSecondsBeforeMoving }
 
     static var hasAccess: Bool { AXIsProcessTrusted() }
 
@@ -37,7 +40,7 @@ final class MouseMover {
     }
 
     private func moveIfIdle() async {
-        guard Self.hasAccess, Self.isLeftAlone else { return }
+        guard Self.hasAccess, isLeftAlone else { return }
         guard let origin = CGEvent(source: nil)?.location else { return }
         var generator = SystemRandomNumberGenerator()
         let route = MouseWander.route(from: origin, within: Self.displayBounds(containing: origin), using: &generator)
@@ -45,9 +48,9 @@ final class MouseMover {
         await follow(route)
     }
 
-    /// Nobody has used the Mac for a minute, the screen is on and unlocked, and no button is held.
-    private static var isLeftAlone: Bool {
-        guard MouseWander.isDue(idleSeconds: idleSeconds), NSEvent.pressedMouseButtons == 0 else { return false }
+    /// Nobody has used the Mac for the chosen time, the screen is on and unlocked, and no button is held.
+    private var isLeftAlone: Bool {
+        guard MouseWander.isDue(idleSeconds: Self.idleSeconds, after: wait()), NSEvent.pressedMouseButtons == 0 else { return false }
         guard CGDisplayIsAsleep(CGMainDisplayID()) == 0 else { return false }
         let session = CGSessionCopyCurrentDictionary() as? [String: Any]
         return session?["CGSSessionScreenIsLocked"] as? Bool != true

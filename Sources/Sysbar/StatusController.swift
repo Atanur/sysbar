@@ -19,7 +19,15 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private let fans: FanController
     private let keepAwake: KeepAwakeController
     private let shelf: ShelfController
-    private lazy var settingsWindow = SettingsWindowController(preferences: preferences, updater: updater, helper: helper)
+    /// The clipboard history, a feature of its own: it needs neither the stash nor an open panel.
+    private let clipboard: ClipboardController
+    /// The global shortcuts of both features, registered together.
+    private lazy var hotKeys = ShelfHotKeys { [weak self] id in self?.shortcutPressed(id) }
+    /// Sysbar at the top of the screen, when Settings puts it there instead of in the menu bar.
+    private let notch = NotchDisplays()
+    private lazy var settingsWindow = SettingsWindowController(
+        preferences: preferences, updater: updater, helper: helper, shelf: shelf, clipboard: clipboard
+    )
     private var service: MonitorService?
     private var processMonitor: ProcessMonitor?
     private var history: BoundedHistory<Snapshot>
@@ -37,6 +45,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// control in it has been used (a menu, a stepper), which left it stuck on screen.
     private var outsideClickMonitor: Any?
     private var preferencesSubscription: AnyCancellable?
+    /// Redraws the island's feature icons when what they show changes between two samples.
+    private var featureSubscription: AnyCancellable?
+    /// Marks the open panel's tab on the island's icons.
+    private var sectionSubscription: AnyCancellable?
     private var terminationObserver: NSObjectProtocol?
     /// Animates the popover's values and graphs between samples. The menu bar is not animated:
     /// it is drawn once per sample, which keeps it cheap.
@@ -45,6 +57,10 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private var remoteStopTask: Task<Void, Never>?
     /// The tab shown last, so the popover reopens where the user left it.
     private var lastSelection: DeviceSelection = .thisMac
+    /// The tab the panel showed when it last closed: System, Stash or Clipboard.
+    private var lastSection: PopoverSection = .system
+    /// What the panel about to open is asked to show, by `showSection`; read once, when it is made.
+    private var pendingTarget: PanelTarget?
 
     override init() {
         history = BoundedHistory(capacity: SamplingInterval.historyPoints)
@@ -53,9 +69,30 @@ final class StatusController: NSObject, NSPopoverDelegate {
         fans = FanController(helper: helper)
         keepAwake = KeepAwakeController(helper: helper)
         shelf = ShelfController(preferences: preferences)
+        clipboard = ClipboardController(preferences: preferences)
         super.init()
-        shelf.openSettings = { [weak self] in self?.openSettings(page: .shelf) }
+        clipboard.onAddToShelf = { [weak self] items, id in self?.shelf.add(items, to: id) }
+        // The stash may be off, and then a copy has nowhere to go.
+        clipboard.stashChoices = { [weak self] in
+            guard let self, preferences.shelfEnabled else { return [] }
+            return shelf.stashes
+        }
+        keepAwake.mouseWait = { [weak self] in self?.preferences.keepAwakeMouseIdle ?? MouseWander.idleSecondsBeforeMoving }
         configureButton()
+        notch.makeContent = { [weak self] row, target in
+            self?.makePanelContent(sizesToFit: true, row: row, target: target) ?? NSViewController()
+        }
+        notch.onClose = { [weak self] in self?.panelDidClose() }
+        notch.onMenu = { [weak self] view, point in self?.showMenu(in: view, at: point) }
+        notch.stashes = { [weak self] in self?.shelf.stashes ?? [] }
+        notch.onDrop = { [weak self] urls, target in self?.shelf.drop(urls, on: target) }
+        notch.features.onSelect = { [weak self] in self?.featureClicked($0) }
+        notch.features.onStatus = { [weak self] in self?.statusClicked($0) }
+        shelf.onReveal = { [weak self] in self?.showStashTab() }
+        shelf.onSummon = { [weak self] in self?.summonStashes() }
+        shelf.onFileDragBegan = { [weak self] in self?.notch.setDragHint(true) }
+        shelf.onFileDragEnded = { [weak self] in self?.notch.dragEnded() }
+        applyPlacement()
 
         processMonitor = ProcessMonitor { [weak self] usage in
             MainActor.assumeIsolated { self?.viewModel?.apps = usage }
@@ -71,6 +108,14 @@ final class StatusController: NSObject, NSPopoverDelegate {
             DispatchQueue.main.async { MainActor.assumeIsolated { self?.preferencesDidChange() } }
         }
 
+        featureSubscription = Publishers.MergeMany(
+            fans.objectWillChange.map { _ in () }.eraseToAnyPublisher(),
+            keepAwake.objectWillChange.map { _ in () }.eraseToAnyPublisher(),
+            shelf.objectWillChange.map { _ in () }.eraseToAnyPublisher()
+        ).sink { [weak self] in
+            DispatchQueue.main.async { MainActor.assumeIsolated { self?.refreshNotchFeatures() } }
+        }
+
         terminationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification, object: nil, queue: .main
         ) { [weak self] _ in
@@ -78,11 +123,12 @@ final class StatusController: NSObject, NSPopoverDelegate {
                 self?.remoteMonitor.closeConnections()
                 self?.keepAwake.appWillTerminate()
                 self?.shelf.appWillTerminate()
+                self?.clipboard.stop()
             }
         }
 
         updater.start()
-        shelf.sync()
+        syncFeatures()
         // A setting an earlier run left behind is turned off, or shown if someone else set it.
         keepAwake.refreshFromSystem()
         Task { [weak self] in
@@ -109,16 +155,17 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// The heat assessment when it needs attention; the menu bar then shows a warning that leads
     /// to the fan panel.
     private var heatAlert: ThermalAssessment? {
-        ThermalAssessment.assess(history.items).flatMap { $0.needsAttention ? $0 : nil }
+        ThermalAssessment.assess(history.items).flatMap { $0.needsAttention(preferences.heatWarning) ? $0 : nil }
     }
 
     private func receive(_ snapshot: Snapshot) {
         history = history.appending(snapshot)
         lastSnapshot = snapshot
-        keepAwake.evaluate(battery: snapshot.battery)
+        keepAwake.evaluate(battery: snapshot.battery, lowBatteryPercent: preferences.keepAwakeLowBattery)
         viewModel?.history = history
         refreshMenuBar(snapshot)
         updateDescription(snapshot)
+        refreshNotch(snapshot)
         // Only the open popover animates; with it closed, or with Reduce Motion on, the reading is
         // taken over at once, so VoiceOver also hears one value per sample.
         let animates = viewModel != nil && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
@@ -129,15 +176,145 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// once per animation frame.
     private func updateDescription(_ snapshot: Snapshot) {
         guard let button = statusItem.button else { return }
-        let readouts = Format.statusTitle(
-            snapshot, metrics: preferences.menuBarMetrics, batteryThreshold: preferences.batteryMenuBarThreshold
-        )
-        let heat = heatAlert.map { "\($0.cause.title) · \($0.source.title) \(preferences.temperatureUnit.format(celsius: $0.celsius))" }
-        let description = [readouts, heat].compactMap { $0 }.joined(separator: " · ")
+        let description = description(of: snapshot)
         guard description != button.toolTip else { return }
         button.toolTip = description
         // The name stays "Sysbar"; the readings are its value, so VoiceOver says both.
         button.setAccessibilityValue(description)
+    }
+
+    /// The readings in words, and the heat warning when there is one.
+    private func description(of snapshot: Snapshot) -> String {
+        let readouts = Format.statusTitle(
+            snapshot, metrics: preferences.menuBarMetrics, batteryThreshold: preferences.batteryMenuBarThreshold
+        )
+        return [readouts, heatText].compactMap { $0 }.joined(separator: " · ")
+    }
+
+    /// What is warming this Mac, when it needs attention.
+    private var heatText: String? {
+        heatAlert.map { "\($0.cause.title) · \($0.source.title) \(preferences.temperatureUnit.format(celsius: $0.celsius))" }
+    }
+
+    /// Sysbar shows in one place: its menu bar item, or the island at the top of the screen.
+    private func applyPlacement() {
+        let atTop = preferences.sysbarPlacement == .notch
+        statusItem.isVisible = !atTop
+        guard atTop else { return notch.stop() }
+        popover?.performClose(nil)
+        notch.configure(
+            choice: preferences.notchDisplays,
+            look: NotchLook(
+                background: preferences.notchBackground, iconStyle: preferences.notchIconStyle, iconSize: preferences.notchIconSize
+            ),
+            opensOnHover: preferences.notchOpening == .hover,
+            visibility: preferences.notchVisibility
+        )
+        guard !notch.isRunning else { return }
+        notch.start()
+        if let lastSnapshot { refreshNotch(lastSnapshot) }
+    }
+
+    /// The island's System item shows the menu bar's readouts the settings leave in, as many as its ear
+    /// holds beside the other items; the stash and the clipboard have an icon each while they are on, and
+    /// the right ear starts with a glyph for the heat warning and for keep awake while they apply. Which
+    /// ear holds what, in what order, is the user's (`notchEars`).
+    private func refreshNotch(_ snapshot: Snapshot) {
+        guard notch.isRunning else { return }
+        let readouts = MenuBarReadouts.make(
+            from: snapshot, metrics: preferences.menuBarMetrics, batteryThreshold: preferences.batteryMenuBarThreshold
+        )
+        // Measured at the chosen size, which is the most a display gives them (a capsule may give less).
+        let scale = preferences.notchIconSize.scale
+        let style = preferences.menuBarStyle
+        let widths = MenuBarImage.slotWidths(readouts, style: style).map { $0 * scale }
+        let features = notchFeatures()
+        let statuses = notchStatuses()
+        let shown = NotchGeometry.earReadouts(
+            readouts.map(\.slot), hidden: Set(preferences.notchLeftHidden), limit: preferences.notchLeftCount,
+            widths: widths, gap: MenuBarImage.readoutGap(for: style) * scale,
+            room: readoutRoom(features: features, statuses: statuses, scale: scale)
+        ).map { readouts[$0] }
+        notch.setDrops(enabled: preferences.shelfEnabled, opensOnDrag: preferences.shelfNotchEnabled)
+        notch.update(
+            left: shown.isEmpty ? nil : MenuBarImage.make(
+                shown, colored: preferences.coloredMenuBar, style: style, alert: nil,
+                monochrome: preferences.notchIconStyle == .monochrome
+            ),
+            features: features, statuses: statuses, ears: preferences.notchEars,
+            description: description(of: snapshot)
+        )
+    }
+
+    /// What the System item's ear leaves the readouts, with the icons that share it as they are when
+    /// the island is open: every item shows then, so the readouts stay as they are when it opens. The
+    /// status glyphs, which show while closed, take their room from the right ear.
+    private func readoutRoom(features: [NotchFeature], statuses: [NotchStatusInfo], scale: CGFloat) -> CGFloat {
+        let ears = preferences.notchEars
+        let shown = ears.ears(available: Set(features.map(\.item)).union([.system]), open: true)
+        let side = NotchGeometry.featureIconSide(scale: scale)
+        let onLeft = ears.ear(of: .system) == .left
+        let sharing = (onLeft ? shown.left : shown.right).map {
+            NotchEarEntry(item: $0, width: $0 == .system ? 0 : side, isBars: $0 == .system)
+        }
+        return NotchGeometry.readoutRoom(onLeft ? sharing : NotchGeometry.withStatuses(statuses.map(\.status), side: side, before: sharing))
+    }
+
+    private func refreshNotchFeatures() {
+        if let lastSnapshot { refreshNotch(lastSnapshot) }
+    }
+
+    /// One icon per tab on offer besides System: the stash once it is on, and the clipboard once its
+    /// history is on.
+    private func notchFeatures() -> [NotchFeature] {
+        var features: [NotchFeature] = []
+        if preferences.shelfEnabled {
+            let items = shelf.totalItemCount
+            features.append(NotchFeature(section: .stash, kind: .stash(items: items), value: items > 0 ? L("%@ items", "\(items)") : ""))
+        }
+        if preferences.clipboardHistoryEnabled {
+            features.append(NotchFeature(section: .clipboard, kind: .clipboard, value: ""))
+        }
+        return features
+    }
+
+    /// The signals the closed island shows: the heat warning, which the fan button of the System page
+    /// explains, and keep awake while it is on. Each only while its button is on offer.
+    private func notchStatuses() -> [NotchStatusInfo] {
+        var statuses: [NotchStatusInfo] = []
+        if preferences.showsFanButton, let alert = heatAlert {
+            statuses.append(NotchStatusInfo(
+                status: .heat, heat: alert.level, title: L("Heat warning"), value: heatText ?? ""
+            ))
+        }
+        if preferences.showsKeepAwakeButton, keepAwake.isActive {
+            let value = KeepAwakeController.hasLid ? L("Lid closed, Mac awake") : L("Mac kept awake")
+            statuses.append(NotchStatusInfo(status: .keepAwake, title: KeepAwakeController.title, value: value))
+        }
+        return statuses
+    }
+
+    /// Starts or stops the stash and the clipboard history to match Settings, and registers their shortcuts.
+    private func syncFeatures() {
+        shelf.sync()
+        clipboard.sync()
+        var shortcuts: [UInt32: KeyShortcut] = [:]
+        if preferences.shelfEnabled {
+            shortcuts[ShelfHotKeys.newShelf] = preferences.shelfShortcuts["new"]
+            shortcuts[ShelfHotKeys.newShelfFromClipboard] = preferences.shelfShortcuts["clipboard"]
+        }
+        if preferences.clipboardHistoryEnabled {
+            shortcuts[ShelfHotKeys.clipboardHistory] = preferences.clipboardShortcut
+        }
+        hotKeys.apply(shortcuts.compactMapValues { $0 })
+    }
+
+    private func shortcutPressed(_ id: UInt32) {
+        switch id {
+        case ShelfHotKeys.newShelf: shelf.createStash(startRenaming: true, reveal: true)
+        case ShelfHotKeys.clipboardHistory: clipboard.showPanel()
+        default: shelf.addClipboard()
+        }
     }
 
     private func preferencesDidChange() {
@@ -148,11 +325,13 @@ final class StatusController: NSObject, NSPopoverDelegate {
         // A hidden button leaves no way to see or end what it started, so that ends with it.
         if !preferences.showsFanButton, fans.mode.isManual { fans.setAutomatic() }
         if !preferences.showsKeepAwakeButton, case .on = keepAwake.state { keepAwake.stop() }
-        shelf.sync()
+        syncFeatures()
+        applyPlacement()
         lastSignature = nil
         if let lastSnapshot {
             refreshMenuBar(lastSnapshot)
             updateDescription(lastSnapshot)
+            refreshNotch(lastSnapshot)
         }
     }
 
@@ -213,13 +392,13 @@ final class StatusController: NSObject, NSPopoverDelegate {
     private static let pulseCount = 3.0
 
     private func openSettings(page: SettingsPage?) {
-        popover?.performClose(nil)
+        closePanel()
         settingsWindow.show(page: page)
     }
 
     /// Opens Activity Monitor (or Battery settings) for the clicked card.
     private func openDetails(for metric: MenuBarMetric) {
-        popover?.performClose(nil)
+        closePanel()
         let hasBattery = lastSnapshot?.battery != nil
         SystemLinks.open(SystemLinks.target(for: metric, hasBattery: hasBattery))
     }
@@ -327,8 +506,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
         }
     }
 
-    /// For checking the layout: `Sysbar --thermal-panel-test` opens the popover, shows and hides
-    /// the thermal panel twice, and prints the popover window's top edge and height each time.
+    /// For checking the layout: `Sysbar --thermal-panel-test` opens the popover, unfolds and folds
+    /// the fan panel twice, and prints the popover window's top edge and height each time.
     func toggleThermalPanelForTesting() {
         Task {
             try? await Task.sleep(for: .seconds(3))
@@ -336,9 +515,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
             for step in 0..<5 {
                 try? await Task.sleep(for: .seconds(1))
                 if let frame = popover?.contentViewController?.view.window?.frame {
-                    print("step \(step) panel \(viewModel?.showsThermal == true ? "open" : "closed"): top \(Int(frame.maxY)) height \(Int(frame.height))")
+                    print("step \(step) panel \(viewModel?.panel == .thermal ? "fans" : "none"): top \(Int(frame.maxY)) height \(Int(frame.height))")
                 }
-                viewModel?.showsThermal.toggle()
+                viewModel?.panel = viewModel?.panel == .thermal ? nil : .thermal
             }
             NSApp.terminate(nil)
         }
@@ -396,15 +575,15 @@ final class StatusController: NSObject, NSPopoverDelegate {
     @objc private func statusItemClicked() {
         let event = NSApp.currentEvent
         if event?.type == .rightMouseUp || event?.modifierFlags.contains(.control) == true {
-            showMenu()
+            guard let button = statusItem.button else { return }
+            showMenu(in: button, at: NSPoint(x: 0, y: button.bounds.height + 5))
         } else {
             togglePopover()
         }
     }
 
-    private func showMenu() {
-        popover?.performClose(nil)
-        guard let button = statusItem.button else { return }
+    private func showMenu(in view: NSView, at point: NSPoint) {
+        closePanel()
         let menu = NSMenu()
         for (title, key, action) in [
             (L("Settings"), ",", #selector(openSettingsFromMenu)),
@@ -419,7 +598,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
         let quit = NSMenuItem(title: L("Quit Sysbar"), action: #selector(quitFromMenu), keyEquivalent: "q")
         quit.target = self
         menu.addItem(quit)
-        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height + 5), in: button)
+        menu.popUp(positioning: nil, at: point, in: view)
     }
 
     @objc private func openSettingsFromMenu() { openSettings(page: nil) }
@@ -440,7 +619,27 @@ final class StatusController: NSObject, NSPopoverDelegate {
             return
         }
         guard let button = statusItem.button else { return }
+        let popover = NSPopover()
+        popover.behavior = .transient
+        popover.delegate = self
+        self.popover = popover
+        popover.contentViewController = makePanelContent(sizesToFit: false)
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        // The popover follows each page's height with its own animation; the content is anchored to
+        // its top (see `PopoverView.body`), so the top bar stays still while it grows or shrinks.
+        popover.contentViewController?.view.window?.makeKey()
+        // Global monitors see only events meant for other apps, so clicks in the popover are not seen.
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            MainActor.assumeIsolated { self?.popover?.performClose(nil) }
+        }
+    }
 
+    /// What the popover shows, for the menu bar item or the island at the top of the screen.
+    /// Making it also starts what an open panel needs: this Mac's apps table, or the remote device
+    /// shown last. `sizesToFit` reports its size as it changes, for the island to follow. `target` is
+    /// what was asked for, by the readouts or an icon the island was opened from: a tab, and on the
+    /// System page a panel unfolded.
+    private func makePanelContent(sizesToFit: Bool, row: NotchRowModel? = nil, target: PanelTarget? = nil) -> NSViewController {
         // The user may have just approved the helper in System Settings.
         helper.refreshState()
         keepAwake.refreshFromSystem()
@@ -449,14 +648,22 @@ final class StatusController: NSObject, NSPopoverDelegate {
         // Reopen on the tab shown last; a device that has since been deleted falls back to this Mac.
         if case .remote(let id) = lastSelection, preferences.device(id: id) == nil { lastSelection = .thisMac }
         model.selection = lastSelection
-        // Opened because of the heat warning: show the fan panel straight away.
-        model.showsThermal = heatAlert != nil && lastSelection == .thisMac && preferences.showsFanButton
+        // A tab asked for comes first. Opened because of the heat warning: the System page with the fan
+        // panel unfolded straight away, whatever tab was shown last.
+        let asked = pendingTarget ?? target
+        pendingTarget = nil
+        if let asked {
+            model.section = asked.section
+            model.panel = asked.panel
+        } else if heatAlert != nil && preferences.showsFanButton {
+            model.section = .system
+            model.panel = .thermal
+        } else {
+            model.section = lastSection
+        }
         viewModel = model
-        let popover = NSPopover()
-        popover.behavior = .transient
-        popover.delegate = self
-        self.popover = popover
-        popover.contentViewController = NSHostingController(
+        sectionSubscription = sizesToFit ? model.$section.sink { [weak self] in self?.notch.features.active = $0 } : nil
+        let controller = PanelHostingController(
             rootView: PopoverView(
                 model: model,
                 preferences: preferences,
@@ -465,32 +672,90 @@ final class StatusController: NSObject, NSPopoverDelegate {
                 fans: fans,
                 keepAwake: keepAwake,
                 helper: helper,
+                shelf: shelf,
+                clipboard: clipboard,
+                topRow: row ?? NotchRowModel(),
                 onSelect: { [weak self] in self?.select($0) },
                 onRetry: { [weak self] in self?.retryRemote() },
                 onSettings: { [weak self] in self?.openSettings(page: $0) },
-                onOpenDetails: { [weak self] in self?.openDetails(for: $0) }
+                onOpenDetails: { [weak self] in self?.openDetails(for: $0) },
+                onClose: { [weak self] in self?.closePanel() },
+                // Only the island's panel sizes to fit, and it opens under the notch, where there is room sideways.
+                isWide: sizesToFit
             )
         )
-        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        // After the opening animation, size changes (the thermal panel) apply in one step: an
-        // animated resize keeps the content centred while it runs, so the top bar would jump.
-        popover.animates = false
-        popover.contentViewController?.view.window?.makeKey()
-        // Global monitors see only events meant for other apps, so clicks in the popover are not seen.
-        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            MainActor.assumeIsolated { self?.popover?.performClose(nil) }
+        if sizesToFit {
+            controller.sizingOptions = [.preferredContentSize]
+            // The island follows the panel's height from page to page and as panels unfold.
+            controller.onHeightChange = { [weak self] in self?.notch.contentSizeChanged() }
         }
-        // Starts this Mac's apps table, or resumes (or reconnects to) the remote device shown last.
         select(lastSelection)
+        return controller
+    }
+
+    /// Brings up the Stash tab, opening the panel if it is closed: for a stash that was just made and
+    /// wants a name.
+    private func showStashTab() {
+        showSection(.stash)
+        // Typing the new stash's name needs the keyboard, which an inactive menu bar app does not have.
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    /// Shows a tab, and on the System page a panel unfolded, opening the island or the popover first
+    /// when it is closed, and keeping the island open.
+    private func showSection(_ section: PopoverSection, panel: PopoverPanel? = nil) {
+        lastSection = section
+        if viewModel == nil {
+            pendingTarget = PanelTarget(section: section, panel: panel)
+            if preferences.sysbarPlacement == .notch { notch.open(pinned: true) } else { togglePopover() }
+            pendingTarget = nil
+        } else if notch.isOpen {
+            notch.open(pinned: true)
+        }
+        viewModel?.section = section
+        if let panel { viewModel?.panel = panel }
+    }
+
+    /// A click on a feature's icon in the island: its tab, or closed again when it is already the one
+    /// shown and the island was opened on purpose, not by resting the pointer on it.
+    private func featureClicked(_ section: PopoverSection) {
+        if notch.isPinned, viewModel?.section == section { return notch.close() }
+        showSection(section)
+    }
+
+    /// A click on a status glyph of the closed island: the System page with the glyph's panel unfolded.
+    private func statusClicked(_ status: NotchStatus) {
+        showSection(.system, panel: status.panel)
+    }
+
+    /// A shake or the modifier key during a file drag: the stashes to drop on, in the island, or on the
+    /// Stash tab of the popover when Sysbar is in the menu bar. The open island goes to the tab.
+    private func summonStashes() {
+        guard preferences.sysbarPlacement == .notch, notch.isRunning, !notch.isOpen else { return showSection(.stash) }
+        notch.showPicker(summoned: true)
+    }
+
+    /// Closes the popover or the island's panel, whichever is open.
+    private func closePanel() {
+        popover?.performClose(nil)
+        notch.close()
     }
 
     func popoverDidClose(_ notification: Notification) {
         if let outsideClickMonitor { NSEvent.removeMonitor(outsideClickMonitor) }
         outsideClickMonitor = nil
+        popover?.contentViewController = nil
+        popover = nil
+        panelDidClose()
+    }
+
+    /// Stops what only an open panel needs.
+    private func panelDidClose() {
+        if let viewModel { lastSection = viewModel.section }
+        sectionSubscription = nil
+        notch.features.active = nil
         processMonitor?.stop()
         keepRemoteMonitoringAfterClose()
         viewModel = nil
-        popover?.contentViewController = nil
-        popover = nil
     }
 }

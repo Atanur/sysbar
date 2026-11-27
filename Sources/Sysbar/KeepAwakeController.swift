@@ -105,6 +105,10 @@ final class KeepAwakeController: ObservableObject {
     /// Held while it is on, on a Mac without a lid: macOS then does not sleep when idle.
     private var sleepAssertion: IOPMAssertionID?
     private let mouseMover = MouseMover()
+    /// Set by the owner: how long the Mac must be left alone before the cursor moves.
+    var mouseWait: () -> Double = { MouseWander.idleSecondsBeforeMoving } {
+        didSet { mouseMover.wait = mouseWait }
+    }
     /// Looks for the Accessibility permission to be granted, after the user was sent to System Settings.
     private var accessWatch: Task<Void, Never>?
 
@@ -176,13 +180,16 @@ final class KeepAwakeController: ObservableObject {
     }
 
     /// Called with every sample: ends it once its time is up, its app is closed or the battery is low.
-    func evaluate(battery: BatteryInfo?, now: Date = Date()) {
+    func evaluate(
+        battery: BatteryInfo?, lowBatteryPercent: Int = KeepAwakePolicy.lowBatteryPercent, now: Date = Date()
+    ) {
         guard case .on(let plan, let endsAt) = state else { return }
         if case .app(let app) = plan, appPresence.isGone(running: app.isRunning, now: now) {
             Self.log.notice("Keep awake ended: \(app.bundleID, privacy: .public) was not running for \(AppPresence.graceSeconds, privacy: .public) s")
             stop(because: .appQuit)
         } else if let reason = KeepAwakePolicy.stopReason(
-            now: now, endsAt: endsAt, battery: battery, requiresPower: plan == .whileCharging
+            now: now, endsAt: endsAt, battery: battery, requiresPower: plan == .whileCharging,
+            lowBatteryPercent: lowBatteryPercent
         ) {
             stop(because: reason)
         }

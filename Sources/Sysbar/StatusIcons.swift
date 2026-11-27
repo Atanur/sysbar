@@ -46,12 +46,15 @@ struct FanIcon: View {
     let automaticStyle: AnyShapeStyle
     /// The heat warning wins over the fans' own colour.
     var isHeatWarning = false
+    /// Whether the state dims or tints the icon; beside the notch every icon is one ink, and only
+    /// the filled symbol tells manual apart.
+    var showsState = true
 
     var body: some View {
         Image(systemName: state == .manual ? "fan.fill" : "fan")
             .font(.body)
-            .foregroundStyle(style)
-            .opacity(state == .stopped ? 0.55 : 1)
+            .foregroundStyle(showsState || isHeatWarning ? style : automaticStyle)
+            .opacity(showsState && state == .stopped ? 0.55 : 1)
             .motion(.easeOut(duration: 0.2), value: state)
     }
 

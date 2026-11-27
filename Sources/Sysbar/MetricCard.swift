@@ -40,8 +40,12 @@ struct MetricCard: View {
     let capacity: Int
     let range: ClosedRange<Double>?
     let tint: Color
+    /// The value's colour when it is not the plain text colour, such as a temperature's heat.
+    var valueColor: Color?
     /// Shown on hover, and read out by VoiceOver.
     var help = ""
+    /// Stretches the card to the height of its row, for cards laid out by `CardRows`.
+    var fillsHeight = false
     var onTap: (() -> Void)?
 
     @State private var isHovering = false
@@ -63,10 +67,7 @@ struct MetricCard: View {
 
     private var content: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 5) {
-                Image(systemName: symbol).font(.caption).foregroundStyle(.secondary)
-                Text(title).font(.caption.weight(.medium)).foregroundStyle(.secondary)
-                Spacer(minLength: 4)
+            CardHeader(title: title, icon: { Image(systemName: symbol) }) {
                 HStack(spacing: 3) {
                     if !note.isEmpty { Text(note) }
                     if let noteSymbol {
@@ -85,10 +86,7 @@ struct MetricCard: View {
             valueRow
             graph.revealOnAppear()
         }
-        .padding(10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.primary.opacity(isHovering ? 0.10 : 0.06), in: RoundedRectangle(cornerRadius: 10))
-        .contentShape(RoundedRectangle(cornerRadius: 10))
+        .cardChrome(isHovering: isHovering, fillsHeight: fillsHeight)
         // One element per card: its title, then the value and the note in words.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
@@ -103,6 +101,7 @@ struct MetricCard: View {
         if readouts.isEmpty {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text(value).font(.system(size: 22, weight: .semibold).monospacedDigit())
+                    .foregroundStyle(valueColor ?? .primary)
                 if !unit.isEmpty {
                     Text(unit).font(.caption).foregroundStyle(.secondary)
                 }
@@ -135,4 +134,35 @@ struct MetricCard: View {
             Sparkline(values: series, capacity: capacity, range: range, color: tint, height: Self.graphHeight)
         }
     }
+}
+
+/// A card's title row: a small icon and the title at the left, a secondary value at the right.
+struct CardHeader<Icon: View, Trailing: View>: View {
+    let title: String
+    @ViewBuilder let icon: Icon
+    @ViewBuilder let trailing: Trailing
+
+    var body: some View {
+        HStack(spacing: 5) {
+            icon.font(.caption).foregroundStyle(.secondary)
+            Text(title).font(.caption.weight(.medium)).foregroundStyle(.secondary).lineLimit(1)
+            Spacer(minLength: 4)
+            trailing
+        }
+    }
+}
+
+extension View {
+    /// The look every card shares: its padding, its soft background, and its rounded hit shape.
+    func cardChrome(isHovering: Bool = false, fillsHeight: Bool = false) -> some View {
+        padding(10)
+            .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading)
+            .background(Color.primary.opacity(isHovering ? 0.10 : 0.06), in: RoundedRectangle(cornerRadius: MetricCardStyle.corner, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: MetricCardStyle.corner, style: .continuous))
+    }
+}
+
+/// The cards' shape, which the island's open corners are drawn concentric with.
+enum MetricCardStyle {
+    static let corner: CGFloat = 10
 }

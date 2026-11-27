@@ -1,7 +1,7 @@
 import Foundation
 
 /// How long the Mac is kept awake with its lid closed.
-public enum KeepAwakeDuration: CaseIterable, Sendable {
+public enum KeepAwakeDuration: String, CaseIterable, Sendable {
     case oneHour
     case fourHours
     case untilOff
@@ -17,6 +17,28 @@ public enum KeepAwakeDuration: CaseIterable, Sendable {
 
     public func endDate(from start: Date) -> Date? {
         seconds.map { start.addingTimeInterval($0) }
+    }
+
+    public static func normalized(_ value: String?) -> KeepAwakeDuration {
+        value.flatMap(KeepAwakeDuration.init(rawValue:)) ?? .untilOff
+    }
+}
+
+/// How long the switch keeps the Mac awake: a fixed length, or the one last picked from the menu.
+public enum KeepAwakeSwitchDefault: String, CaseIterable, Sendable {
+    case untilOff, oneHour, fourHours, lastUsed
+
+    public func duration(last: KeepAwakeDuration) -> KeepAwakeDuration {
+        switch self {
+        case .untilOff: .untilOff
+        case .oneHour: .oneHour
+        case .fourHours: .fourHours
+        case .lastUsed: last
+        }
+    }
+
+    public static func normalized(_ value: String?) -> KeepAwakeSwitchDefault {
+        value.flatMap(KeepAwakeSwitchDefault.init(rawValue:)) ?? .untilOff
     }
 }
 
@@ -42,12 +64,19 @@ public enum KeepAwakeSchedule {
 /// When keeping the Mac awake ends by itself. A closed lid in a bag is the risk, so a low
 /// battery ends it too; plugged in, the charge does not matter.
 public enum KeepAwakePolicy {
-    /// Charge, in percent, at or below which it ends while the Mac runs on battery.
+    /// Charge, in percent, at or below which it ends while the Mac runs on battery, and the levels
+    /// Settings offers. There is no "never": a closed lid in a bag is the risk this guards against.
     public static let lowBatteryPercent = 20
+    public static let lowBatteryChoices = [10, 20, 30]
+
+    public static func normalizedLowBattery(_ value: Int?) -> Int {
+        value.flatMap { lowBatteryChoices.contains($0) ? $0 : nil } ?? lowBatteryPercent
+    }
 
     /// `requiresPower` is for keeping awake only while the charger is connected: unplugging ends it.
     public static func stopReason(
-        now: Date, endsAt: Date?, battery: BatteryInfo?, requiresPower: Bool = false
+        now: Date, endsAt: Date?, battery: BatteryInfo?, requiresPower: Bool = false,
+        lowBatteryPercent: Int = KeepAwakePolicy.lowBatteryPercent
     ) -> KeepAwakeStop? {
         if let endsAt, now >= endsAt { return .timeUp }
         if requiresPower, let battery, !battery.isPluggedIn { return .unplugged }

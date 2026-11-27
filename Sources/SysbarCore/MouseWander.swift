@@ -57,6 +57,13 @@ public enum MouseWander {
     /// How long the Mac must have been left alone before the cursor moves; the move itself starts the
     /// clock again, so it comes about once a minute for as long as nobody touches the Mac.
     public static let idleSecondsBeforeMoving = 60.0
+    /// The waits Settings offers, in seconds. None is shorter than `pollSeconds`, which could not be kept.
+    public static let idleChoices = [30.0, 60, 120, 300]
+
+    public static func normalizedIdle(_ value: Double?) -> Double {
+        value.flatMap { idleChoices.contains($0) ? $0 : nil } ?? idleSecondsBeforeMoving
+    }
+
     /// How often the idle time is looked at.
     public static let pollSeconds = 5.0
 
@@ -72,8 +79,8 @@ public enum MouseWander {
     static let backDurations = 0.4...0.8
     static let secondsPerPoint = 1.0 / 1500
 
-    public static func isDue(idleSeconds: Double) -> Bool {
-        idleSeconds >= idleSecondsBeforeMoving
+    public static func isDue(idleSeconds: Double, after wait: Double = idleSecondsBeforeMoving) -> Bool {
+        idleSeconds >= wait
     }
 
     /// Where the cursor goes: the middle of the screen, or the lower right when it already is near the middle.
