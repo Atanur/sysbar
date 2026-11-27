@@ -3,6 +3,14 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.6.0 — 2026-11-27
+
+- Sysbar can live **around the notch** instead of in the menu bar (Settings › Menu Bar › Appearance › Location). The readings sit beside the notch and the features as icons; click one and a panel grows down from under the notch, on that page. Displays without a notch get a small capsule in the middle of the menu bar that works the same way.
+- The notch is yours to arrange on the new **Notch** settings page: which items sit left or right of it and in what order, which show only once it is open, which displays show it, a black, glass or clear background, coloured or one-ink icons in three sizes, and whether it opens when the pointer rests on it or only on a click. In full screen it hides until the pointer reaches it, and it can hide like that all the time too.
+- **Clipboard history**, a feature of its own: text, links, rich text, images and files you copy are kept on this Mac, searchable and filtered by kind, and put back with a click. A shortcut opens it beside the pointer. Copies that password managers mark as concealed are never kept, and you choose which apps to ignore, how long and how much to keep, and where.
+- The file shelf is now the **Stash**: named stashes such as Work or School, each with its colour, that keep their files (followed even when moved or renamed) and copied text and links. Drag files onto the notch and pick the stash they go in; drag them out and they stay.
+- Fans and Keep awake are buttons beside Settings in the System page again, and unfold right there. More of their details can be set: how long the switch keeps the Mac awake, when low battery ends it, how soon the mouse moves, and how early the heat warning comes.
+
 ## 0.5.13 — 2026-11-08
 
 - File shelves hold files while you move them between apps: shake the pointer during a drag to open one, then drop files on it and take them out in any other app.
