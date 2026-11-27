@@ -84,15 +84,6 @@ import Testing
 }
 
 @Suite struct ClipboardLimitsTests {
-    @Test func imageSizesAreChosenInMegabytes() {
-        #expect(ClipboardHistory.imageLimits == [5, 10, 20, 50])
-        #expect(ClipboardHistory.normalizedImageLimit(nil) == 20)
-        #expect(ClipboardHistory.normalizedImageLimit(7) == 20)
-        #expect(ClipboardHistory.normalizedImageLimit(50) == 50)
-        #expect(ClipboardHistory.imageBytes(megabytes: 10) == 10_000_000)
-        #expect(ClipboardHistory.maxImageBytes == ClipboardHistory.imageBytes(megabytes: 20))
-    }
-
     @Test func aRepeatedCopyMovesUpUnlessRepeatsAreKept() {
         let first = ClipboardEntry(kind: .text, text: "a", fingerprint: "a", date: Date(timeIntervalSince1970: 1))
         let again = ClipboardEntry(kind: .text, text: "a", fingerprint: "a", date: Date(timeIntervalSince1970: 2))

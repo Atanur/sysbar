@@ -54,10 +54,8 @@ Apple's accessibility guidelines.
   several displays each island is its own "Sysbar" button, and opening one closes the others. Pressing
   the button always opens the panel, so choosing "click" for opening does not affect VoiceOver or
   keyboard use. State is never carried by colour alone: the monochrome style keeps every icon's
-  state in its accessibility value. Black always uses the dark look; glass and transparent follow the
-  system's light or dark look, and a transparent island adds a faint shadow in the opposite tone to
-  its text. A transparent island or panel has no backing of its own, so its legibility depends on the
-  desktop behind it; use black or glass if it is hard to read.
+  state in its accessibility value. Black always uses the dark look; glass follows the
+  system's light or dark look.
 - **Settings** names every switch, menu, slider and stepper after its row, such as "Launch at login,
   switch". Page and group titles are headings, so VoiceOver's heading rotor moves between them. The
   sidebar is a standard list and works with the arrow keys.

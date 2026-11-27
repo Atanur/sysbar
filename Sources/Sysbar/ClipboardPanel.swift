@@ -203,9 +203,10 @@ struct ClipboardHistoryView: View {
 
     /// Concentric with the shortcut panel's 16 pt corners, which the rows sit 6 pt inside.
     private static let rowCorner: CGFloat = 10
-    /// A row's height (a title of one or two lines over its caption), and what lies between rows and
-    /// around them, for sizing the list to its rows.
-    private static let rowHeight: CGFloat = 46
+    /// A row's height (a one-line title over its caption, measured: 31 pt of text and 12 pt of padding),
+    /// which every row is held to, and what lies between rows and around them, so the list can be sized
+    /// to whole rows.
+    private static let rowHeight: CGFloat = 43
     private static let rowSpacing: CGFloat = 2
     private static let listPadding: CGFloat = 6
     /// Above and below the note of an empty list on the tab, which is then compact.
@@ -313,18 +314,19 @@ struct ClipboardHistoryView: View {
             HStack(spacing: 10) {
                 icon(entry)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(controller.title(of: entry)).lineLimit(2)
+                    Text(controller.title(of: entry)).lineLimit(1)
                     Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: Self.rowHeight, maxHeight: Self.rowHeight, alignment: .leading)
             .background(RoundedRectangle(cornerRadius: Self.rowCorner, style: .continuous).fill(selected ? Color.accentColor.opacity(0.25) : .clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .help(controller.title(of: entry))
         .contextMenu {
             Button(L("Copy")) { onPick(entry) }
             if controller.canStash(entry) {

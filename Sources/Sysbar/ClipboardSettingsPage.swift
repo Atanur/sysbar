@@ -54,11 +54,6 @@ struct ClipboardSettingsPage: View {
                             RowToggle(isOn: kindBinding(kind))
                         }
                     }
-                    RowDivider(inset: 12)
-                    SettingsRow(title: L("Largest image")) {
-                        menu(L("Largest image"), $preferences.clipboardImageLimit, ClipboardHistory.imageLimits) { L("%@ MB", "\($0)") }
-                    }
-                    .disabled(!preferences.clipboardKinds.contains(.image))
                 }
 
                 SettingsGroup(

@@ -34,6 +34,11 @@ import Testing
         #expect(Set(pages) == Set(expected))
     }
 
+    @Test func theSidebarStartsWithTheAppsOwnPages() {
+        #expect(SettingsSection.allCases == [.app, .devices, .menuBar, .window, .tools])
+        #expect(SettingsSection.allCases.first?.pages(deviceIDs: []) == [.general, .about])
+    }
+
     @Test func findingDevicesIsReachedFromTheAddButtonNotTheSidebar() {
         let sidebar = SettingsSection.allCases.flatMap { $0.pages(deviceIDs: [first]) }
         #expect(!sidebar.contains(.findDevices))

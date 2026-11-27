@@ -127,18 +127,8 @@ public enum ClipboardHistory {
     public static let defaultLimit = 50
     /// Larger copies are not kept: a huge log or a raw photo would bloat the history on disk.
     public static let maxTextLength = 100_000
-    /// The largest image Settings offers to keep, in megabytes, and the one used until it is changed.
-    public static let imageLimits = [5, 10, 20, 50]
-    public static let defaultImageLimit = 20
-    public static let maxImageBytes = imageBytes(megabytes: defaultImageLimit)
-    /// Rich text that is larger is kept as plain text; images have their own limit.
+    /// Rich text that is larger is kept as plain text.
     public static let maxRichTextBytes = 20_000_000
-
-    public static func normalizedImageLimit(_ value: Int?) -> Int {
-        value.flatMap { imageLimits.contains($0) ? $0 : nil } ?? defaultImageLimit
-    }
-
-    public static func imageBytes(megabytes: Int) -> Int { megabytes * 1_000_000 }
 
     public static func normalizedLimit(_ value: Int?) -> Int {
         value.flatMap { limits.contains($0) ? $0 : nil } ?? defaultLimit

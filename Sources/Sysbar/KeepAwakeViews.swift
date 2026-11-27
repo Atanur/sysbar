@@ -36,7 +36,6 @@ struct KeepAwakeButton: View {
 struct KeepAwakePanel: View {
     @ObservedObject var keepAwake: KeepAwakeController
     @ObservedObject var helper: HelperConnection
-    @ObservedObject var preferences: Preferences
     /// Whether the list of open apps is shown, and the apps in it as of when it was opened.
     @State private var choosingApp = false
     @State private var openApps: [KeepAwakeController.WatchedApp] = []
@@ -59,15 +58,7 @@ struct KeepAwakePanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Text(KeepAwakeController.title).font(.callout.weight(.medium)).help(explanation)
-                Spacer(minLength: 0)
-                Toggle(KeepAwakeController.title, isOn: switchBinding)
-                    .labelsHidden()
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-                    .disabled(KeepAwakeController.hasLid && helper.state != .ready)
-            }
+            Text(KeepAwakeController.title).font(.callout.weight(.medium)).help(explanation)
             dropdown
                 .disabled(KeepAwakeController.hasLid && helper.state != .ready)
             if choosingTime { timeChooser }
@@ -111,22 +102,6 @@ struct KeepAwakePanel: View {
         }
     }
 
-    /// On keeps the Mac awake for the duration Settings chose (until it is turned off, unless changed); off
-    /// stops whatever plan is running.
-    private var switchBinding: Binding<Bool> {
-        Binding(
-            get: { keepAwake.isActive },
-            set: { on in
-                closeChoosers()
-                if on {
-                    keepAwake.start(.duration(preferences.keepAwakeSwitchDefault.duration(last: preferences.keepAwakeLastDuration)))
-                } else {
-                    keepAwake.stop()
-                }
-            }
-        )
-    }
-
     private var explanation: String {
         KeepAwakeController.hasLid
             ? L("The Mac stays awake even when the lid is closed, so it can get warm in a bag. It sleeps again when Sysbar quits.")
@@ -144,7 +119,8 @@ struct KeepAwakePanel: View {
         ] + charging + [(L("While an app is open"), .app)]
     }
 
-    /// Nil, with no option chosen, while it was turned on outside Sysbar.
+    /// What the menu shows: the plan running, or Off. Nil, with no option chosen, while it was turned on
+    /// outside Sysbar.
     private var selection: Choice? {
         if choosingApp { return .app }
         if choosingTime { return .untilTime }
@@ -159,6 +135,8 @@ struct KeepAwakePanel: View {
     }
 
     /// The pop-up menu: shows the chosen option, and lists them all with a tick on the chosen one.
+    /// Choosing Off stops keeping awake. Choosing another while off starts keeping awake for it; while
+    /// on, it replaces the plan and starts the countdown again.
     private var dropdown: some View {
         Menu {
             ForEach(options.indices, id: \.self) { index in
@@ -188,7 +166,7 @@ struct KeepAwakePanel: View {
         .menuStyle(.button)
         .menuIndicator(.hidden)
         .buttonStyle(.plain)
-        .accessibilityLabel(KeepAwakeController.title)
+        .accessibilityLabel(L("Keep awake"))
         .accessibilityValue(options.first { $0.value == selection }?.title ?? "")
     }
 
@@ -199,7 +177,6 @@ struct KeepAwakePanel: View {
             keepAwake.stop()
         case .duration(let duration):
             closeChoosers()
-            preferences.keepAwakeLastDuration = duration
             keepAwake.start(.duration(duration))
         case .whileCharging:
             closeChoosers()

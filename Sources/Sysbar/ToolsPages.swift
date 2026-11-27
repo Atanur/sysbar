@@ -71,20 +71,8 @@ struct KeepAwakePage: View {
 
             SettingsGroup(
                 title: L("Defaults"),
-                footer: L("The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it.")
+                footer: L("On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it.")
             ) {
-                SettingsRow(symbol: "timer", title: L("When switched on")) {
-                    Picker(L("When switched on"), selection: $preferences.keepAwakeSwitchDefault) {
-                        Text(L("Until off")).tag(KeepAwakeSwitchDefault.untilOff)
-                        Text(L("1 hour")).tag(KeepAwakeSwitchDefault.oneHour)
-                        Text(L("4 hours")).tag(KeepAwakeSwitchDefault.fourHours)
-                        Text(L("Last choice")).tag(KeepAwakeSwitchDefault.lastUsed)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .fixedSize()
-                }
-                RowDivider(inset: 12)
                 SettingsRow(symbol: "battery.25percent", title: L("End on low battery")) {
                     Picker(L("End on low battery"), selection: $preferences.keepAwakeLowBattery) {
                         ForEach(KeepAwakePolicy.lowBatteryChoices, id: \.self) {

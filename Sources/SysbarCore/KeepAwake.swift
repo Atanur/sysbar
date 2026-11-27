@@ -18,28 +18,6 @@ public enum KeepAwakeDuration: String, CaseIterable, Sendable {
     public func endDate(from start: Date) -> Date? {
         seconds.map { start.addingTimeInterval($0) }
     }
-
-    public static func normalized(_ value: String?) -> KeepAwakeDuration {
-        value.flatMap(KeepAwakeDuration.init(rawValue:)) ?? .untilOff
-    }
-}
-
-/// How long the switch keeps the Mac awake: a fixed length, or the one last picked from the menu.
-public enum KeepAwakeSwitchDefault: String, CaseIterable, Sendable {
-    case untilOff, oneHour, fourHours, lastUsed
-
-    public func duration(last: KeepAwakeDuration) -> KeepAwakeDuration {
-        switch self {
-        case .untilOff: .untilOff
-        case .oneHour: .oneHour
-        case .fourHours: .fourHours
-        case .lastUsed: last
-        }
-    }
-
-    public static func normalized(_ value: String?) -> KeepAwakeSwitchDefault {
-        value.flatMap(KeepAwakeSwitchDefault.init(rawValue:)) ?? .untilOff
-    }
 }
 
 public enum KeepAwakeStop: Equatable, Sendable {

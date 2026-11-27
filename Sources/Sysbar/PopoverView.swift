@@ -113,6 +113,9 @@ struct PopoverView: View {
     let onClose: () -> Void
     /// Wide and short under the notch; narrow and tall from the menu bar.
     var isWide = false
+    /// Told the height the narrow page wants, as it changes, for the popover to follow; the wide
+    /// panel reports through `topRow`.
+    var onHeight: ((CGFloat) -> Void)?
 
     var body: some View {
         if isWide {
@@ -137,6 +140,8 @@ struct PopoverView: View {
             }
             .padding(12)
             .frame(width: Self.width)
+            .background(GeometryReader { Color.clear.preference(key: PanelHeightKey.self, value: $0.size.height) })
+            .onPreferenceChange(PanelHeightKey.self) { onHeight?($0) }
             .frame(maxHeight: .infinity, alignment: .top)
         }
     }
@@ -353,7 +358,7 @@ struct PopoverView: View {
                 unit: preferences.temperatureUnit, fans: fans, helper: helper
             )
         case .keepAwake:
-            KeepAwakePanel(keepAwake: keepAwake, helper: helper, preferences: preferences)
+            KeepAwakePanel(keepAwake: keepAwake, helper: helper)
         case nil:
             EmptyView()
         }

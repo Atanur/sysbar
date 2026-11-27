@@ -8,7 +8,6 @@
 "%1$@ · %2$@ performance + %3$@ efficiency" = "%1$@ · %2$@ performance + %3$@ efficiency";
 "%1$@d %2$@h" = "%1$@d %2$@h";
 "%1$@h %2$@m" = "%1$@h %2$@m";
-"%@ MB" = "%@ MB";
 "%@ cycles" = "%@ cycles";
 "%@ free" = "%@ free";
 "%@ hidden" = "%@ hidden";
@@ -78,7 +77,7 @@
 "Battery charge" = "Battery charge";
 "Battery draw %@ W" = "Battery draw %@ W";
 "Black" = "Black";
-"Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look." = "Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look.";
+"Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look." = "Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look.";
 "Blue" = "Blue";
 "Built-in display only" = "Built-in display only";
 "CPU" = "CPU";
@@ -185,6 +184,7 @@
 "Expanded" = "Expanded";
 "Fahrenheit" = "Fahrenheit";
 "Fan %1$@: %2$@ rpm" = "Fan %1$@: %2$@ rpm";
+"Fan %@: stopped" = "Fan %@: stopped";
 "Fan control needs a signed copy of Sysbar." = "Fan control needs a signed copy of Sysbar.";
 "Fan control needs a small helper, set up once with your administrator approval." = "Fan control needs a small helper, set up once with your administrator approval.";
 "Fan speed" = "Fan speed";
@@ -264,8 +264,6 @@
 "Language, startup and reset" = "Language, startup and reset";
 "Laptop" = "Laptop";
 "Large" = "Large";
-"Largest image" = "Largest image";
-"Last choice" = "Last choice";
 "Last used stash" = "Last used stash";
 "Late" = "Late";
 "Launch at login" = "Launch at login";
@@ -349,6 +347,7 @@
 "OK" = "OK";
 "Off" = "Off";
 "Off: copying the same thing again moves it to the top." = "Off: copying the same thing again moves it to the top.";
+"On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it." = "On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it.";
 "On the Mac to watch: find its address and user name" = "On the Mac to watch: find its address and user name";
 "On the Mac to watch: turn on Remote Login" = "On the Mac to watch: turn on Remote Login";
 "On the server: find its address and user name" = "On the server: find its address and user name";
@@ -470,6 +469,7 @@
 "Stashes are kept until you delete them. A file in a stash is only remembered by where it is; nothing is copied. Hiding the button also turns the stash off." = "Stashes are kept until you delete them. A file in a stash is only remembered by where it is; nothing is copied. Hiding the button also turns the stash off.";
 "Statistics from the graphics driver" = "Statistics from the graphics driver";
 "Status" = "Status";
+"Stopped" = "Stopped";
 "Storage" = "Storage";
 "Style" = "Style";
 "Suggest a feature" = "Suggest a feature";
@@ -525,7 +525,6 @@
 "The server's key could not be verified. Connect once in Terminal with `ssh %@` and accept it." = "The server's key could not be verified. Connect once in Terminal with `ssh %@` and accept it.";
 "The server's key has changed. Sysbar did not connect, for your safety; check the server." = "The server's key has changed. Sysbar did not connect, for your safety; check the server.";
 "The shortcut adds to this stash; files dropped on a stash always go to that one. Deleting never touches the files themselves." = "The shortcut adds to this stash; files dropped on a stash always go to that one. Deleting never touches the files themselves.";
-"The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it." = "The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it.";
 "The update could not be installed: %@" = "The update could not be installed: %@";
 "This Mac" = "This Mac";
 "This Mac's temperature sensors cannot be read." = "This Mac's temperature sensors cannot be read.";
@@ -538,7 +537,6 @@
 "Top of screen" = "Top of screen";
 "Top processes" = "Top processes";
 "Total SMC power, energy counters and battery log" = "Total SMC power, energy counters and battery log";
-"Transparent" = "Transparent";
 "Try again" = "Try again";
 "Turned off: the app was closed." = "Turned off: the app was closed.";
 "Turned off: the battery was low." = "Turned off: the battery was low.";
@@ -580,7 +578,6 @@
 "What's new" = "What's new";
 "What's new in %@" = "What's new in %@";
 "When a stash is deleted" = "When a stash is deleted";
-"When switched on" = "When switched on";
 "Which metrics appear in the menu bar, and in what order" = "Which metrics appear in the menu bar, and in what order";
 "While %@ is open" = "While %@ is open";
 "While an app is open" = "While an app is open";

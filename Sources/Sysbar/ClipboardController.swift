@@ -115,7 +115,7 @@ final class ClipboardController: ObservableObject {
         if [source, frontmost, previous].contains(where: { $0.map(ignored.contains) ?? false }) { return }
         guard let capture = Self.capture(
             pasteboard, types: types, source: source,
-            allowed: preferences.clipboardKinds, maxImageBytes: ClipboardHistory.imageBytes(megabytes: preferences.clipboardImageLimit)
+            allowed: preferences.clipboardKinds
         ) else { return }
         add(capture.entry, data: capture.data)
     }
@@ -123,7 +123,7 @@ final class ClipboardController: ObservableObject {
     /// The entry for what is on `pasteboard`, and the image or rich text to keep beside it. Kinds
     /// Settings turns off are skipped, and rich text turned off is kept as plain text.
     private static func capture(
-        _ pasteboard: NSPasteboard, types: [String], source: String?, allowed: Set<ClipboardKind>, maxImageBytes: Int
+        _ pasteboard: NSPasteboard, types: [String], source: String?, allowed: Set<ClipboardKind>
     ) -> (entry: ClipboardEntry, data: Data?)? {
         let text = pasteboard.string(forType: .string)
         guard let found = ClipboardKind.of(types: types, text: text),
@@ -145,7 +145,7 @@ final class ClipboardController: ObservableObject {
             let plain: ClipboardKind = kind == .link ? .link : .text
             return (ClipboardEntry(kind: plain, text: text, fingerprint: fingerprint, source: source, date: now), nil)
         case .image:
-            guard let png = pngData(on: pasteboard), png.count <= maxImageBytes else { return nil }
+            guard let png = pngData(on: pasteboard) else { return nil }
             return (ClipboardEntry(kind: .image, fingerprint: ClipboardEntry.fingerprint(data: png), source: source, date: now), png)
         }
     }

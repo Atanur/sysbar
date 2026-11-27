@@ -46,6 +46,8 @@ struct MetricCard: View {
     var help = ""
     /// Stretches the card to the height of its row, for cards laid out by `CardRows`.
     var fillsHeight = false
+    /// Draws the graph in from the left when the card appears; off for a still picture, as in a preview.
+    var revealsGraph = true
     var onTap: (() -> Void)?
 
     @State private var isHovering = false
@@ -84,7 +86,7 @@ struct MetricCard: View {
                 .minimumScaleFactor(0.8)
             }
             valueRow
-            graph.revealOnAppear()
+            if revealsGraph { graph.revealOnAppear() } else { graph }
         }
         .cardChrome(isHovering: isHovering, fillsHeight: fillsHeight)
         // One element per card: its title, then the value and the note in words.

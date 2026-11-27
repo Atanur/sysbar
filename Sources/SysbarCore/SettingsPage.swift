@@ -27,9 +27,9 @@ public enum SettingsPage: Hashable, Sendable {
     }
 }
 
-/// A titled group of pages in the settings sidebar.
+/// A titled group of pages in the settings sidebar, in its order: the app's own pages first.
 public enum SettingsSection: CaseIterable, Sendable {
-    case devices, menuBar, window, tools, app
+    case app, devices, menuBar, window, tools
 
     public func pages(deviceIDs: [UUID]) -> [SettingsPage] {
         switch self {

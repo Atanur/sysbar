@@ -184,14 +184,20 @@ struct ThermalPanel: View {
     }
 
     /// One speed for all fans: their average. Macs with two fans run them separately, so their
-    /// speeds differ a little; the tooltip lists each one.
+    /// speeds differ a little; the tooltip lists each one. Fans that are not turning are said so in
+    /// words, not as 0 rpm.
     private func rpmText(_ readings: [FanReading]) -> String {
         let average = readings.map(\.rpm).reduce(0, +) / Double(max(readings.count, 1))
+        if FanReading.isStopped(rpm: average) { return L("Stopped") }
         return L("%@ rpm", "\(Int(average.rounded()))")
     }
 
     private func perFanText(_ readings: [FanReading]) -> String {
-        readings.map { L("Fan %1$@: %2$@ rpm", "\($0.index + 1)", "\(Int($0.rpm.rounded()))") }.joined(separator: "\n")
+        readings.map {
+            let number = "\($0.index + 1)"
+            if FanReading.isStopped(rpm: $0.rpm) { return L("Fan %@: stopped", number) }
+            return L("Fan %1$@: %2$@ rpm", number, "\(Int($0.rpm.rounded()))")
+        }.joined(separator: "\n")
     }
 
     private func trendText(_ perMinute: Double) -> String {

@@ -12,13 +12,10 @@ enum FanState: Equatable {
     /// Running at the speed the user set.
     case manual
 
-    /// A reading under this is a fan that is not turning.
-    static let stoppedBelowRPM = 1.0
-
     init(isManual: Bool, rpm: Double?) {
         if isManual {
             self = .manual
-        } else if let rpm, rpm < Self.stoppedBelowRPM {
+        } else if let rpm, FanReading.isStopped(rpm: rpm) {
             self = .stopped
         } else {
             self = .automatic

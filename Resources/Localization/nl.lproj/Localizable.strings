@@ -267,6 +267,7 @@
 "macOS is lowering performance to bring the temperature down." = "macOS verlaagt de prestaties om de temperatuur te laten dalen.";
 "Not now" = "Niet nu";
 "Fan %1$@: %2$@ rpm" = "Ventilator %1$@: %2$@ tpm";
+"Fan %@: stopped" = "Ventilator %@: uit";
 "Set up again" = "Opnieuw instellen";
 "1 hour" = "1 uur";
 "4 hours" = "4 uur";
@@ -391,6 +392,7 @@
 "Same as on this Mac" = "Zelfde als op deze Mac";
 "Show this Mac's cards" = "Kaarten van deze Mac tonen";
 "Status" = "Status";
+"Stopped" = "Uit";
 "Temperature readings and fan control in the popover" = "Temperaturen en ventilatorbediening in de popover";
 "The busiest apps, under the cards in the popover" = "De drukste apps, onder de kaarten in de popover";
 "The details of this Mac" = "De gegevens van deze Mac";
@@ -496,7 +498,6 @@
 "All displays" = "Alle schermen";
 "Background" = "Achtergrond";
 "Black" = "Zwart";
-"Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look." = "Zwart gaat op in de notch; automatisch gebruikt glas op een scherm zonder notch. Een transparant eiland heeft geen vulling, dus de tekst krijgt een lichte schaduw. Glas en transparant volgen de lichte of donkere weergave van het systeem.";
 "Built-in display only" = "Alleen het ingebouwde scherm";
 "Click" = "Klik";
 "Colored" = "Kleur";
@@ -520,9 +521,7 @@
 "Small" = "Klein";
 "Takes effect once Sysbar is shown at the top of the screen, under Appearance." = "Werkt zodra Sysbar bovenaan het scherm wordt getoond, onder Weergave.";
 "The island at the top of the screen: displays, background, ears and icons" = "Het eiland bovenaan het scherm: schermen, achtergrond, oren en symbolen";
-"Transparent" = "Transparant";
 "With click, resting the pointer on the island does nothing; a click, or a feature's icon, opens it." = "Bij klik gebeurt er niets als de aanwijzer op het eiland rust; een klik, of het symbool van een functie, opent het.";
-"%@ MB" = "%@ MB";
 "1 day" = "1 dag";
 "1 minute" = "1 minuut";
 "1 month" = "1 maand";
@@ -553,8 +552,6 @@
 "Keep repeated copies" = "Bewaar herhaalde kopieën";
 "Keeps what you copy, on this Mac only" = "Bewaart wat je kopieert, alleen op deze Mac";
 "Keeps what you copy. The newest are on the Clipboard tab; a shortcut opens them all." = "Bewaart wat je kopieert. De nieuwste staan op het tabblad Klembord; met een toetscombinatie open je ze allemaal.";
-"Largest image" = "Grootste afbeelding";
-"Last choice" = "Laatste keuze";
 "Last used stash" = "Laatst gebruikte bergplaats";
 "Late" = "Laat";
 "More folder actions for %@" = "Meer mapacties voor %@";
@@ -587,7 +584,6 @@
 "Warn about heat" = "Waarschuw bij hitte";
 "What to keep" = "Wat te bewaren";
 "When a stash is deleted" = "Wanneer een bergplaats wordt verwijderd";
-"When switched on" = "Wanneer ingeschakeld";
 "While you are away, the cursor moves a little, so apps see you as active. Settings says how soon." = "Terwijl je weg bent, beweegt de cursor een klein beetje, zodat apps je als actief zien. In Instellingen stel je in hoe snel.";
 "Your stashes move to the new folder. Files in them stay where they are." = "Je bergplaatsen gaan naar de nieuwe map. Bestanden erin blijven waar ze zijn.";
 "the clipboard history" = "de klembordgeschiedenis";
@@ -612,9 +608,10 @@
 "Opens the System page" = "Opent de pagina Systeem";
 "Set up; used from the System page" = "Ingesteld; gebruikt vanaf de pagina Systeem";
 "The menu bar flags heat that is out of the ordinary, and the panel of the fan button opens on it. Early warns sooner and Late later; macOS slowing the Mac down counts at any setting except Off." = "De menubalk meldt ongewone hitte en het paneel van de ventilatorknop opent erop. Vroeg waarschuwt eerder en Laat later; als macOS de Mac vertraagt, telt dat bij elke instelling behalve Uit.";
-"The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it." = "De schakelaar in het paneel Wakker houden gebruikt deze duur; het menu daar biedt de andere. Wakker houden stopt altijd als de batterij bijna leeg is, zodat een gesloten scherm in een tas de batterij niet leegtrekt.";
 "Used while Move the mouse when idle is on in the Keep awake panel." = "Gebruikt zolang Muis bewegen bij inactiviteit aan staat in het paneel Wakker houden.";
 "Visibility" = "Zichtbaarheid";
 "Show the island" = "Het eiland tonen";
 "Only when the pointer is on it" = "Alleen als de aanwijzer erop staat";
 "In full screen, the island hides until the pointer reaches it." = "In volledig scherm blijft het eiland verborgen tot de aanwijzer het bereikt.";
+"On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it." = "Wakker houden stopt altijd als de batterij bijna leeg is op batterijvoeding, zodat een dichtgeklapte Mac in een tas niet leegloopt.";
+"Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look." = "Zwart gaat op in de notch; automatisch gebruikt glas op een scherm zonder notch. Glas volgt de lichte of donkere weergave van het systeem.";

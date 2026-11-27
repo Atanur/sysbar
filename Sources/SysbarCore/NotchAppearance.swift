@@ -45,11 +45,15 @@ public enum NotchBackground: String, CaseIterable, Sendable {
     case automatic
     case black
     case glass
-    /// No fill at all; the content has a faint shadow so it stays legible on the desktop.
-    case transparent
+
+    /// The background a stored value stands for. A missing or unknown one, such as the removed
+    /// "transparent", is automatic.
+    public static func stored(_ raw: String?) -> NotchBackground {
+        raw.flatMap(NotchBackground.init(rawValue:)) ?? .automatic
+    }
 
     public enum Fill: Equatable, Sendable {
-        case black, glass, clear
+        case black, glass
 
         /// Black is the one fill that is dark whatever is behind it, so it needs the dark look.
         public var isDark: Bool { self == .black }
@@ -60,7 +64,6 @@ public enum NotchBackground: String, CaseIterable, Sendable {
         case .automatic: shape == .notch ? .black : .glass
         case .black: .black
         case .glass: .glass
-        case .transparent: .clear
         }
     }
 }

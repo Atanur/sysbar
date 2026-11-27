@@ -16,10 +16,8 @@ struct IslandEntry: Equatable {
 /// panel that hangs from its bottom edge, the content while open or the stash tiles while files are
 /// dragged. Strip and panel are one outline (see `IslandOutline`).
 ///
-/// Black is dark whatever the system look, so its content is forced to the dark look. Glass and a
-/// clear island follow the system look, which is what the desktop behind them is likely to follow; a
-/// clear one also gives its content a faint shadow in the opposite tone, so it stays legible on any
-/// wallpaper. While files are dragged the tiles need a dark ground, which a clear island then gets.
+/// Black is dark whatever the system look, so its content is forced to the dark look. Glass follows
+/// the system look, which is what the desktop behind it is likely to follow.
 @MainActor
 final class IslandView: NSView {
     private static let closedCorner: CGFloat = 10
@@ -40,7 +38,7 @@ final class IslandView: NSView {
     var opensOnDrag = false
 
     private var shape: NotchGeometry.Shape = .notch
-    /// What is drawn behind the content, with the picker's dark ground taken into account.
+    /// What is drawn behind the content.
     private var fill: NotchBackground.Fill = .black
     /// Whether the island is a black shape, which is the only fill the window's shadow suits.
     var drawsBlack: Bool { fill == .black }
@@ -115,9 +113,8 @@ final class IslandView: NSView {
         right: [IslandEntry], open: Bool, contentSize: NSSize = .zero, picker: ShelfPickerLayout?, stashes: [ShelfStash],
         dragHint: Bool, look: NotchLook, scale: CGFloat
     ) {
-        var fill = look.background.fill(for: geometry.shape)
+        let fill = look.background.fill(for: geometry.shape)
         let tilesNeedDark = picker != nil
-        if fill == .clear && tilesNeedDark { fill = .black }
         if shape != geometry.shape || self.fill != fill || fill == .glass && glass == nil { applyBackground(geometry.shape, fill) }
         self.header = header
         self.notch = notch
@@ -134,8 +131,6 @@ final class IslandView: NSView {
         // The tiles are white on a dark ground, which glass only is in the dark look.
         let dark = fill.isDark || tilesNeedDark
         appearance = dark ? NSAppearance(named: .darkAqua) : nil
-        shadowsContent = fill == .clear
-        updateShadows()
         overlay.configure(
             layout: picker, stashes: stashes, hint: dragHint && picker == nil && !open,
             corner: shape == .notch ? Self.closedCorner : header / 2, isNotch: shape == .notch
@@ -175,26 +170,6 @@ final class IslandView: NSView {
         addSubview(view, positioned: .below, relativeTo: overlay)
         itemViews[slot] = view
         return view
-    }
-
-    private var shadowsContent = false
-
-    /// A faint shadow behind a clear island's content, in the tone opposite to its text.
-    private func updateShadows() {
-        var shadow: NSShadow?
-        if shadowsContent {
-            let isDark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            shadow = NSShadow()
-            shadow?.shadowColor = isDark ? NSColor.black.withAlphaComponent(0.6) : NSColor.white.withAlphaComponent(0.7)
-            shadow?.shadowBlurRadius = 3
-            shadow?.shadowOffset = NSSize(width: 0, height: -0.5)
-        }
-        (Array(itemViews.values) + [container]).forEach { $0.shadow = shadow }
-    }
-
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        updateShadows()
     }
 
     private func applyBackground(_ shape: NotchGeometry.Shape, _ fill: NotchBackground.Fill) {
@@ -351,13 +326,25 @@ final class IslandView: NSView {
         needsDisplay = true
     }
 
-    /// One area that follows the view as it grows and shrinks, so it is made once.
+    private var hoverArea: NSTrackingArea?
+
+    /// Made as the view reaches its window: AppKit asks for tracking areas only once the view's geometry
+    /// changes, which the island's first frame never does, and would leave it blind to the pointer.
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil { updateTrackingAreas() }
+    }
+
+    /// One area that follows the view as it grows and shrinks, so it is made once. It is looked for by
+    /// itself: the tooltip puts an area of AppKit's own on the view, which must not stand in for it.
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
-        guard trackingAreas.isEmpty else { return }
-        addTrackingArea(NSTrackingArea(
+        if let hoverArea, trackingAreas.contains(hoverArea) { return }
+        let area = NSTrackingArea(
             rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self, userInfo: nil
-        ))
+        )
+        addTrackingArea(area)
+        hoverArea = area
     }
 
     override func mouseEntered(with event: NSEvent) { onEnter() }

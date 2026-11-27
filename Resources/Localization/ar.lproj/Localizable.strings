@@ -267,6 +267,7 @@
 "macOS is lowering performance to bring the temperature down." = "يخفّض macOS الأداء لخفض درجة الحرارة.";
 "Not now" = "ليس الآن";
 "Fan %1$@: %2$@ rpm" = "المروحة %1$@: %2$@ دورة/دقيقة";
+"Fan %@: stopped" = "المروحة %@: متوقفة";
 "Set up again" = "إعادة الإعداد";
 "1 hour" = "ساعة واحدة";
 "4 hours" = "4 ساعات";
@@ -391,6 +392,7 @@
 "Same as on this Mac" = "مثل هذا الـ Mac";
 "Show this Mac's cards" = "عرض بطاقات هذا الـ Mac";
 "Status" = "الحالة";
+"Stopped" = "متوقفة";
 "Temperature readings and fan control in the popover" = "قراءات الحرارة والتحكم في المراوح في النافذة المنبثقة";
 "The busiest apps, under the cards in the popover" = "أكثر التطبيقات نشاطًا، تحت البطاقات في النافذة المنبثقة";
 "The details of this Mac" = "معلومات هذا الـ Mac";
@@ -496,7 +498,6 @@
 "All displays" = "كل الشاشات";
 "Background" = "الخلفية";
 "Black" = "أسود";
-"Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look." = "الأسود يندمج مع النتوء؛ و«تلقائي» يستخدم الزجاج على شاشة بلا نتوء. الجزيرة الشفافة بلا تعبئة، لذا يحصل نصّها على ظل خفيف. الزجاج والشفاف يتبعان المظهر الفاتح أو الداكن للنظام.";
 "Built-in display only" = "الشاشة المدمجة فقط";
 "Click" = "نقر";
 "Colored" = "ملوّن";
@@ -520,9 +521,7 @@
 "Small" = "صغير";
 "Takes effect once Sysbar is shown at the top of the screen, under Appearance." = "يسري عندما يظهر Sysbar أعلى الشاشة، ضمن المظهر.";
 "The island at the top of the screen: displays, background, ears and icons" = "الجزيرة أعلى الشاشة: الشاشات والخلفية والأذنان والأيقونات";
-"Transparent" = "شفاف";
 "With click, resting the pointer on the island does nothing; a click, or a feature's icon, opens it." = "مع النقر، لا يحدث شيء عند إبقاء المؤشر على الجزيرة؛ يفتحها النقر أو أيقونة إحدى الميزات.";
-"%@ MB" = "%@ ميغابايت";
 "1 day" = "يوم واحد";
 "1 minute" = "دقيقة واحدة";
 "1 month" = "شهر واحد";
@@ -553,8 +552,6 @@
 "Keep repeated copies" = "الاحتفاظ بالنسخ المتكررة";
 "Keeps what you copy, on this Mac only" = "يحتفظ بما تنسخه، على هذا الـ Mac فقط";
 "Keeps what you copy. The newest are on the Clipboard tab; a shortcut opens them all." = "يحتفظ بما تنسخه. الأحدث في تبويب الحافظة، ويفتحها كلها اختصار.";
-"Largest image" = "أكبر صورة";
-"Last choice" = "آخر اختيار";
 "Last used stash" = "آخر مخبأ مستخدم";
 "Late" = "متأخرًا";
 "More folder actions for %@" = "المزيد من إجراءات المجلد لـ %@";
@@ -587,7 +584,6 @@
 "Warn about heat" = "التحذير من الحرارة";
 "What to keep" = "ما يُحتفظ به";
 "When a stash is deleted" = "عند حذف مخبأ";
-"When switched on" = "عند التشغيل";
 "While you are away, the cursor moves a little, so apps see you as active. Settings says how soon." = "أثناء غيابك، يتحرك المؤشر قليلًا فتراك التطبيقات نشطًا. تحدد الإعدادات المدة.";
 "Your stashes move to the new folder. Files in them stay where they are." = "تنتقل مخابئك إلى المجلد الجديد. تبقى الملفات فيها في مكانها.";
 "the clipboard history" = "سجل الحافظة";
@@ -612,9 +608,10 @@
 "Opens the System page" = "يفتح صفحة النظام";
 "Set up; used from the System page" = "تم الإعداد؛ يُستخدم من صفحة النظام";
 "The menu bar flags heat that is out of the ordinary, and the panel of the fan button opens on it. Early warns sooner and Late later; macOS slowing the Mac down counts at any setting except Off." = "يشير شريط القوائم إلى الحرارة غير المعتادة، وتُفتح عندها لوحة زر المراوح. «مبكرًا» ينبّه أبكر و«متأخرًا» أبعد؛ وإبطاء macOS للـ Mac يُحتسب في أي إعداد عدا «إيقاف».";
-"The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it." = "يستخدم المفتاح في لوحة «إبقاء الجهاز مستيقظًا» هذه المدة؛ وتعرض القائمة هناك المدد الأخرى. ينتهي الإبقاء مستيقظًا دائمًا عند انخفاض البطارية أثناء العمل على البطارية، فلا ينفد شحن جهاز مغلق داخل حقيبة.";
 "Used while Move the mouse when idle is on in the Keep awake panel." = "يُستخدم عندما يكون «تحريك الفأرة عند الخمول» قيد التشغيل في لوحة «إبقاء الجهاز مستيقظًا».";
 "Visibility" = "الظهور";
 "Show the island" = "إظهار الجزيرة";
 "Only when the pointer is on it" = "فقط عندما يكون المؤشر عليها";
 "In full screen, the island hides until the pointer reaches it." = "في وضع ملء الشاشة تختفي الجزيرة إلى أن يصل المؤشر إليها.";
+"On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it." = "ينتهي الإبقاء مستيقظًا دائمًا عند انخفاض البطارية أثناء العمل على البطارية، فلا ينفد شحن جهاز مغلق داخل حقيبة.";
+"Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look." = "الأسود يندمج مع النتوء؛ و«تلقائي» يستخدم الزجاج على شاشة بلا نتوء. الزجاج يتبع المظهر الفاتح أو الداكن للنظام.";

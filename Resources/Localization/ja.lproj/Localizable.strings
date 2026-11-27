@@ -267,6 +267,7 @@
 "macOS is lowering performance to bring the temperature down." = "macOS は温度を下げるために性能を落としています。";
 "Not now" = "今はしない";
 "Fan %1$@: %2$@ rpm" = "ファン %1$@: %2$@ rpm";
+"Fan %@: stopped" = "ファン %@: 停止中";
 "Set up again" = "再設定";
 "1 hour" = "1時間";
 "4 hours" = "4時間";
@@ -391,6 +392,7 @@
 "Same as on this Mac" = "この Mac と同じ";
 "Show this Mac's cards" = "この Mac のカードを表示";
 "Status" = "状態";
+"Stopped" = "停止中";
 "Temperature readings and fan control in the popover" = "ポップオーバーの温度表示とファン制御";
 "The busiest apps, under the cards in the popover" = "ポップオーバーのカードの下に表示される負荷の高いアプリ";
 "The details of this Mac" = "この Mac の情報";
@@ -496,7 +498,6 @@
 "All displays" = "すべてのディスプレイ";
 "Background" = "背景";
 "Black" = "ブラック";
-"Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look." = "ブラックはノッチと一体になります。「自動」では、ノッチのないディスプレイでガラスを使います。透明のアイランドには塗りがないため、文字に薄い影が付きます。ガラスと透明は、システムのライト／ダーク外観に従います。";
 "Built-in display only" = "内蔵ディスプレイのみ";
 "Click" = "クリック";
 "Colored" = "カラー";
@@ -520,9 +521,7 @@
 "Small" = "小";
 "Takes effect once Sysbar is shown at the top of the screen, under Appearance." = "Sysbarを画面上部に表示しているときに有効です（「外観」で設定）。";
 "The island at the top of the screen: displays, background, ears and icons" = "画面上部のアイランド：ディスプレイ、背景、左右の領域、アイコン";
-"Transparent" = "透明";
 "With click, resting the pointer on the island does nothing; a click, or a feature's icon, opens it." = "クリックを選ぶと、アイランドにポインタを置いても何も起こりません。クリックするか、機能のアイコンで開きます。";
-"%@ MB" = "%@ MB";
 "1 day" = "1日";
 "1 minute" = "1分";
 "1 month" = "1か月";
@@ -553,8 +552,6 @@
 "Keep repeated copies" = "重複したコピーを残す";
 "Keeps what you copy, on this Mac only" = "コピーしたものを保存します(このMac内のみ)";
 "Keeps what you copy. The newest are on the Clipboard tab; a shortcut opens them all." = "コピーしたものを保存します。最新のものは「クリップボード」タブに表示され、ショートカットですべて開けます。";
-"Largest image" = "最大の画像";
-"Last choice" = "前回の選択";
 "Last used stash" = "最後に使ったスタッシュ";
 "Late" = "遅め";
 "More folder actions for %@" = "%@のその他のフォルダ操作";
@@ -587,7 +584,6 @@
 "Warn about heat" = "高温を警告";
 "What to keep" = "保存する内容";
 "When a stash is deleted" = "スタッシュを削除したとき";
-"When switched on" = "オンにしたとき";
 "While you are away, the cursor moves a little, so apps see you as active. Settings says how soon." = "席を外している間、カーソルが少し動き、アプリはあなたを操作中と見なします。時間は設定で指定します。";
 "Your stashes move to the new folder. Files in them stay where they are." = "スタッシュは新しいフォルダに移動します。中のファイルは元の場所に残ります。";
 "the clipboard history" = "クリップボード履歴";
@@ -612,9 +608,10 @@
 "Opens the System page" = "「システム」ページを開きます";
 "Set up; used from the System page" = "設定済み。「システム」ページから使用します";
 "The menu bar flags heat that is out of the ordinary, and the panel of the fan button opens on it. Early warns sooner and Late later; macOS slowing the Mac down counts at any setting except Off." = "メニューバーは通常とは異なる高温を知らせ、ファンボタンのパネルがその内容を表示します。「早め」は早く、「遅め」は遅く警告します。macOSがMacの動作を遅くした場合は、「オフ」以外のどの設定でも警告されます。";
-"The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it." = "「スリープさせない」パネルのスイッチはこの時間を使います。そこのメニューで他の時間を選べます。バッテリー駆動中は、バッテリー残量が少なくなると必ず終了するので、バッグの中で蓋を閉じたままでも電池を使い切ることはありません。";
 "Used while Move the mouse when idle is on in the Keep awake panel." = "「スリープさせない」パネルで「アイドル時にマウスを動かす」がオンのときに使用されます。";
 "Visibility" = "表示";
 "Show the island" = "アイランドの表示";
 "Only when the pointer is on it" = "ポインタが重なっているときだけ";
 "In full screen, the island hides until the pointer reaches it." = "フルスクリーンでは、ポインタが届くまでアイランドは非表示になります。";
+"On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it." = "バッテリー駆動中にバッテリー残量が少なくなると、スリープ防止は必ず終了します。カバンの中で閉じたままのMacが電池切れになることはありません。";
+"Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look." = "ブラックはノッチと一体になります。「自動」では、ノッチのないディスプレイでガラスを使います。ガラスは、システムのライト／ダーク外観に従います。";

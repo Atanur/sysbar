@@ -137,6 +137,12 @@ import Testing
         #expect(NotchGeometry.fit(entries, ear: .right) == entries)
     }
 
+    @Test func fansSetByHandShowBesideTheOtherGlyphs() {
+        let entries = NotchGeometry.withStatuses([.heat, .manualFans, .keepAwake], side: side, before: [icon(.stash)])
+        #expect(entries.map(\.slot) == [.status(.heat), .status(.manualFans), .status(.keepAwake), .item(.stash)])
+        #expect(NotchGeometry.fit(entries, ear: .right) == entries)
+    }
+
     @Test func aFullRightEarDropsItemsBeforeStatusGlyphs() {
         let big = NotchEarEntry(item: .stash, width: NotchGeometry.earRoom - 2 * side)
         let entries = NotchGeometry.withStatuses([.heat], side: side, before: [big, icon(.clipboard)])

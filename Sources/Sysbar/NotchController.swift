@@ -4,7 +4,7 @@ import SysbarCore
 /// Sysbar at the top of one display instead of in the menu bar; `NotchDisplays` runs one per display
 /// that shows it. Around the notch it is an island with the readouts in its left ear and an icon for
 /// each feature in its right; on a display without a notch it is a small capsule at the top centre
-/// with the same two. It is black, glass or transparent as the settings say. Resting the
+/// with the same two. It is black or glass as the settings say. Resting the
 /// pointer on it (or clicking it, if the settings say so) opens the same panel the menu bar item
 /// opens, below it, as a panel that hangs from the strip's bottom edge; moving away closes it again. A click keeps it open until a click elsewhere or Escape, like the popover. A feature's
 /// icon opens the panel on its tab. While files are dragged, the island opens into the stash picker
@@ -488,8 +488,8 @@ final class NotchController {
             contentSize: closing ? openSize : (content != nil ? frame.size : .zero),
             picker: picker, stashes: stashes, dragHint: dragHint, look: look, scale: itemScale
         )
-        // A shadow sets the open black panel off the page below; closed, it is part of the menu bar. Glass and
-        // a clear island get none: the window's shadow follows a square outline there and shows as a black rim.
+        // A shadow sets the open black panel off the page below; closed, it is part of the menu bar. Glass
+        // gets none: the window's shadow follows a square outline there and shows as a black rim.
         panel.hasShadow = (content != nil || closing || picker != nil) && panel.island.drawsBlack
         // The tiles are found by position, so the picker opens at its size at once.
         let animates = animated && picker == nil && panel.isVisible && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion

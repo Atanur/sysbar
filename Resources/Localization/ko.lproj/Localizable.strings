@@ -267,6 +267,7 @@
 "macOS is lowering performance to bring the temperature down." = "macOS가 온도를 낮추기 위해 성능을 줄이고 있습니다.";
 "Not now" = "나중에";
 "Fan %1$@: %2$@ rpm" = "팬 %1$@: %2$@ rpm";
+"Fan %@: stopped" = "팬 %@: 정지";
 "Set up again" = "다시 설정";
 "1 hour" = "1시간";
 "4 hours" = "4시간";
@@ -391,6 +392,7 @@
 "Same as on this Mac" = "이 Mac과 동일";
 "Show this Mac's cards" = "이 Mac의 카드 보기";
 "Status" = "상태";
+"Stopped" = "정지";
 "Temperature readings and fan control in the popover" = "팝오버의 온도 표시와 팬 제어";
 "The busiest apps, under the cards in the popover" = "팝오버의 카드 아래에 표시되는 가장 바쁜 앱";
 "The details of this Mac" = "이 Mac의 정보";
@@ -496,7 +498,6 @@
 "All displays" = "모든 디스플레이";
 "Background" = "배경";
 "Black" = "검정";
-"Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look." = "검정은 노치와 하나로 이어지며, 자동은 노치가 없는 디스플레이에서 글라스를 씁니다. 투명 아일랜드는 채움이 없어 글자에 옅은 그림자가 생깁니다. 글라스와 투명은 시스템의 라이트 또는 다크 모양을 따릅니다.";
 "Built-in display only" = "내장 디스플레이만";
 "Click" = "클릭";
 "Colored" = "컬러";
@@ -520,9 +521,7 @@
 "Small" = "작게";
 "Takes effect once Sysbar is shown at the top of the screen, under Appearance." = "Sysbar가 화면 상단에 표시될 때 적용되며, 모양에서 설정합니다.";
 "The island at the top of the screen: displays, background, ears and icons" = "화면 상단의 아일랜드: 디스플레이, 배경, 좌우 영역, 아이콘";
-"Transparent" = "투명";
 "With click, resting the pointer on the island does nothing; a click, or a feature's icon, opens it." = "클릭을 선택하면 아일랜드 위에 포인터를 두어도 아무 일도 일어나지 않으며, 클릭하거나 기능 아이콘을 눌러야 열립니다.";
-"%@ MB" = "%@ MB";
 "1 day" = "1일";
 "1 minute" = "1분";
 "1 month" = "1개월";
@@ -553,8 +552,6 @@
 "Keep repeated copies" = "반복 복사 유지";
 "Keeps what you copy, on this Mac only" = "복사한 항목을 이 Mac에만 보관합니다";
 "Keeps what you copy. The newest are on the Clipboard tab; a shortcut opens them all." = "복사한 항목을 보관합니다. 최신 항목은 클립보드 탭에 있고, 단축키로 모두 열 수 있습니다.";
-"Largest image" = "가장 큰 이미지";
-"Last choice" = "마지막 선택";
 "Last used stash" = "마지막으로 사용한 보관함";
 "Late" = "늦게";
 "More folder actions for %@" = "%@의 추가 폴더 동작";
@@ -587,7 +584,6 @@
 "Warn about heat" = "발열 경고";
 "What to keep" = "보관할 항목";
 "When a stash is deleted" = "보관함을 삭제할 때";
-"When switched on" = "켤 때";
 "While you are away, the cursor moves a little, so apps see you as active. Settings says how soon." = "자리를 비운 동안 커서가 조금씩 움직여 앱이 사용 중으로 인식합니다. 시기는 설정에서 정합니다.";
 "Your stashes move to the new folder. Files in them stay where they are." = "보관함이 새 폴더로 이동합니다. 그 안의 파일은 그대로 남습니다.";
 "the clipboard history" = "클립보드 기록";
@@ -612,9 +608,10 @@
 "Opens the System page" = "시스템 페이지를 엽니다";
 "Set up; used from the System page" = "설정됨, 시스템 페이지에서 사용";
 "The menu bar flags heat that is out of the ordinary, and the panel of the fan button opens on it. Early warns sooner and Late later; macOS slowing the Mac down counts at any setting except Off." = "메뉴 막대는 평소와 다른 발열을 알려 주며, 팬 버튼의 패널이 해당 화면으로 열립니다. 일찍은 더 빨리, 늦게는 더 늦게 경고하며, macOS가 Mac 속도를 늦추는 경우에는 끔을 제외한 모든 설정에서 경고합니다.";
-"The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it." = "깨어 있게 유지 패널의 스위치는 이 시간을 사용하며, 그곳의 메뉴에서 다른 시간을 고를 수 있습니다. 배터리 사용 중에는 배터리가 부족하면 항상 종료되므로, 가방 속에서 덮개를 닫아 둬도 배터리가 바닥나지 않습니다.";
 "Used while Move the mouse when idle is on in the Keep awake panel." = "깨어 있게 유지 패널에서 유휴 시 마우스 움직이기가 켜져 있을 때 사용됩니다.";
 "Visibility" = "표시";
 "Show the island" = "아일랜드 표시";
 "Only when the pointer is on it" = "포인터가 위에 있을 때만";
 "In full screen, the island hides until the pointer reaches it." = "전체 화면에서는 포인터가 닿을 때까지 아일랜드가 숨겨집니다.";
+"On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it." = "배터리로 사용 중 배터리가 부족해지면 깨어 있기는 항상 종료되므로, 가방 속에 덮어 둔 Mac의 배터리가 모두 소모되지 않습니다.";
+"Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look." = "검정은 노치와 하나로 이어지며, 자동은 노치가 없는 디스플레이에서 글라스를 씁니다. 글라스는 시스템의 라이트 또는 다크 모양을 따릅니다.";

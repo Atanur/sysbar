@@ -267,6 +267,7 @@
 "macOS is lowering performance to bring the temperature down." = "macOS está reduciendo el rendimiento para bajar la temperatura.";
 "Not now" = "Ahora no";
 "Fan %1$@: %2$@ rpm" = "Ventilador %1$@: %2$@ rpm";
+"Fan %@: stopped" = "Ventilador %@: parado";
 "Set up again" = "Volver a configurar";
 "1 hour" = "1 hora";
 "4 hours" = "4 horas";
@@ -391,6 +392,7 @@
 "Same as on this Mac" = "El mismo que en este Mac";
 "Show this Mac's cards" = "Ver las tarjetas de este Mac";
 "Status" = "Estado";
+"Stopped" = "Parados";
 "Temperature readings and fan control in the popover" = "Temperaturas y control de ventiladores en el popover";
 "The busiest apps, under the cards in the popover" = "Las apps más activas, bajo las tarjetas del popover";
 "The details of this Mac" = "Los datos de este Mac";
@@ -496,7 +498,6 @@
 "All displays" = "Todas las pantallas";
 "Background" = "Fondo";
 "Black" = "Negro";
-"Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look." = "El negro se funde con el notch; automático usa cristal en una pantalla que no lo tiene. Una isla transparente no tiene relleno, así que su texto lleva una sombra tenue. Cristal y transparente siguen la apariencia clara u oscura del sistema.";
 "Built-in display only" = "Solo la pantalla integrada";
 "Click" = "Clic";
 "Colored" = "En color";
@@ -520,9 +521,7 @@
 "Small" = "Pequeño";
 "Takes effect once Sysbar is shown at the top of the screen, under Appearance." = "Se aplica cuando Sysbar se muestra en la parte superior de la pantalla, en Apariencia.";
 "The island at the top of the screen: displays, background, ears and icons" = "La isla en la parte superior de la pantalla: pantallas, fondo, orejas e iconos";
-"Transparent" = "Transparente";
 "With click, resting the pointer on the island does nothing; a click, or a feature's icon, opens it." = "Con clic, dejar el puntero sobre la isla no hace nada; un clic, o el icono de una función, la abre.";
-"%@ MB" = "%@ MB";
 "1 day" = "1 día";
 "1 minute" = "1 minuto";
 "1 month" = "1 mes";
@@ -553,8 +552,6 @@
 "Keep repeated copies" = "Conservar copias repetidas";
 "Keeps what you copy, on this Mac only" = "Guarda lo que copias, solo en este Mac";
 "Keeps what you copy. The newest are on the Clipboard tab; a shortcut opens them all." = "Guarda lo que copias. Lo más reciente está en la pestaña Portapapeles; un atajo abre todo.";
-"Largest image" = "Imagen más grande";
-"Last choice" = "Última elección";
 "Last used stash" = "Último escondite usado";
 "Late" = "Tarde";
 "More folder actions for %@" = "Más acciones de carpeta para %@";
@@ -587,7 +584,6 @@
 "Warn about heat" = "Avisar del calor";
 "What to keep" = "Qué conservar";
 "When a stash is deleted" = "Cuando se elimina un escondite";
-"When switched on" = "Al activarlo";
 "While you are away, the cursor moves a little, so apps see you as active. Settings says how soon." = "Mientras estás ausente, el cursor se mueve un poco, para que las apps te vean activo. En Ajustes eliges cada cuánto.";
 "Your stashes move to the new folder. Files in them stay where they are." = "Tus escondites se mueven a la nueva carpeta. Los archivos que contienen se quedan donde están.";
 "the clipboard history" = "el historial del portapapeles";
@@ -612,9 +608,10 @@
 "Opens the System page" = "Abre la página Sistema";
 "Set up; used from the System page" = "Configurado; se usa desde la página Sistema";
 "The menu bar flags heat that is out of the ordinary, and the panel of the fan button opens on it. Early warns sooner and Late later; macOS slowing the Mac down counts at any setting except Off." = "La barra de menús señala el calor fuera de lo normal, y el panel del botón de ventiladores se abre en él. Pronto avisa antes y Tarde después; que macOS ralentice el Mac cuenta con cualquier ajuste excepto Desactivado.";
-"The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it." = "El interruptor del panel Mantener activo usa esta duración; el menú de allí ofrece las demás. Mantener activo siempre termina con batería baja cuando funciona con batería, así que un Mac con la tapa cerrada en una bolsa no se queda sin carga.";
 "Used while Move the mouse when idle is on in the Keep awake panel." = "Se usa mientras Mover el ratón en reposo está activado en el panel Mantener activo.";
 "Visibility" = "Visibilidad";
 "Show the island" = "Mostrar la isla";
 "Only when the pointer is on it" = "Solo cuando el puntero está sobre ella";
 "In full screen, the island hides until the pointer reaches it." = "En pantalla completa, la isla se oculta hasta que el puntero llega a ella.";
+"On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it." = "Mantener activo siempre termina con batería baja cuando funciona con batería, así que un Mac con la tapa cerrada en una bolsa no se queda sin carga.";
+"Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look." = "El negro se funde con el notch; automático usa cristal en una pantalla que no lo tiene. El cristal sigue la apariencia clara u oscura del sistema.";

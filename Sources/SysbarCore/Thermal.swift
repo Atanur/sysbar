@@ -33,6 +33,12 @@ public struct FanReading: Equatable, Sendable {
         self.maximum = maximum
     }
 
+    /// A reading under this is a fan that is not turning: many Macs stop theirs while they are cool.
+    public static let stoppedBelowRPM = 1.0
+
+    /// Whether a speed (one fan's, or the average of several) is a fan that is not turning.
+    public static func isStopped(rpm: Double) -> Bool { rpm < stoppedBelowRPM }
+
     /// Where the fan sits between its minimum (0) and maximum (1) speed.
     public var fraction: Double {
         guard maximum > minimum else { return 0 }

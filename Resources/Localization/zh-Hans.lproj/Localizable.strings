@@ -267,6 +267,7 @@
 "macOS is lowering performance to bring the temperature down." = "macOS 正在降低性能以降低温度。";
 "Not now" = "以后再说";
 "Fan %1$@: %2$@ rpm" = "风扇 %1$@：%2$@ 转/分";
+"Fan %@: stopped" = "风扇 %@：已停止";
 "Set up again" = "重新设置";
 "1 hour" = "1 小时";
 "4 hours" = "4 小时";
@@ -391,6 +392,7 @@
 "Same as on this Mac" = "与此 Mac 相同";
 "Show this Mac's cards" = "查看此 Mac 的卡片";
 "Status" = "状态";
+"Stopped" = "已停止";
 "Temperature readings and fan control in the popover" = "弹出窗口中的温度读数和风扇控制";
 "The busiest apps, under the cards in the popover" = "弹出窗口卡片下方最繁忙的应用";
 "The details of this Mac" = "此 Mac 的信息";
@@ -496,7 +498,6 @@
 "All displays" = "所有显示器";
 "Background" = "背景";
 "Black" = "黑色";
-"Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look." = "黑色与刘海融为一体；“自动”在没有刘海的显示器上使用玻璃。透明的岛没有填充，所以文字会带一层淡淡的阴影。玻璃和透明会跟随系统的浅色或深色外观。";
 "Built-in display only" = "仅内置显示器";
 "Click" = "点按";
 "Colored" = "彩色";
@@ -520,9 +521,7 @@
 "Small" = "小";
 "Takes effect once Sysbar is shown at the top of the screen, under Appearance." = "在 Sysbar 显示于屏幕顶部时生效，可在“外观”中设置。";
 "The island at the top of the screen: displays, background, ears and icons" = "屏幕顶部的岛：显示器、背景、左右两侧和图标";
-"Transparent" = "透明";
 "With click, resting the pointer on the island does nothing; a click, or a feature's icon, opens it." = "选择点按后，把指针停在岛上不会有任何反应；点按它或某个功能的图标才会打开。";
-"%@ MB" = "%@ MB";
 "1 day" = "1 天";
 "1 minute" = "1 分钟";
 "1 month" = "1 个月";
@@ -553,8 +552,6 @@
 "Keep repeated copies" = "保留重复拷贝";
 "Keeps what you copy, on this Mac only" = "保存你拷贝的内容，仅限这台 Mac";
 "Keeps what you copy. The newest are on the Clipboard tab; a shortcut opens them all." = "保存你拷贝的内容。最新的显示在“剪贴板”标签页；快捷键可打开全部。";
-"Largest image" = "最大图片";
-"Last choice" = "上次选择";
 "Last used stash" = "上次使用的暂存箱";
 "Late" = "较晚";
 "More folder actions for %@" = "“%@”的更多文件夹操作";
@@ -587,7 +584,6 @@
 "Warn about heat" = "发热时警告";
 "What to keep" = "保留内容";
 "When a stash is deleted" = "删除暂存箱时";
-"When switched on" = "开启时";
 "While you are away, the cursor moves a little, so apps see you as active. Settings says how soon." = "你离开时，光标会轻微移动，让 App 认为你处于活跃状态。多久后移动由“设置”决定。";
 "Your stashes move to the new folder. Files in them stay where they are." = "你的暂存箱会移到新文件夹。其中的文件仍保留在原处。";
 "the clipboard history" = "剪贴板历史记录";
@@ -612,9 +608,10 @@
 "Opens the System page" = "打开“系统”页面";
 "Set up; used from the System page" = "已设置；在“系统”页面中使用";
 "The menu bar flags heat that is out of the ordinary, and the panel of the fan button opens on it. Early warns sooner and Late later; macOS slowing the Mac down counts at any setting except Off." = "菜单栏会标出异常发热，风扇按钮的面板也会定位到它。“较早”提醒更早，“较晚”提醒更晚；除“关闭”外，在任何设置下，macOS 为 Mac 降速都会计入。";
-"The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it." = "“保持唤醒”面板中的开关使用此时长；那里的菜单提供其他时长。使用电池时，电量低时保持唤醒总会结束，这样包里合盖的 Mac 不会被耗尽电量。";
 "Used while Move the mouse when idle is on in the Keep awake panel." = "在“保持唤醒”面板中开启“闲置时移动鼠标”时使用。";
 "Visibility" = "可见性";
 "Show the island" = "显示灵动岛";
 "Only when the pointer is on it" = "仅当指针在其上时";
 "In full screen, the island hides until the pointer reaches it." = "在全屏时，灵动岛会隐藏，直到指针移到它上面。";
+"On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it." = "使用电池供电时，电量低会始终结束保持唤醒，因此放在包里合上盖子的 Mac 不会把电耗尽。";
+"Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look." = "黑色与刘海融为一体；“自动”在没有刘海的显示器上使用玻璃。玻璃会跟随系统的浅色或深色外观。";

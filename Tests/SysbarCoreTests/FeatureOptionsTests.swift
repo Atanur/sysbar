@@ -3,21 +3,6 @@ import Testing
 @testable import SysbarCore
 
 @Suite struct KeepAwakeOptionsTests {
-    @Test func theSwitchUsesTheChosenDurationOrTheLastOne() {
-        #expect(KeepAwakeSwitchDefault.untilOff.duration(last: .oneHour) == .untilOff)
-        #expect(KeepAwakeSwitchDefault.oneHour.duration(last: .untilOff) == .oneHour)
-        #expect(KeepAwakeSwitchDefault.fourHours.duration(last: .untilOff) == .fourHours)
-        #expect(KeepAwakeSwitchDefault.lastUsed.duration(last: .fourHours) == .fourHours)
-    }
-
-    @Test func storedNamesAreReadBackAndUnknownOnesFallBack() {
-        #expect(KeepAwakeSwitchDefault.normalized("oneHour") == .oneHour)
-        #expect(KeepAwakeSwitchDefault.normalized(nil) == .untilOff)
-        #expect(KeepAwakeSwitchDefault.normalized("soon") == .untilOff)
-        #expect(KeepAwakeDuration.normalized("fourHours") == .fourHours)
-        #expect(KeepAwakeDuration.normalized("soon") == .untilOff)
-    }
-
     @Test func theLowBatteryLevelIsOneOfTheChoices() {
         #expect(KeepAwakePolicy.lowBatteryChoices == [10, 20, 30])
         #expect(KeepAwakePolicy.normalizedLowBattery(nil) == 20)

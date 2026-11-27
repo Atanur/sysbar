@@ -44,6 +44,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// Closes the popover on a click anywhere else: a transient popover alone stays open once a
     /// control in it has been used (a menu, a stepper), which left it stuck on screen.
     private var outsideClickMonitor: Any?
+    /// The height the popover is, or is growing or shrinking to, and the steps of that change.
+    private var popoverHeight: CGFloat = 0
+    private var popoverResize: Timer?
     private var preferencesSubscription: AnyCancellable?
     /// Redraws the island's feature icons when what they show changes between two samples.
     private var featureSubscription: AnyCancellable?
@@ -279,13 +282,16 @@ final class StatusController: NSObject, NSPopoverDelegate {
     }
 
     /// The signals the closed island shows: the heat warning, which the fan button of the System page
-    /// explains, and keep awake while it is on. Each only while its button is on offer.
+    /// explains, fans set by hand, and keep awake while it is on. Each only while its button is on offer.
     private func notchStatuses() -> [NotchStatusInfo] {
         var statuses: [NotchStatusInfo] = []
         if preferences.showsFanButton, let alert = heatAlert {
             statuses.append(NotchStatusInfo(
                 status: .heat, heat: alert.level, title: L("Heat warning"), value: heatText ?? ""
             ))
+        }
+        if preferences.showsFanButton, fans.mode.isManual {
+            statuses.append(NotchStatusInfo(status: .manualFans, title: L("Fans"), value: FanState.manual.accessibilityText))
         }
         if preferences.showsKeepAwakeButton, keepAwake.isActive {
             let value = KeepAwakeController.hasLid ? L("Lid closed, Mac awake") : L("Mac kept awake")
@@ -623,14 +629,68 @@ final class StatusController: NSObject, NSPopoverDelegate {
         popover.behavior = .transient
         popover.delegate = self
         self.popover = popover
-        popover.contentViewController = makePanelContent(sizesToFit: false)
+        let controller = makePanelContent(sizesToFit: false)
+        // The popover is sized here, from the page's height, not by the content: left to it, the popover
+        // jumps to each page's height, and is first placed for the default 320 × 320 and then grows
+        // upwards, off the top of the screen.
+        controller.sizingOptions = [.intrinsicContentSize]
+        popover.contentViewController = controller
+        controller.view.layoutSubtreeIfNeeded()
+        popover.contentSize = popoverSize(forContentHeight: controller.view.fittingSize.height, below: button)
+        popoverHeight = popover.contentSize.height
+        // From here on the page reports its height (`PopoverView.onHeight`) and the popover follows it
+        // with `resizePopover`; the content is anchored to its top (see `PopoverView.body`), so the top
+        // bar stays still while the bottom moves.
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        // The popover follows each page's height with its own animation; the content is anchored to
-        // its top (see `PopoverView.body`), so the top bar stays still while it grows or shrinks.
         popover.contentViewController?.view.window?.makeKey()
         // Global monitors see only events meant for other apps, so clicks in the popover are not seen.
         outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             MainActor.assumeIsolated { self?.popover?.performClose(nil) }
+        }
+    }
+
+    /// What the popover keeps from the room below the menu bar item: its arrow, its inset and the
+    /// screen's edge.
+    private static let popoverEdgeMargin: CGFloat = 40
+
+    /// How long the popover takes to follow a page's new height.
+    private static let popoverResizeDuration: TimeInterval = 0.25
+
+    /// The size for a page that wants `height`, within the room below the menu bar item.
+    private func popoverSize(forContentHeight height: CGFloat, below button: NSStatusBarButton) -> NSSize {
+        let window = button.window
+        let room = (window?.frame.minY ?? 0) - ((window?.screen ?? NSScreen.main)?.visibleFrame.minY ?? 0) - Self.popoverEdgeMargin
+        return NSSize(width: PopoverView.width, height: PageHeight.popoverHeight(wanted: height, room: room))
+    }
+
+    /// Follows the page's height as another tab is shown or a panel unfolds.
+    private func fitPopover(toContentHeight height: CGFloat) {
+        guard let popover, popover.isShown, let button = statusItem.button, height > 0 else { return }
+        let size = popoverSize(forContentHeight: height, below: button)
+        guard abs(size.height - popoverHeight) > 0.5 else { return }
+        popoverHeight = size.height
+        resizePopover(popover, to: size)
+    }
+
+    /// An `NSPopover` jumps to a new `contentSize`, so the steps in between are set here. The top
+    /// edge stays under the menu bar item: only the bottom moves.
+    private func resizePopover(_ popover: NSPopover, to size: NSSize) {
+        popoverResize?.invalidate()
+        popoverResize = nil
+        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { popover.contentSize = size; return }
+        let from = popover.contentSize.height
+        let start = Date()
+        popoverResize = Timer.scheduledTimer(withTimeInterval: 1.0 / 60, repeats: true) { [weak self, weak popover] timer in
+            MainActor.assumeIsolated {
+                guard let popover, popover.isShown else { return timer.invalidate() }
+                let progress = min(Date().timeIntervalSince(start) / Self.popoverResizeDuration, 1)
+                let eased = progress < 0.5 ? 2 * progress * progress : 1 - pow(-2 * progress + 2, 2) / 2
+                popover.contentSize = NSSize(width: size.width, height: (from + (size.height - from) * eased).rounded())
+                if progress >= 1 {
+                    timer.invalidate()
+                    self?.popoverResize = nil
+                }
+            }
         }
     }
 
@@ -639,7 +699,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// shown last. `sizesToFit` reports its size as it changes, for the island to follow. `target` is
     /// what was asked for, by the readouts or an icon the island was opened from: a tab, and on the
     /// System page a panel unfolded.
-    private func makePanelContent(sizesToFit: Bool, row: NotchRowModel? = nil, target: PanelTarget? = nil) -> NSViewController {
+    private func makePanelContent(sizesToFit: Bool, row: NotchRowModel? = nil, target: PanelTarget? = nil) -> PanelHostingController<PopoverView> {
         // The user may have just approved the helper in System Settings.
         helper.refreshState()
         keepAwake.refreshFromSystem()
@@ -681,7 +741,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
                 onOpenDetails: { [weak self] in self?.openDetails(for: $0) },
                 onClose: { [weak self] in self?.closePanel() },
                 // Only the island's panel sizes to fit, and it opens under the notch, where there is room sideways.
-                isWide: sizesToFit
+                isWide: sizesToFit,
+                onHeight: sizesToFit ? nil : { [weak self] in self?.fitPopover(toContentHeight: $0) }
             )
         )
         if sizesToFit {
@@ -744,6 +805,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
     func popoverDidClose(_ notification: Notification) {
         if let outsideClickMonitor { NSEvent.removeMonitor(outsideClickMonitor) }
         outsideClickMonitor = nil
+        popoverResize?.invalidate()
+        popoverResize = nil
         popover?.contentViewController = nil
         popover = nil
         panelDidClose()

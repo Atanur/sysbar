@@ -53,13 +53,10 @@ final class Preferences: ObservableObject {
         static let clipboardLocation = "clipboardLocation"
         static let clipboardRetention = "clipboardRetention"
         static let clipboardKinds = "clipboardKinds"
-        static let clipboardImageLimit = "clipboardImageLimit"
         static let clipboardKeepsDuplicates = "clipboardKeepsDuplicates"
         static let shelfLocation = "shelfLocation"
         static let shelfDefaultStash = "shelfDefaultStash"
         static let shelfDeleteMovesItems = "shelfDeleteMovesItems"
-        static let keepAwakeSwitchDefault = "keepAwakeSwitchDefault"
-        static let keepAwakeLastDuration = "keepAwakeLastDuration"
         static let keepAwakeMouseIdle = "keepAwakeMouseIdle"
         static let keepAwakeLowBattery = "keepAwakeLowBattery"
         static let heatWarning = "heatWarning"
@@ -265,10 +262,6 @@ final class Preferences: ObservableObject {
     @Published var clipboardKinds: Set<ClipboardKind> {
         didSet { defaults.set(ClipboardRecording.stored(clipboardKinds), forKey: Key.clipboardKinds) }
     }
-    /// The largest image kept, in megabytes; one of `ClipboardHistory.imageLimits`.
-    @Published var clipboardImageLimit: Int {
-        didSet { defaults.set(clipboardImageLimit, forKey: Key.clipboardImageLimit) }
-    }
     /// A repeated copy is kept as another item, instead of moving the first one to the top.
     @Published var clipboardKeepsDuplicates: Bool {
         didSet { defaults.set(clipboardKeepsDuplicates, forKey: Key.clipboardKeepsDuplicates) }
@@ -282,12 +275,6 @@ final class Preferences: ObservableObject {
     }
 
     /// What the Keep awake switch starts, and the duration last picked from the menu (for `lastUsed`).
-    @Published var keepAwakeSwitchDefault: KeepAwakeSwitchDefault {
-        didSet { defaults.set(keepAwakeSwitchDefault.rawValue, forKey: Key.keepAwakeSwitchDefault) }
-    }
-    @Published var keepAwakeLastDuration: KeepAwakeDuration {
-        didSet { defaults.set(keepAwakeLastDuration.rawValue, forKey: Key.keepAwakeLastDuration) }
-    }
     /// Seconds without input before the cursor moves, and the charge at or below which keeping awake ends on battery.
     @Published var keepAwakeMouseIdle: Double {
         didSet { defaults.set(keepAwakeMouseIdle, forKey: Key.keepAwakeMouseIdle) }
@@ -353,7 +340,7 @@ final class Preferences: ObservableObject {
         showsKeepAwakeButton = defaults.object(forKey: Key.showsKeepAwakeButton) as? Bool ?? true
         sysbarPlacement = defaults.string(forKey: Key.sysbarPlacement).flatMap(SysbarPlacement.init(rawValue:)) ?? .menuBar
         notchDisplays = defaults.string(forKey: Key.notchDisplays).flatMap(NotchDisplayChoice.init(rawValue:)) ?? .builtIn
-        notchBackground = defaults.string(forKey: Key.notchBackground).flatMap(NotchBackground.init(rawValue:)) ?? .automatic
+        notchBackground = NotchBackground.stored(defaults.string(forKey: Key.notchBackground))
         notchIconStyle = defaults.string(forKey: Key.notchIconStyle).flatMap(NotchIconStyle.init(rawValue:)) ?? .colored
         notchIconSize = defaults.string(forKey: Key.notchIconSize).flatMap(NotchIconSize.init(rawValue:)) ?? .medium
         notchOpening = defaults.string(forKey: Key.notchOpening).flatMap(NotchOpening.init(rawValue:)) ?? .hover
@@ -378,13 +365,10 @@ final class Preferences: ObservableObject {
         clipboardLocation = defaults.string(forKey: Key.clipboardLocation) ?? ""
         clipboardRetention = ClipboardRetention.normalized(defaults.string(forKey: Key.clipboardRetention))
         clipboardKinds = ClipboardRecording.normalized(stored: defaults.stringArray(forKey: Key.clipboardKinds))
-        clipboardImageLimit = ClipboardHistory.normalizedImageLimit(defaults.object(forKey: Key.clipboardImageLimit) as? Int)
         clipboardKeepsDuplicates = defaults.bool(forKey: Key.clipboardKeepsDuplicates)
         shelfLocation = defaults.string(forKey: Key.shelfLocation) ?? ""
         shelfDefaultStash = defaults.string(forKey: Key.shelfDefaultStash) ?? ""
         shelfDeleteMovesItems = defaults.object(forKey: Key.shelfDeleteMovesItems) as? Bool ?? true
-        keepAwakeSwitchDefault = KeepAwakeSwitchDefault.normalized(defaults.string(forKey: Key.keepAwakeSwitchDefault))
-        keepAwakeLastDuration = KeepAwakeDuration.normalized(defaults.string(forKey: Key.keepAwakeLastDuration))
         keepAwakeMouseIdle = MouseWander.normalizedIdle(defaults.object(forKey: Key.keepAwakeMouseIdle) as? Double)
         keepAwakeLowBattery = KeepAwakePolicy.normalizedLowBattery(defaults.object(forKey: Key.keepAwakeLowBattery) as? Int)
         heatWarning = HeatWarning.normalized(defaults.string(forKey: Key.heatWarning))
@@ -497,10 +481,7 @@ final class Preferences: ObservableObject {
         clipboardIgnoredApps = ClipboardPrivacy.defaultIgnoredApps
         clipboardRetention = .forever
         clipboardKinds = Set(ClipboardKind.allCases)
-        clipboardImageLimit = ClipboardHistory.defaultImageLimit
         clipboardKeepsDuplicates = false
-        keepAwakeSwitchDefault = .untilOff
-        keepAwakeLastDuration = .untilOff
         keepAwakeMouseIdle = MouseWander.idleSecondsBeforeMoving
         keepAwakeLowBattery = KeepAwakePolicy.lowBatteryPercent
         heatWarning = .standard

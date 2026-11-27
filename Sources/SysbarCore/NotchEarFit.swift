@@ -5,6 +5,8 @@ import CoreGraphics
 public enum NotchStatus: String, CaseIterable, Sendable {
     /// The heat warning.
     case heat
+    /// The fans run at a speed set by hand.
+    case manualFans
     /// Keep awake is on.
     case keepAwake
 }

@@ -43,7 +43,7 @@ extension NotchItem {
 
 extension NotchStatus {
     /// The panel of the System page the glyph unfolds.
-    var panel: PopoverPanel { self == .heat ? .thermal : .keepAwake }
+    var panel: PopoverPanel { self == .keepAwake ? .keepAwake : .thermal }
 }
 
 /// A status glyph of the closed island's right ear: what it shows, and the words for the tooltip and VoiceOver.
@@ -142,6 +142,10 @@ struct NotchItemView: View {
             Image(systemName: "thermometer.high")
                 .font(.callout)
                 .foregroundStyle(heat?.color ?? LoadLevel.high.color)
+        case .manualFans:
+            Image(systemName: "fan.fill")
+                .font(.callout)
+                .foregroundStyle(style.monochrome ? AnyShapeStyle(.primary) : AnyShapeStyle(.tint))
         case .keepAwake:
             KeepAwakeIcon(isKeptAwake: true)
                 .foregroundStyle(style.monochrome ? AnyShapeStyle(.primary) : AnyShapeStyle(.tint))

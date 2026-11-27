@@ -267,6 +267,7 @@
 "macOS is lowering performance to bring the temperature down." = "macOS sıcaklığı düşürmek için performansı azaltıyor.";
 "Not now" = "Şimdi değil";
 "Fan %1$@: %2$@ rpm" = "Fan %1$@: %2$@ dev/dk";
+"Fan %@: stopped" = "Fan %@: durdu";
 "Set up again" = "Yeniden kur";
 "1 hour" = "1 saat";
 "4 hours" = "4 saat";
@@ -391,6 +392,7 @@
 "Same as on this Mac" = "Bu Mac'tekiyle aynı";
 "Show this Mac's cards" = "Bu Mac'in kartlarını göster";
 "Status" = "Durum";
+"Stopped" = "Durdu";
 "Temperature readings and fan control in the popover" = "Açılır penceredeki sıcaklık değerleri ve fan kontrolü";
 "The busiest apps, under the cards in the popover" = "Açılır pencerede kartların altındaki en yoğun uygulamalar";
 "The details of this Mac" = "Bu Mac'in bilgileri";
@@ -496,7 +498,6 @@
 "All displays" = "Tüm ekranlar";
 "Background" = "Arka plan";
 "Black" = "Siyah";
-"Black merges with the notch; automatic uses glass on a display without one. A transparent island has no fill, so its text gets a faint shadow. Glass and transparent follow the system's light or dark look." = "Siyah çentikle birleşir; otomatik, çentiği olmayan ekranda cam kullanır. Saydam adanın dolgusu yoktur, bu yüzden yazısına hafif bir gölge verilir. Cam ve saydam, sistemin açık ya da koyu görünümünü izler.";
 "Built-in display only" = "Yalnızca yerleşik ekran";
 "Click" = "Tıklama";
 "Colored" = "Renkli";
@@ -520,9 +521,7 @@
 "Small" = "Küçük";
 "Takes effect once Sysbar is shown at the top of the screen, under Appearance." = "Sysbar ekranın üstünde gösterildiğinde geçerli olur; Görünüm altında ayarlanır.";
 "The island at the top of the screen: displays, background, ears and icons" = "Ekranın üstündeki ada: ekranlar, arka plan, kulaklar ve simgeler";
-"Transparent" = "Saydam";
 "With click, resting the pointer on the island does nothing; a click, or a feature's icon, opens it." = "Tıklamada, işaretçiyi adanın üzerinde bekletmek bir şey yapmaz; bir tıklama ya da özelliğin simgesi adayı açar.";
-"%@ MB" = "%@ MB";
 "1 day" = "1 gün";
 "1 minute" = "1 dakika";
 "1 month" = "1 ay";
@@ -553,8 +552,6 @@
 "Keep repeated copies" = "Tekrarlanan kopyaları tut";
 "Keeps what you copy, on this Mac only" = "Kopyaladıklarını yalnızca bu Mac'te tutar";
 "Keeps what you copy. The newest are on the Clipboard tab; a shortcut opens them all." = "Kopyaladıklarını tutar. En yeniler Pano sekmesinde; bir kısayol hepsini açar.";
-"Largest image" = "En büyük görsel";
-"Last choice" = "Son seçim";
 "Last used stash" = "Son kullanılan zula";
 "Late" = "Geç";
 "More folder actions for %@" = "%@ için daha fazla klasör işlemi";
@@ -587,7 +584,6 @@
 "Warn about heat" = "Isı konusunda uyar";
 "What to keep" = "Ne saklansın";
 "When a stash is deleted" = "Bir zula silinince";
-"When switched on" = "Açıldığında";
 "While you are away, the cursor moves a little, so apps see you as active. Settings says how soon." = "Siz yokken imleç biraz hareket eder, böylece uygulamalar sizi etkin görür. Ne kadar sonra olacağını Ayarlar belirler.";
 "Your stashes move to the new folder. Files in them stay where they are." = "Zulalarınız yeni klasöre taşınır. İçindeki dosyalar yerinde kalır.";
 "the clipboard history" = "pano geçmişi";
@@ -612,9 +608,10 @@
 "Opens the System page" = "Sistem sayfasını açar";
 "Set up; used from the System page" = "Kuruldu; Sistem sayfasından kullanılır";
 "The menu bar flags heat that is out of the ordinary, and the panel of the fan button opens on it. Early warns sooner and Late later; macOS slowing the Mac down counts at any setting except Off." = "Menü çubuğu olağan dışı ısıyı işaretler ve fan düğmesinin paneli onunla açılır. Erken daha çabuk, Geç daha geç uyarır; macOS'in Mac'i yavaşlatması Kapalı dışındaki her ayarda sayılır.";
-"The switch in the Keep awake panel uses this length; the menu there offers the others. Keeping awake always ends when the battery runs low on battery power, so a closed lid in a bag cannot drain it." = "Uyanık tut panelindeki anahtar bu süreyi kullanır; oradaki menü diğerlerini sunar. Pille çalışırken pil azalınca uyanık tutma her zaman sona erer; böylece çantadaki kapalı bir Mac pili bitirmez.";
 "Used while Move the mouse when idle is on in the Keep awake panel." = "Uyanık tut panelinde Boştayken fareyi oynat açıkken kullanılır.";
 "Visibility" = "Görünürlük";
 "Show the island" = "Adayı göster";
 "Only when the pointer is on it" = "Yalnızca işaretçi üzerindeyken";
 "In full screen, the island hides until the pointer reaches it." = "Tam ekranda ada, işaretçi ona ulaşana kadar gizlenir.";
+"On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it." = "Uyanık tutma, pille çalışırken pil azaldığında her zaman sona erer; böylece çantadaki kapağı kapalı bir Mac'in pili bitmez.";
+"Black merges with the notch; automatic uses glass on a display without one. Glass follows the system's light or dark look." = "Siyah çentikle birleşir; otomatik, çentiği olmayan ekranda cam kullanır. Cam, sistemin açık ya da koyu görünümünü izler.";

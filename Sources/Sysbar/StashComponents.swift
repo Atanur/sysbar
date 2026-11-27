@@ -147,8 +147,9 @@ struct StashDetail: View {
     let listRoom: CGFloat
     let onClose: () -> Void
     @State private var dropTargeted = false
-    /// An item's row, and the gap between rows, for sizing the list to its items.
-    private static let rowHeight: CGFloat = 38
+    /// An item's row (measured: 29 pt of text and 8 pt of padding), and the gap between rows, for
+    /// sizing the list to whole items. Rows are held to this height.
+    private static let rowHeight: CGFloat = 37
     private static let rowSpacing: CGFloat = 1
 
     init(shelf: ShelfController, listRoom: CGFloat, onClose: @escaping () -> Void) {
@@ -167,7 +168,7 @@ struct StashDetail: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: Self.rowSpacing) {
-                        ForEach(stash.items) { StashItemRow(shelf: shelf, stash: stash, item: $0, onClose: onClose) }
+                        ForEach(stash.items) { StashItemRow(shelf: shelf, stash: stash, item: $0, onClose: onClose).frame(height: Self.rowHeight) }
                     }
                 }
                 .frame(height: PageHeight.list(rows: stash.items.count, rowHeight: Self.rowHeight, spacing: Self.rowSpacing, room: listRoom))

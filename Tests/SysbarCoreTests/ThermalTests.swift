@@ -201,3 +201,15 @@ import Testing
         #expect(rule.contains("subject.OU] = \"ABCDE12345\""))
     }
 }
+
+@Suite struct FanStoppedTests {
+    @Test func aFanReadingZeroIsStopped() {
+        #expect(FanReading.isStopped(rpm: 0))
+        #expect(FanReading.isStopped(rpm: 0.4))
+    }
+
+    @Test func aTurningFanIsNotStopped() {
+        #expect(!FanReading.isStopped(rpm: 1))
+        #expect(!FanReading.isStopped(rpm: 1_200))
+    }
+}

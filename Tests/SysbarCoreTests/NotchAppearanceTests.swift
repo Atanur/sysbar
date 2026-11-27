@@ -51,14 +51,25 @@ import Testing
         for shape in [NotchGeometry.Shape.notch, .capsule] {
             #expect(NotchBackground.black.fill(for: shape) == .black)
             #expect(NotchBackground.glass.fill(for: shape) == .glass)
-            #expect(NotchBackground.transparent.fill(for: shape) == .clear)
         }
     }
 
-    @Test func onlyAFilledIslandIsAlwaysDark() {
+    @Test func onlyBlackIsAlwaysDark() {
         #expect(NotchBackground.Fill.black.isDark)
         #expect(!NotchBackground.Fill.glass.isDark)
-        #expect(!NotchBackground.Fill.clear.isDark)
+    }
+
+    @Test func aStoredValueIsReadBackAndAnythingElseIsAutomatic() {
+        for background in NotchBackground.allCases {
+            #expect(NotchBackground.stored(background.rawValue) == background)
+        }
+        #expect(NotchBackground.stored(nil) == .automatic)
+        #expect(NotchBackground.stored("nonsense") == .automatic)
+    }
+
+    @Test func theRemovedTransparentStyleBecomesAutomatic() {
+        #expect(NotchBackground.stored("transparent") == .automatic)
+        #expect(NotchBackground.stored("clear") == .automatic)
     }
 }
 
