@@ -3,6 +3,14 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.6.3 — 2026-11-28
+
+- Settings is easier to find your way around: General, Readouts, Menu Bar, Notch and Panel come first, then Features and Devices, with About at the end. Whether Sysbar lives in the menu bar or around the notch is chosen in General, next to the update checks, and the page of the place in use is marked **In use**.
+- Each feature's page starts with one switch and a line on what it does. The Stash page groups its settings by what they are for, and This Mac shows its cards and refresh rate before its details.
+- The notch shows the readouts chosen on the Readouts page; its own page only sets how many fit beside it. Readouts hidden for the notch alone show again.
+- A remote device's cards can be put in any order by dragging, like this Mac's.
+- Move the mouse when idle can be turned on or off on the Keep awake page as well.
+
 ## 0.6.2 — 2026-11-28
 
 - Sysbar is lighter: in the menu bar it now uses under 1% of one core, and after the panel closes the memory it used is handed back to macOS.
