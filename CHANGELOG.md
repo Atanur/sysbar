@@ -3,6 +3,11 @@
 What changed in each release of Sysbar, newest first. The app shows the notes of its own version in
 Settings › About, and the website and GitHub releases show the same text.
 
+## 0.6.2 — 2026-11-28
+
+- Sysbar is lighter: in the menu bar it now uses under 1% of one core, and after the panel closes the memory it used is handed back to macOS.
+- The panel that opens under the notch has the same rounded corners at the bottom as at the top.
+
 ## 0.6.1 — 2026-11-27
 
 - Resting the pointer on the notch opens it again when it is set to open on hover, on the tab of the item under the pointer.
