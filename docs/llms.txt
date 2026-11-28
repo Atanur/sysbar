@@ -1,0 +1,33 @@
+# Sysbar
+
+> Sysbar is a free, open-source (MIT) system monitor for macOS 14 Sonoma or later on Macs with Apple silicon. It lives around the MacBook notch or in the menu bar and shows CPU, GPU, memory, power, disk, network and temperatures. It can also watch Linux servers and other Macs over SSH, and adds clipboard history, a Stash for files and text, fan control and keep awake.
+
+Sysbar is a native app written in Swift (AppKit and SwiftUI). It has no accounts and no analytics. At rest it uses under 1% of one CPU core and about 20 MB of memory, and it stops sampling while the Mac or its screens sleep.
+
+## Install
+
+- Homebrew: `brew install --cask atanur/sysbar/sysbar`
+- Download: https://github.com/Atanur/sysbar/releases/latest (unzip and drag Sysbar to Applications)
+- Requirements: macOS 14 or later, Apple silicon (M1 or newer). Intel Macs are not supported.
+- Sysbar is not on the Mac App Store, because it reads power data through a system interface the App Store does not allow.
+- Updates install from inside the app, only when the release is signed by the same developer.
+
+## Features
+
+- Menu bar or notch: readouts for CPU, GPU, memory, power, disk and network sit in the menu bar, or in two "ears" beside the notch (a small capsule at the top of displays without a notch). Settings › General chooses where it lives.
+- Panel: one card per metric with a graph, and a table of the busiest apps. Clicking a card opens Activity Monitor or Battery settings.
+- Temperatures and fans: CPU, GPU, memory and battery temperatures, a heat warning that names the cause, and manual fan control.
+- Keep awake: for a set time, until a time, while charging or while an app is open, also with the lid closed. Optionally moves the mouse when idle.
+- Stash: named collections of files, text and links, filled by dragging files onto the notch or with a shortcut.
+- Clipboard history: text, links, rich text, images and files, searchable, kept on the Mac only; copies marked concealed by password managers are never kept.
+- Remote devices: Linux servers and other Macs over SSH with your own keys or ssh-agent (CPU, memory, load, network, disk, NVIDIA GPU). Nothing is installed on the server.
+- 13 languages: English, Türkçe, Deutsch, Français, Español, Italiano, Português (Brasil), Nederlands, Русский, 日本語, 한국어, 简体中文, العربية.
+- Accessibility: every control is named for VoiceOver, nothing relies on colour alone, Reduce Motion is respected. The aim is WCAG 2.2 level AA.
+
+## Links
+
+- [Website](https://sysbar.atanur.dev/)
+- [Source code](https://github.com/Atanur/sysbar)
+- [Changelog](https://github.com/Atanur/sysbar/blob/main/CHANGELOG.md)
+- [Accessibility](https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md)
+- [License (MIT)](https://github.com/Atanur/sysbar/blob/main/LICENSE)

@@ -4,25 +4,152 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sysbar — a system monitor for the Mac notch and menu bar</title>
-<meta name="description" content="A native system monitor for the Mac. CPU, memory, power and temperatures around the notch or in the menu bar, plus your servers over SSH.">
+<meta name="description" content="Free, open-source system monitor for the Mac notch and menu bar: CPU, GPU, memory, power and temperatures, plus clipboard history and SSH servers.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="Atanur">
+<meta name="application-name" content="Sysbar">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#131416" media="(prefers-color-scheme: dark)">
 <link rel="canonical" href="https://sysbar.atanur.dev/">
 <link rel="icon" href="assets/icon.png" type="image/png">
 <link rel="apple-touch-icon" href="assets/icon.png">
+<link rel="alternate" type="application/atom+xml" title="Sysbar releases" href="https://github.com/Atanur/sysbar/releases.atom">
+<!-- Structured data for search and answer engines; scripts/changelog.py site keeps softwareVersion current. -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "WebSite",
+   "@id": "https://sysbar.atanur.dev/#website",
+   "url": "https://sysbar.atanur.dev/",
+   "name": "Sysbar",
+   "inLanguage": "en",
+   "about": {
+    "@id": "https://sysbar.atanur.dev/#app"
+   }
+  },
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://sysbar.atanur.dev/#app",
+   "name": "Sysbar",
+   "description": "A free, open-source system monitor for macOS that lives around the MacBook notch or in the menu bar. It shows CPU, GPU, memory, power, disk, network and temperatures, watches Linux servers and other Macs over SSH, and adds clipboard history, Stash, fan control and keep awake.",
+   "url": "https://sysbar.atanur.dev/",
+   "image": "https://sysbar.atanur.dev/assets/og.png",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "macOS 14 or later",
+   "softwareRequirements": "A Mac with Apple silicon (M1 or later)",
+   "softwareVersion": "0.6.3",
+   "downloadUrl": "https://github.com/Atanur/sysbar/releases/latest",
+   "installUrl": "https://github.com/Atanur/sysbar/releases/latest",
+   "releaseNotes": "https://github.com/Atanur/sysbar/blob/main/CHANGELOG.md",
+   "license": "https://opensource.org/licenses/MIT",
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+   },
+   "author": {
+    "@type": "Person",
+    "name": "Atanur",
+    "url": "https://github.com/Atanur"
+   },
+   "sameAs": [
+    "https://github.com/Atanur/sysbar"
+   ],
+   "inLanguage": [
+    "en",
+    "tr",
+    "de",
+    "fr",
+    "es",
+    "it",
+    "pt-BR",
+    "nl",
+    "ru",
+    "ja",
+    "ko",
+    "zh-Hans",
+    "ar"
+   ],
+   "featureList": [
+    "CPU, GPU, memory, power, disk and network readouts in the menu bar or beside the notch",
+    "Temperatures, heat warning and manual fan control",
+    "Busiest apps table",
+    "Linux servers and other Macs over SSH",
+    "Clipboard history",
+    "Stash for files, text and links",
+    "Keep awake, also with the lid closed",
+    "13 languages, VoiceOver and Reduce Motion support"
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://sysbar.atanur.dev/#faq",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Is Sysbar free?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. Sysbar is free and open source under the MIT license, with no accounts, ads or in-app purchases."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Does it work on Intel Macs?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. Sysbar needs macOS 14 Sonoma or later on a Mac with Apple silicon (M1 or newer)."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Does Sysbar send any data?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No analytics and no accounts. Its only request is a daily check for a new release on GitHub, which you can turn off, besides the SSH sessions you set up yourself."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Can it watch my servers?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. Add a Linux server or another Mac over SSH, with your own keys or ssh-agent, and see its CPU, memory, load, network, disk and NVIDIA GPU. Nothing is installed on the server."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Why not the App Store?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Sysbar reads power data through a system interface the App Store doesn't allow."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sysbar">
 <meta property="og:url" content="https://sysbar.atanur.dev/">
 <meta property="og:title" content="Sysbar — see what your Mac is doing">
 <meta property="og:description" content="A native, private system monitor that lives around the MacBook notch or in the menu bar. With Stash, clipboard history, fan control and keep awake.">
-<meta property="og:image" content="https://sysbar.atanur.dev/assets/icon.png">
-<meta property="og:image:alt" content="The Sysbar app icon.">
-<meta name="twitter:card" content="summary">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://sysbar.atanur.dev/assets/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Sysbar: see what your Mac is doing. A native system monitor for the notch and the menu bar.">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Sysbar — see what your Mac is doing">
 <meta name="twitter:description" content="A native, private system monitor that lives around the MacBook notch or in the menu bar. With Stash, clipboard history, fan control and keep awake.">
-<meta name="twitter:image" content="https://sysbar.atanur.dev/assets/icon.png">
-<meta name="twitter:image:alt" content="The Sysbar app icon.">
+<meta name="twitter:image" content="https://sysbar.atanur.dev/assets/og.png">
+<meta name="twitter:image:alt" content="Sysbar: see what your Mac is doing. A native system monitor for the notch and the menu bar.">
 <script>document.documentElement.classList.add("js")</script>
 <noscript><style>.nav { opacity: 1; } .copy { visibility: visible; }</style></noscript>
 <style>
@@ -4074,7 +4201,7 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
 @supports (background: color-mix(in srgb, red 10%, blue)) { #private .pv-ico { background: color-mix(in srgb, var(--accent) 13%, transparent); } }
 #private .pv-card h3 { margin: 0; font-size: clamp(20px, 1.7vw, 24px); line-height: 1.15; letter-spacing: -.02em; font-weight: 650; }
 #private .pv-card p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.55; max-width: 34em; }
-#private .pv-link { display: inline-flex; margin-top: auto; align-items: center; gap: 6px; width: fit-content; font-weight: 600; font-size: 15px; color: var(--accent); }
+#private .pv-link { display: inline-flex; margin-top: auto; align-items: center; gap: 6px; width: fit-content; white-space: nowrap; font-weight: 600; font-size: 15px; color: var(--accent); }
 #private .pv-link .pv-i { width: 16px; height: 16px; transition: transform .2s ease; }
 #private .pv-link:hover .pv-i { transform: translateX(3px); }
 #private .pv-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
@@ -4092,18 +4219,13 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
 #private .pv-check { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
 #private.pv-js .pv-check { stroke-dasharray: 50; stroke-dashoffset: 50; }
 #private.pv-js .pv-in .pv-check { stroke-dashoffset: 0; transition: stroke-dashoffset .7s cubic-bezier(.215,.61,.355,1) .5s; }
-@media (prefers-reduced-motion: reduce) { #private.pv-js .pv-check { stroke-dashoffset: 0; transition: none; } #private.pv-js .pv-meter i { transform: none; transition: none; } }
+@media (prefers-reduced-motion: reduce) { #private.pv-js .pv-check { stroke-dashoffset: 0; transition: none; } }
 /* the figures */
 #private .pv-stats { display: flex; flex-wrap: wrap; gap: 14px 36px; margin-top: auto; padding-top: 18px; }
 #private .pv-stat { display: flex; flex-direction: column; gap: 6px; }
 #private .pv-stat b { font-size: clamp(44px, 5vw, 68px); line-height: .95; letter-spacing: -.045em; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
 #private .pv-stat small { font-size: .42em; letter-spacing: 0; margin-left: .2em; font-weight: 650; }
 #private .pv-stat span { font-size: 14px; line-height: 1.35; color: var(--muted); max-width: 12em; }
-/* the core meter: under 1% of one core, drawn as 1% of a bar */
-#private .pv-meter { height: 8px; margin-top: 18px; border-radius: 4px; background: var(--line); overflow: hidden; }
-#private .pv-meter i { display: block; height: 100%; width: 1%; min-width: 6px; border-radius: 4px; background: linear-gradient(90deg, var(--pv-low), var(--pv-mid)); transform-origin: 0 50%; }
-#private.pv-js .pv-meter i { transform: scaleX(0); }
-#private.pv-js .pv-in .pv-meter i { transform: none; transition: transform 1s cubic-bezier(.215,.61,.355,1) .35s; }
 /* the languages: the figure, with the languages' own names taking turns under it */
 #private .pv-say { position: relative; display: block; height: 1.35em; overflow: hidden; max-width: none; }
 #private .pv-say i { position: absolute; left: 0; top: 0; font-style: normal; white-space: nowrap; }
@@ -4172,14 +4294,13 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
         <div class="pv-stat"><b>&lt;1%</b><span>of one core, at rest</span></div>
         <div class="pv-stat"><b data-pv-count="20" data-pv-prefix="~">~20<small> MB</small></b><span>of memory, at rest</span></div>
       </div>
-      <div class="pv-meter" aria-hidden="true"><i></i></div>
     </article>
 
     <article class="pv-card pv-c-access pv-r" style="--pv-d:160ms">
       <span class="pv-ico" aria-hidden="true"><svg class="pv-i" viewBox="0 0 24 24"><circle cx="12" cy="4.8" r="1.8"/><path d="M4.8 8.4l7.2 1.6 7.2-1.6M12 10v4.6l-3.2 5.6M12 14.6l3.2 5.6"/></svg></span>
       <h3>Accessible</h3>
-      <p>Every control is named for VoiceOver, nothing relies on color alone, and Reduce Motion is respected. The aim is WCAG 2.2 level AA. The accessibility page lists what works, what doesn't yet, and how to report a barrier.</p>
-      <a class="pv-link" href="https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md">Read the accessibility page<svg class="pv-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
+      <p>Every control is named for VoiceOver, nothing relies on color alone, and Reduce Motion is respected. The aim is WCAG 2.2 level AA.</p>
+      <a class="pv-link" href="https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md" aria-label="Read the details of Sysbar's accessibility">Read the details<svg class="pv-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
     </article>
 
     <article class="pv-card pv-c-lang pv-r" style="--pv-d:240ms">
@@ -4431,6 +4552,22 @@ if (!reduced() && "IntersectionObserver" in window) {
   </div>
 
   <div class="in-more in-r">
+    <details>
+      <summary>Is Sysbar free?<svg class="in-i" viewBox="0 0 16 16" aria-hidden="true"><use href="#in-i-chev"/></svg></summary>
+      <div class="in-body"><p>Yes. Sysbar is free and open source under the MIT license, with no accounts, ads or in-app purchases.</p></div>
+    </details>
+    <details>
+      <summary>Does it work on Intel Macs?<svg class="in-i" viewBox="0 0 16 16" aria-hidden="true"><use href="#in-i-chev"/></svg></summary>
+      <div class="in-body"><p>No. Sysbar needs macOS 14 Sonoma or later on a Mac with Apple silicon (M1 or newer).</p></div>
+    </details>
+    <details>
+      <summary>Does Sysbar send any data?<svg class="in-i" viewBox="0 0 16 16" aria-hidden="true"><use href="#in-i-chev"/></svg></summary>
+      <div class="in-body"><p>No analytics and no accounts. Its only request is a daily check for a new release on GitHub, which you can turn off, besides the SSH sessions you set up yourself.</p></div>
+    </details>
+    <details>
+      <summary>Can it watch my servers?<svg class="in-i" viewBox="0 0 16 16" aria-hidden="true"><use href="#in-i-chev"/></svg></summary>
+      <div class="in-body"><p>Yes. Add a Linux server or another Mac over SSH, with your own keys or ssh-agent, and see its CPU, memory, load, network, disk and NVIDIA GPU. Nothing is installed on the server.</p></div>
+    </details>
     <details>
       <summary>Build from source<svg class="in-i" viewBox="0 0 16 16" aria-hidden="true"><use href="#in-i-chev"/></svg></summary>
       <div class="in-body"><pre class="in-src"><span>git clone https://github.com/atanur/sysbar.git</span><span>cd sysbar &amp;&amp; ./scripts/bundle.sh</span><span>open build/Sysbar.app</span></pre></div>

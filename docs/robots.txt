@@ -1,0 +1,5 @@
+# Everything here is public; search engines and AI crawlers are welcome.
+User-agent: *
+Allow: /
+
+Sitemap: https://sysbar.atanur.dev/sitemap.xml

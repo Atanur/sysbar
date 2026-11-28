@@ -20,6 +20,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 CHANGELOG = ROOT / "CHANGELOG.md"
 SITE = ROOT / "docs" / "index.html"
 START, END = "<!-- changelog:start -->", "<!-- changelog:end -->"
+SOFTWARE_VERSION = re.compile(r'("softwareVersion": ")[^"]*(")')
 HEADING = re.compile(r"^## (\d+\.\d+\.\d+)(?:\s+[—–-]\s+(\d{4}-\d{2}-\d{2}))?\s*$")
 OPEN_RELEASES = 1
 SITE_RELEASES = 8
@@ -97,7 +98,11 @@ def site():
         sys.exit(f"{SITE.relative_to(ROOT)} needs exactly one {START} and one {END}")
     head, rest = page.split(START)
     _, tail = rest.split(END)
-    SITE.write_text(head + START + "\n" + "\n".join(lines) + "\n" + END + tail, encoding="utf-8")
+    page = head + START + "\n" + "\n".join(lines) + "\n" + END + tail
+    if shown:
+        # The structured data names the newest release too.
+        page = SOFTWARE_VERSION.sub(rf"\g<1>{shown[0][0]}\g<2>", page, count=1)
+    SITE.write_text(page, encoding="utf-8")
     print(f"{SITE.relative_to(ROOT)}: {len(shown)} releases")
 
 
