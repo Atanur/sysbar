@@ -375,21 +375,31 @@ final class StatusController: NSObject, NSPopoverDelegate {
                 : MenuBarImage.make(readouts, colored: colored, style: style, alert: alert, alertOpacity: alertOpacity)
         }
         menuBarFrames.cancel()
-        draw(readouts)
 
         // Small touches, each a short burst of frames after a change and nothing in between.
-        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion else { return }
-        if alert != nil, alert != previousAlert {
+        let animates = !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        if animates, alert != nil, alert != previousAlert {
             // The heat warning pulses a few times when it appears or changes.
+            draw(readouts)
             menuBarFrames.run(duration: Self.pulseSeconds) { progress in
                 draw(readouts, alertOpacity: 0.65 + 0.35 * cos(2 * .pi * Self.pulseCount * progress))
             }
-        } else if !previous.isEmpty, MenuBarReadouts.blend(from: previous, to: readouts, fraction: 0.5) != readouts {
-            // The bars glide to their new level instead of jumping.
+        } else if animates, style.showsBars, !previous.isEmpty,
+                  MenuBarReadouts.blend(from: previous, to: readouts, fraction: 0.5) != readouts {
+            // The bars glide to their new level instead of jumping. A frame is drawn only when a bar
+            // has moved by a point: every new image makes macOS copy the item to each menu bar, which
+            // costs far more than the drawing, so frames that would look the same are skipped.
+            var drawn: String?
             menuBarFrames.run(duration: Self.glideSeconds) { progress in
                 let eased = 1 - pow(1 - progress, 3)
-                draw(MenuBarReadouts.blend(from: previous, to: readouts, fraction: eased))
+                let frame = progress >= 1 ? readouts : MenuBarReadouts.blend(from: previous, to: readouts, fraction: eased)
+                let frameSignature = MenuBarImage.signature(for: frame, colored: colored, style: style, alert: alert)
+                guard frameSignature != drawn else { return }
+                drawn = frameSignature
+                draw(frame)
             }
+        } else {
+            draw(readouts)
         }
     }
 
@@ -820,5 +830,18 @@ final class StatusController: NSObject, NSPopoverDelegate {
         processMonitor?.stop()
         keepRemoteMonitoringAfterClose()
         viewModel = nil
+        returnFreedMemory()
     }
+
+    /// Hands the pages the closed panel freed back to macOS. The allocator otherwise keeps them for
+    /// later, so a Mac that opened the panel a few times would show Sysbar several times its resting
+    /// size. It waits for the panel's views to be torn down first.
+    private func returnFreedMemory() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.memoryReleaseDelay) { [weak self] in
+            guard self?.viewModel == nil else { return }
+            malloc_zone_pressure_relief(nil, 0)
+        }
+    }
+
+    private static let memoryReleaseDelay: TimeInterval = 2
 }
