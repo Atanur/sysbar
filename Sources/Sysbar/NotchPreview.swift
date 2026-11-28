@@ -17,7 +17,7 @@ struct NotchPreview: View {
     private static let closedCorner: CGFloat = 10
     private static let notchCorner: CGFloat = 10
     /// What the open panel's bottom corners are drawn with, as the island's are.
-    private static let openCorner = MetricCardStyle.corner + NotchGeometry.contentInset + PopoverView.wideInset
+    private static let openCorner = NotchOutline.preferredCorner
     /// The wallpaper under the closed island, below the menu bar.
     private static let wallpaperMargin: CGFloat = 22
     /// A panel's inset from the screen's side edges, for a scale that fits it.

@@ -21,9 +21,8 @@ struct IslandEntry: Equatable {
 @MainActor
 final class IslandView: NSView {
     private static let closedCorner: CGFloat = 10
-    /// The open panel's bottom corners, concentric with the cards inside: their radius plus how far they
-    /// sit from the panel's edge, as Apple nests rounded shapes.
-    private static let openCorner: CGFloat = MetricCardStyle.corner + NotchGeometry.contentInset + PopoverView.wideInset
+    /// The open panel's bottom corners, the same as its top ones.
+    private static let openCorner: CGFloat = NotchOutline.preferredCorner
     var onEnter: () -> Void = {}
     var onExit: () -> Void = {}
     var onClick: () -> Void = {}

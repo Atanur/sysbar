@@ -7,14 +7,21 @@ struct NotchOutlineTests {
     private func outline(
         strip: ClosedRange<CGFloat> = 100...400, width: CGFloat = 500, room: CGFloat = 38, body: CGFloat = 300
     ) -> NotchOutline {
-        NotchOutline(strip: strip, width: width, sideRoom: room, bodyHeight: body, bottomCorner: 32)
+        NotchOutline(strip: strip, width: width, sideRoom: room, bodyHeight: body, bottomCorner: NotchOutline.preferredCorner)
     }
 
     @Test func aPanelWiderThanTheStripGetsFilletsAndRoundedTopCorners() {
         let shape = outline()
         #expect(shape.left == NotchOutline.Side(fillet: NotchOutline.preferredFillet, corner: NotchOutline.preferredCorner))
         #expect(shape.right == shape.left)
-        #expect(shape.bottom == 32)
+        #expect(shape.bottom == shape.left.corner)
+    }
+
+    @Test func theBottomCornersAreNoRounderThanTheTopOnes() {
+        let narrow = outline(strip: 12...488)
+        #expect(narrow.left.corner < NotchOutline.preferredCorner)
+        #expect(narrow.bottom == narrow.left.corner)
+        #expect(outline(strip: 0...500).bottom == NotchOutline.preferredCorner)
     }
 
     @Test func aPanelAsWideAsTheStripIsStraightDown() {
@@ -50,6 +57,6 @@ struct NotchOutlineTests {
     }
 
     @Test func theBottomCornersNeverExceedHalfTheWidth() {
-        #expect(outline(strip: 0...40, width: 40).bottom == 20)
+        #expect(outline(strip: 0...20, width: 20).bottom == 10)
     }
 }

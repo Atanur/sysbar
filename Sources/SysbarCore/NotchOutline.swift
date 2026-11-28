@@ -3,7 +3,8 @@ import CoreGraphics
 /// The radii of the open island's outline: the closed strip with the panel hanging from its bottom
 /// edge, drawn as one shape. Where the panel is wider than the strip, the strip's side flows into the
 /// panel's top edge through a concave fillet, and the panel's outer top corner is convex; the bottom
-/// corners are the panel's own. Pure arithmetic, so the shape can be tested without drawing it.
+/// corners match the top ones, so the panel reads as one rounded shape. Pure arithmetic, so the shape
+/// can be tested without drawing it.
 ///
 /// The curves are Apple's continuous ones, which reach `continuousReach` times their radius along each
 /// straight edge they leave, so a radius is only as large as that reach allows: the room beside the
@@ -26,7 +27,7 @@ public struct NotchOutline: Equatable, Sendable {
 
     public let left: Side
     public let right: Side
-    /// The panel's two bottom corners.
+    /// The panel's two bottom corners: no rounder than its top corners, where it has any.
     public let bottom: CGFloat
 
     /// - Parameters:
@@ -46,6 +47,8 @@ public struct NotchOutline: Equatable, Sendable {
         }
         left = side(overhang: strip.lowerBound)
         right = side(overhang: width - strip.upperBound)
-        bottom = max(min(bottomCorner, height / 2, width / 2), 0)
+        let top = max(left.corner, right.corner)
+        let fitted = min(bottomCorner, height / 2, width / 2)
+        bottom = max(top > 0 ? min(fitted, top) : fitted, 0)
     }
 }
