@@ -125,7 +125,7 @@ button { font: inherit; color: inherit; }
 .island { position: absolute; left: 461px; top: 0; width: 590px; height: 0; z-index: 8; }
 .island.locked { pointer-events: none; }
 .island svg.out { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
-.island .shade { position: absolute; left: 6px; top: 38px; width: 578px; height: 560px; border-radius: 0 0 34px 34px; transform-origin: 0 0; transform: scaleY(0); opacity: 0; pointer-events: none;
+.island .shade { position: absolute; left: 6px; top: 38px; width: 578px; height: 560px; border-radius: 0 0 16px 16px; transform-origin: 0 0; transform: scaleY(0); opacity: 0; pointer-events: none;
   box-shadow: 0 26px 60px -8px rgba(0,0,0,.6), 0 8px 20px -6px rgba(0,0,0,.4); will-change: transform, opacity; }
 .strip-hit { position: absolute; top: 0; height: 38px; }
 .ears { position: absolute; left: 0; top: 0; width: 590px; height: 38px; pointer-events: none; }
@@ -726,7 +726,7 @@ section[id] { scroll-margin-top: 0; }
 #two-homes .th-isl, #two-homes .th-pop { --sec: rgba(235,235,245,.62); --fill: rgba(255,255,255,.06); font: 13px/1.25 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #f2f2f5; }
 #two-homes .th-island { position: absolute; left: 205px; top: 0; width: 590px; height: 0; z-index: 8; }
 #two-homes .th-island svg.out { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
-#two-homes .th-shade { position: absolute; left: 6px; top: 38px; width: 578px; height: 560px; border-radius: 0 0 34px 34px; transform-origin: 0 0; transform: scaleY(0); opacity: 0; box-shadow: 0 26px 60px -8px rgba(0,0,0,.6), 0 8px 20px -6px rgba(0,0,0,.4); }
+#two-homes .th-shade { position: absolute; left: 6px; top: 38px; width: 578px; height: 560px; border-radius: 0 0 16px 16px; transform-origin: 0 0; transform: scaleY(0); opacity: 0; box-shadow: 0 26px 60px -8px rgba(0,0,0,.6), 0 8px 20px -6px rgba(0,0,0,.4); }
 #two-homes .th-ears { position: absolute; left: 0; top: 0; width: 590px; height: 38px; }
 #two-homes .th-ear { position: absolute; top: 8px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 11px; color: #fff; transform: translateX(var(--ex, 0px)); }
 #two-homes .th-ear.on { background: rgba(255,255,255,.22); }
@@ -1110,7 +1110,7 @@ const OPEN = bezier(.2, .8, .2, 1);
 const W = 1000, H = 510, BAR = 38, PANEL_W = 590, NOTCH_W = 204;
 const CXL = PANEL_W / 2, NL = CXL - NOTCH_W / 2, NR = CXL + NOTCH_W / 2;     /* notch edges, island-local */
 const EAR_L = 69, EAR_R = 60, REACH = 1.52866483;
-const FILLET = 12, CORNER = 14, OPEN_CORNER = 32, CLOSED_CORNER = 10, TOP = -30;
+const FILLET = 12, CORNER = 14, OPEN_CORNER = CORNER, CLOSED_CORNER = 10, TOP = -30;
 const NARROW_VIEW = 640, NARROW_FROM = 180, NARROW_TO = 360;                   /* phones show a 640-wide crop that pans from the island to the popover */
 
 function cornerPath(pt, px, py, ax, ay, bx, by, r) {
@@ -1130,6 +1130,7 @@ function radii(x0, x1, h) {
     return [Math.max(Math.min(FILLET, budget - c, BAR / REACH, h / 2), 0), Math.max(c, 0)];
   };
   let [fL, cL] = side(x0), [fR, cR] = side(PANEL_W - x1), b = Math.max(Math.min(OPEN_CORNER, h / 2, PANEL_W / 2), 0);
+  if (Math.max(cL, cR) > 0) b = Math.min(b, Math.max(cL, cR));   /* the bottom corners match the top ones */
   const need = REACH * (Math.max(cL, cR) + b);
   if (need > h) { const k = h / need; cL *= k; cR *= k; b *= k; }
   return { fL, cL, fR, cR, b };
@@ -3621,7 +3622,7 @@ function measure() {
 /* One continuous corner at vertex (px,py); a and b are unit vectors along the two edges, away from it. */
 const K = [[1.08849296, 0, .86840694, 0, .63149379, .07491139], [.37282392, .16906013, .16906013, .37282392, .07491139, .63149379], [0, .86840694, 0, 1.08849296, 0, REACH]];
 function islandPath(x0, x1, h, dx = 0, dy = 0) {
-  const { W, S, BAR } = G, TOP = -30 * S, FILLET = 12 * S, CORNER = 14 * S, CLOSED = 10 * S, OPEN_CORNER = 28 * Math.max(S, .85);
+  const { W, S, BAR } = G, TOP = -30 * S, FILLET = 12 * S, CORNER = 14 * S, CLOSED = 10 * S, OPEN_CORNER = CORNER;
   const pt = (x, y) => `${f2(x + dx)} ${f2(y + dy)}`;
   const corner = (px, py, ax, ay, bx, by, r) => {
     if (r < .4) return `L${pt(px, py)}`;
@@ -3640,6 +3641,7 @@ function islandPath(x0, x1, h, dx = 0, dy = 0) {
     return [Math.max(Math.min(FILLET, budget - c, BAR / REACH, h / 2), 0), Math.max(c, 0)];
   };
   let [fL, cL] = side(x0), [fR, cR] = side(W - x1), b = Math.max(Math.min(OPEN_CORNER, h / 2, W / 2), 0);
+  if (Math.max(cL, cR) > 0) b = Math.min(b, Math.max(cL, cR));   /* the bottom corners match the top ones */
   const need = REACH * (Math.max(cL, cR) + b);
   if (need > h) { const k = h / need; cL *= k; cR *= k; b *= k; }
   const Y = BAR, B = BAR + h;
@@ -4080,9 +4082,9 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
 #private .pv-stat b { font-size: clamp(44px, 5vw, 68px); line-height: .95; letter-spacing: -.045em; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
 #private .pv-stat small { font-size: .42em; letter-spacing: 0; margin-left: .2em; font-weight: 650; }
 #private .pv-stat span { font-size: 14px; line-height: 1.35; color: var(--muted); max-width: 12em; }
-/* the core meter: 2% of one core, drawn as 2% of a bar */
+/* the core meter: under 1% of one core, drawn as 1% of a bar */
 #private .pv-meter { height: 8px; margin-top: 18px; border-radius: 4px; background: var(--line); overflow: hidden; }
-#private .pv-meter i { display: block; height: 100%; width: 2%; min-width: 6px; border-radius: 4px; background: linear-gradient(90deg, var(--pv-low), var(--pv-mid)); transform-origin: 0 50%; }
+#private .pv-meter i { display: block; height: 100%; width: 1%; min-width: 6px; border-radius: 4px; background: linear-gradient(90deg, var(--pv-low), var(--pv-mid)); transform-origin: 0 50%; }
 #private.pv-js .pv-meter i { transform: scaleX(0); }
 #private.pv-js .pv-in .pv-meter i { transform: none; transition: transform 1s cubic-bezier(.215,.61,.355,1) .35s; }
 /* the languages strip */
@@ -4147,10 +4149,10 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
     <article class="pv-card pv-c-light pv-r" style="--pv-d:80ms">
       <span class="pv-ico" aria-hidden="true"><svg class="pv-i" viewBox="0 0 24 24"><path d="M3.6 16.6a8.4 8.4 0 1 1 16.8 0"/><path d="M12 16.6l3.7-4.9"/><circle cx="12" cy="16.6" r="1.3"/></svg></span>
       <h3>Light</h3>
-      <p>About 2% of one core and around 14 MB of memory with the popover closed. It stops sampling while the Mac or its screens sleep.</p>
+      <p>Under 1% of one core and about 20 MB of memory while it waits in the menu bar or beside the notch. Once the panel has been opened it settles at around 35 MB. It stops sampling while the Mac or its screens sleep.</p>
       <div class="pv-stats">
-        <div class="pv-stat"><b data-pv-count="2" data-pv-prefix="~" data-pv-suffix="%">~2%</b><span>of one core, popover closed</span></div>
-        <div class="pv-stat"><b data-pv-count="14" data-pv-prefix="~">~14<small> MB</small></b><span>of memory</span></div>
+        <div class="pv-stat"><b>&lt;1%</b><span>of one core, at rest</span></div>
+        <div class="pv-stat"><b data-pv-count="20" data-pv-prefix="~">~20<small> MB</small></b><span>of memory, at rest</span></div>
       </div>
       <div class="pv-meter" aria-hidden="true"><i></i></div>
     </article>
@@ -4543,7 +4545,7 @@ const CX = PANEL_W / 2, NL = CX - NOTCH_W / 2, NR = CX + NOTCH_W / 2;   /* notch
 const EAR_L = 69, EAR_R = 60;           /* left ear (readouts + battery), right ear (two icons) */
 const ISLAND_X = SCREEN_W / 2 - CX;     /* island's left edge on screen */
 const REACH = 1.52866483;               /* how far a continuous corner reaches along an edge, per unit radius */
-const FILLET = 12, CORNER = 14, OPEN_CORNER = 32, CLOSED_CORNER = 10, TOP = -30;
+const FILLET = 12, CORNER = 14, OPEN_CORNER = CORNER, CLOSED_CORNER = 10, TOP = -30;
 
 let ox = 0, oy = 0;
 const pt = (x, y) => `${f2(x + ox)} ${f2(y + oy)}`;
@@ -4569,6 +4571,7 @@ function radii(x0, x1, h) {
   };
   let [fL, cL] = side(x0), [fR, cR] = side(PANEL_W - x1);
   let b = Math.max(Math.min(OPEN_CORNER, h / 2, PANEL_W / 2), 0);
+  if (Math.max(cL, cR) > 0) b = Math.min(b, Math.max(cL, cR));   /* the bottom corners match the top ones */
   /* keep the two corners on one side from overlapping while the sheet is still short */
   const need = REACH * (Math.max(cL, cR) + b);
   if (need > h) { const k = h / need; cL *= k; cR *= k; b *= k; }

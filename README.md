@@ -24,7 +24,7 @@
 ## Why Sysbar
 
 - **Glanceable.** Each metric is a thin level bar and a fixed-width number, so the menu bar never shifts as values change. Bars can be tinted by load or follow the menu bar's own colour.
-- **Light.** Written in Swift against the system's own counters. With the popover closed it uses about 2% of a single core and around 14 MB of memory, and it stops sampling while the Mac or its screens sleep.
+- **Light.** Written in Swift against the system's own counters. At rest, in the menu bar or beside the notch, it uses under 1% of a single core and about 20 MB of memory; once the panel has been opened it settles at around 35 MB. It stops sampling while the Mac or its screens sleep.
 - **Honest.** It shows what can be measured and hides what cannot. Values that are estimates are labelled as such.
 - **Private.** No accounts, no analytics. Besides the SSH connections you set up, the only request is a once-a-day check for a new release on GitHub, which you can turn off; nothing about your Mac is sent.
 
