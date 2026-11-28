@@ -1,4 +1,4 @@
-# Everything here is public; search engines and AI crawlers are welcome.
+# The site is public; the sitemap lists its one page.
 User-agent: *
 Allow: /
 
