@@ -21,7 +21,7 @@ CHANGELOG = ROOT / "CHANGELOG.md"
 SITE = ROOT / "docs" / "index.html"
 START, END = "<!-- changelog:start -->", "<!-- changelog:end -->"
 HEADING = re.compile(r"^## (\d+\.\d+\.\d+)(?:\s+[—–-]\s+(\d{4}-\d{2}-\d{2}))?\s*$")
-OPEN_RELEASES = 3
+OPEN_RELEASES = 1
 SITE_RELEASES = 8
 USER_FACING = re.compile(r"^(feat|fix|perf)(\(.+\))?!?: ")
 
@@ -73,22 +73,25 @@ def inline(text):
     return re.sub(r"\*\*([^*]+)\*\*", r"<b>\1</b>", escaped)
 
 
-def article(version, date, items):
+def article(version, date, items, expanded):
+    """One release as a disclosure: its version, date and number of changes, and the changes when open."""
     when = ""
     if date:
         shown = datetime.date.fromisoformat(date).strftime("%b %-d, %Y")
         when = f' <time datetime="{date}">{shown}</time>'
+    count = f'<span class="count">{len(items)} {"change" if len(items) == 1 else "changes"}</span>'
     rows = "".join(f"<li>{inline(item)}</li>" for item in items)
-    return f'<article class="release"><h3><span class="version">{version}</span>{when}</h3><ul>{rows}</ul></article>'
+    state = " open" if expanded else ""
+    return (
+        f'<details class="release"{state}><summary><h3><span class="version">{version}</span>{when}</h3>{count}</summary>'
+        f"<ul>{rows}</ul></details>"
+    )
 
 
 def site():
+    """The newest releases, folded except the first `OPEN_RELEASES`, so the list stays short."""
     shown = releases()[:SITE_RELEASES]
-    lines = [article(*release) for release in shown[:OPEN_RELEASES]]
-    older = shown[OPEN_RELEASES:]
-    if older:
-        inner = "".join(article(*release) for release in older)
-        lines.append(f'<details class="older"><summary>Earlier releases</summary>{inner}</details>')
+    lines = [article(*release, expanded=index < OPEN_RELEASES) for index, release in enumerate(shown)]
     page = SITE.read_text(encoding="utf-8")
     if page.count(START) != 1 or page.count(END) != 1:
         sys.exit(f"{SITE.relative_to(ROOT)} needs exactly one {START} and one {END}")

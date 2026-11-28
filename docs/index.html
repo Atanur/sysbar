@@ -14,12 +14,12 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sysbar">
 <meta property="og:url" content="https://sysbar.atanur.dev/">
-<meta property="og:title" content="Sysbar — your Mac, at a glance">
+<meta property="og:title" content="Sysbar — see what your Mac is doing">
 <meta property="og:description" content="A native, private system monitor that lives around the MacBook notch or in the menu bar. With Stash, clipboard history, fan control and keep awake.">
 <meta property="og:image" content="https://sysbar.atanur.dev/assets/icon.png">
 <meta property="og:image:alt" content="The Sysbar app icon.">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Sysbar — your Mac, at a glance">
+<meta name="twitter:title" content="Sysbar — see what your Mac is doing">
 <meta name="twitter:description" content="A native, private system monitor that lives around the MacBook notch or in the menu bar. With Stash, clipboard history, fan control and keep awake.">
 <meta name="twitter:image" content="https://sysbar.atanur.dev/assets/icon.png">
 <meta name="twitter:image:alt" content="The Sysbar app icon.">
@@ -391,7 +391,14 @@ section[id] { scroll-margin-top: 0; }
 .nav .links { display: flex; align-items: center; gap: clamp(14px, 1.9vw, 26px); font-size: 14px; }
 .nav .links a { position: relative; color: rgba(245,245,247,.72); transition: color .2s ease; padding: 6px 0; border-radius: 6px; }
 .nav .links a:hover, .nav .links a.on { color: #fff; }
-.nav .links a.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 1px; background: currentColor; opacity: .9; }
+.nav .links a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 1px; background: currentColor; opacity: .9; transform: scaleX(0); transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+.nav .links a.on::after { transform: none; }
+/* Install, the one action of the bar, as a small pill */
+.nav .links a.nav-cta, .nav .links a.nav-cta.on { padding: 6px 14px; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font-weight: 600; transition: background-color .2s ease, color .2s ease; }
+.nav .links a.nav-cta:hover { background: rgba(255,255,255,.24); }
+.nav .links a.nav-cta::after { display: none; }
+.nav.solid .links a.nav-cta, .nav.solid .links a.nav-cta.on { background: var(--text); color: var(--bg); }
+.nav.solid .links a.nav-cta:hover { background: color-mix(in srgb, var(--text) 82%, var(--bg)); color: var(--bg); }
 .nav.solid .links a { color: var(--muted); }
 .nav.solid .links a:hover, .nav.solid .links a.on { color: var(--text); }
 .nav a:focus-visible, .nav-btn:focus-visible { outline: 2px solid #9cc4ff; outline-offset: 3px; }
@@ -418,11 +425,12 @@ section[id] { scroll-margin-top: 0; }
   .js .nav .links a, .js .nav.solid .links a { display: flex; align-items: center; min-height: 46px; padding: 0 14px; border-radius: 11px; color: var(--text); }
   .js .nav .links a:hover { background: var(--line); color: var(--text); }
   .js .nav .links a.on { background: var(--line); color: var(--text); }
-  .js .nav .links a.on::after { display: none; }
+  .js .nav .links a::after { display: none; }
+  .js .nav .links a.nav-cta, .js .nav.solid .links a.nav-cta, .js .nav .links a.nav-cta.on, .js .nav .links a.nav-cta:hover { margin-top: 6px; justify-content: center; background: var(--text); color: var(--bg); }
   .js .nav .links a:focus-visible { outline-color: var(--accent); outline-offset: -2px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nav, .nav .links a, .nav-btn .bars i { transition: none; }
+  .nav, .nav .links a, .nav .links a::after, .nav-btn .bars i { transition: none; }
   .js .nav .links { transition: none; transform: none; }
 }
 
@@ -430,9 +438,22 @@ section[id] { scroll-margin-top: 0; }
 .rv-on .rv { opacity: 0; transform: translateY(18px); }
 .rv-on .rv.rv-in { opacity: 1; transform: none; transition: opacity .8s cubic-bezier(.215,.61,.355,1) var(--rv-d, 0ms), transform .8s cubic-bezier(.215,.61,.355,1) var(--rv-d, 0ms); }
 
+/* ---- motion polish: blocks come into focus as they rise, and section titles rise word by word (the page script
+        wraps the words). The selectors repeat each section's own reveal, one step more specific, to add the blur. ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .rv-on .rv, #private.pv-js .pv-r, #install.in-js .in-r, #customize.cz-js .cz-r, #features.ft-js .ft-rv { filter: blur(6px); }
+  :root.rv-on .rv.rv-in { filter: none; transition: opacity .9s cubic-bezier(.2,.7,.2,1) var(--rv-d, 0ms), transform .9s cubic-bezier(.2,.7,.2,1) var(--rv-d, 0ms), filter .9s cubic-bezier(.2,.7,.2,1) var(--rv-d, 0ms); }
+  :root #private.pv-js .pv-r.pv-in { filter: none; transition: opacity .9s cubic-bezier(.2,.7,.2,1) var(--pv-d, 0ms), transform .9s cubic-bezier(.2,.7,.2,1) var(--pv-d, 0ms), filter .9s cubic-bezier(.2,.7,.2,1) var(--pv-d, 0ms), border-color .25s ease; }
+  :root #install.in-js .in-r.in-in { filter: none; transition: opacity .9s cubic-bezier(.2,.7,.2,1) var(--in-d, 0ms), transform .9s cubic-bezier(.2,.7,.2,1) var(--in-d, 0ms), filter .9s cubic-bezier(.2,.7,.2,1) var(--in-d, 0ms), border-color .25s ease; }
+  :root #customize.cz-js .cz-r.cz-in { filter: none; transition: opacity .9s cubic-bezier(.2,.7,.2,1) var(--cz-d, 0ms), transform .9s cubic-bezier(.2,.7,.2,1) var(--cz-d, 0ms), filter .9s cubic-bezier(.2,.7,.2,1) var(--cz-d, 0ms); }
+  :root #features.ft-js .ft-rv.ft-in { filter: none; transition: opacity .9s cubic-bezier(.2,.7,.2,1) var(--ft-d, 0ms), transform .9s cubic-bezier(.2,.7,.2,1) var(--ft-d, 0ms), filter .9s cubic-bezier(.2,.7,.2,1) var(--ft-d, 0ms); }
+  .hw .hw-w { display: inline-block; opacity: 0; transform: translateY(.42em); filter: blur(5px); }
+  .hw.hw-in .hw-w { opacity: 1; transform: none; filter: none; transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1), filter .8s cubic-bezier(.2,.7,.2,1); transition-delay: calc(140ms + var(--hw-i, 0) * 55ms); }
+}
+
 /* ---- What's new (#changelog). The list between the changelog markers is generated by scripts/changelog.py:
-        <article class="release"><h3><span class="version"> <time>…</time></h3><ul><li>…</ul></article> and
-        <details class="older"><summary>…</summary><article class="release">…</details>. Styled here, scoped. ---- */
+        <details class="release" [open]><summary><h3><span class="version"> <time>…</time></h3><span class="count">…</span></summary>
+        <ul><li>…</ul></details>, the newest open. Styled here, scoped; the page script animates the folding. ---- */
 #changelog, #changelog *, #changelog *::before, #changelog *::after { box-sizing: border-box; }
 #changelog {
   position: relative; padding: var(--section-pad) 0; background: var(--bg); color: var(--text); border-top: 1px solid var(--line); overflow-x: clip; line-height: 1.5;
@@ -441,7 +462,7 @@ section[id] { scroll-margin-top: 0; }
 #changelog .cl-eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 #changelog .cl-h2 { margin: 0 0 16px; font-size: clamp(32px, 4.4vw, 56px); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; text-wrap: balance; max-width: 15em; }
 #changelog .cl-sub { margin: 0; max-width: 34em; font-size: clamp(16px, 1.25vw, 19px); line-height: 1.5; color: var(--muted); }
-#changelog .cl-list { display: grid; gap: 14px; min-width: 0; }
+#changelog .cl-list { display: grid; gap: 12px; min-width: 0; align-content: start; }
 #changelog .cl-more { margin: 18px 0 0; }
 #changelog .cl-more a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 600; font-size: 15px; color: var(--accent); border-radius: 8px; }
 #changelog .cl-more svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s ease; }
@@ -451,27 +472,26 @@ section[id] { scroll-margin-top: 0; }
   #changelog .cl-side { position: sticky; top: calc(var(--nav-h) + 40px); }
 }
 /* generated markup */
-#changelog .release { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: clamp(20px, 2.4vw, 28px); }
-#changelog .release h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0 0 14px; font-size: clamp(20px, 1.7vw, 24px); line-height: 1.15; letter-spacing: -.02em; font-weight: 650; }
+#changelog .release { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; transition: border-color .25s ease; }
+#changelog .release + .release { margin-top: 0; }
+#changelog .release summary { list-style: none; display: flex; align-items: center; gap: 12px; padding: clamp(18px, 2.2vw, 24px) clamp(20px, 2.4vw, 28px); border-radius: 21px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+#changelog .release summary::-webkit-details-marker { display: none; }
+#changelog .release summary::after { content: ""; width: 8px; height: 8px; margin-left: 4px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-2px) rotate(45deg); transition: transform .3s cubic-bezier(.2,.7,.2,1); flex: none; }
+#changelog .release[open]:not(.closing) summary::after { transform: translateY(2px) rotate(-135deg); }
+#changelog .release:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+#changelog .release h3 { flex: 1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 0; font-size: clamp(20px, 1.7vw, 24px); line-height: 1.15; letter-spacing: -.02em; font-weight: 650; }
 #changelog .release .version { font-variant-numeric: tabular-nums; }
 #changelog .release time { color: var(--muted); font-size: 14px; font-weight: 500; letter-spacing: 0; font-variant-numeric: tabular-nums; }
-#changelog .release ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; color: var(--muted); font-size: 16px; line-height: 1.55; }
+#changelog .release .count { color: var(--muted); font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#changelog .release ul { margin: 0; padding: 0 clamp(20px, 2.4vw, 28px) clamp(20px, 2.4vw, 28px); list-style: none; display: grid; gap: 10px; color: var(--muted); font-size: 16px; line-height: 1.55; }
 #changelog .release li { position: relative; padding-left: 20px; max-width: 40em; }
 #changelog .release li::before { content: ""; position: absolute; left: 3px; top: .62em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .7; }
 #changelog .release b { color: var(--text); font-weight: 600; }
 #changelog .release a { color: var(--accent); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .2s ease; }
 #changelog .release a:hover { text-decoration-color: currentColor; }
 #changelog .release code { font: .88em ui-monospace, "SF Mono", Menlo, monospace; padding: .12em .4em; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); color: var(--text); overflow-wrap: anywhere; }
-#changelog .older { margin: 0; }
-#changelog .older summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 0 clamp(20px, 2.4vw, 28px); border: 1px solid var(--line); border-radius: 16px; background: var(--surface); cursor: pointer; font-weight: 600; font-size: 15px; color: var(--accent); -webkit-tap-highlight-color: transparent; }
-#changelog .older summary::-webkit-details-marker { display: none; }
-#changelog .older summary::after { content: ""; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .25s ease; flex: none; }
-#changelog .older[open] summary::after { transform: translateY(2px) rotate(-135deg); }
-#changelog .older summary:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
-#changelog .older summary:focus-visible, #changelog .cl-more a:focus-visible, #changelog .release a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-#changelog .older[open] summary { margin-bottom: 14px; }
-#changelog .older .release + .release { margin-top: 14px; }
-@media (prefers-reduced-motion: reduce) { #changelog .older summary::after, #changelog .cl-more svg, #changelog .release a { transition: none; } }
+#changelog .release summary:focus-visible, #changelog .cl-more a:focus-visible, #changelog .release a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { #changelog .release, #changelog .release summary::after, #changelog .cl-more svg, #changelog .release a { transition: none; } }
 
 /* ---- print: light, static, no nav, everything visible ---- */
 @media print {
@@ -524,13 +544,13 @@ section[id] { scroll-margin-top: 0; }
   </defs>
 </svg>
 
-<a class="skip" href="#two-homes">Skip to content</a>
+<a class="skip" href="#placement">Skip to content</a>
 <header class="top">
 <nav class="nav" aria-label="Main">
       <a class="brand keep" href="#top" aria-label="Sysbar home">
         <svg viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" rx="6.5" fill="#131416"/><rect x="6" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="11.5" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="17" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="6" y="14" width="3" height="7" rx="1.5" fill="#f5f5f7"/><rect x="11.5" y="9" width="3" height="12" rx="1.5" fill="#e8874a"/><rect x="17" y="16" width="3" height="5" rx="1.5" fill="#f5f5f7"/></svg>Sysbar</a>
       <button class="nav-btn" type="button" id="nav-btn" aria-expanded="false" aria-controls="nav-links" aria-label="Menu"><span class="bars" aria-hidden="true"><i></i><i></i></span></button>
-      <div class="links" id="nav-links"><a href="#two-homes">Two homes</a><a href="#system">System</a><a href="#features">Tools</a><a href="#customize">Customize</a><a href="#private">Privacy</a><a href="#changelog">What's new</a><a class="keep" href="#install">Install</a><a class="keep" href="https://github.com/atanur/sysbar">GitHub</a></div>
+      <div class="links" id="nav-links"><a href="#placement" data-also="system features customize private">Features</a><a href="#changelog">What's new</a><a class="keep" href="https://github.com/atanur/sysbar">GitHub</a><a class="keep nav-cta" href="#install">Install</a></div>
 </nav>
 </header>
 
@@ -544,7 +564,7 @@ section[id] { scroll-margin-top: 0; }
 
     <div class="copy" id="copy">
       <p class="eyebrow" data-r>Sysbar for macOS</p>
-      <h1 data-r>Your Mac, <span class="glance">at a glance.</span></h1>
+      <h1 data-r>See what your Mac <span class="glance">is doing.</span></h1>
       <p class="lead" data-r>Sysbar is a native system monitor that lives around the notch or in the menu bar. CPU, memory, power, temperatures — and your servers over SSH when you ask.</p>
       <div class="cta" data-r>
         <a class="btn primary" href="https://github.com/atanur/sysbar/releases/latest"><svg class="i" aria-hidden="true"><use href="#i-down"/></svg>Download for macOS</a>
@@ -654,51 +674,51 @@ section[id] { scroll-margin-top: 0; }
   </div>
 </section>
 
-<section id="two-homes" class="th" aria-labelledby="th-title">
+<section id="placement" class="th" aria-labelledby="th-title">
 <style>
 /* ==========================================================================
-   Two homes (copy.md section 2). Everything is scoped under #two-homes.
+   Menu bar or notch (copy.md section 2). Everything is scoped under #placement.
    Page tokens (--bg --surface --text --muted --line --accent) come from the page;
    the laptop-screen mock and the vignettes stay dark like the real app, in both schemes.
    ========================================================================== */
-#two-homes, #two-homes *, #two-homes *::before, #two-homes *::after { box-sizing: border-box; }
-#two-homes {
+#placement, #placement *, #placement *::before, #placement *::after { box-sizing: border-box; }
+#placement {
   /* the hero scene's semantic colors, defined here because hero.html scopes them to its own stage */
   --low: #a8a8b0; --mid: #e0b352; --high: #e8874a; --crit: #eb6b61; --charge: #61cc85; --in: #e6e6eb; --out: #b8b8bf; --focus: #9cc4ff;
   --ease-open: cubic-bezier(.2, .8, .2, 1); --ease-close: cubic-bezier(.8, 0, .8, .2);
   position: relative; padding: clamp(72px, 10vw, 128px) 0; background: var(--bg); color: var(--text); line-height: 1.5; overflow-x: clip;
 }
-#two-homes .th-wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
-#two-homes .th-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#placement .th-wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
+#placement .th-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* ---- section head ---- */
-#two-homes .th-eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-#two-homes .th-h2 { margin: 0 0 16px; font-size: clamp(32px, 4.4vw, 56px); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; text-wrap: balance; max-width: 15em; }
-#two-homes .th-u { background-image: linear-gradient(90deg, var(--low), var(--mid) 45%, var(--high) 70%, var(--crit)); background-size: 100% .09em; background-repeat: no-repeat; background-position: 0 94%; padding-bottom: .05em; }
-#two-homes .th-sub { margin: 0; max-width: 34em; font-size: clamp(16px, 1.25vw, 19px); line-height: 1.5; color: var(--muted); }
-#two-homes .th-head { margin-bottom: clamp(32px, 4.5vw, 52px); }
+#placement .th-eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+#placement .th-h2 { margin: 0 0 16px; font-size: clamp(32px, 4.4vw, 56px); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; text-wrap: balance; max-width: 15em; }
+#placement .th-u { background-image: linear-gradient(90deg, var(--low), var(--mid) 45%, var(--high) 70%, var(--crit)); background-size: 100% .09em; background-repeat: no-repeat; background-position: 0 94%; padding-bottom: .05em; }
+#placement .th-sub { margin: 0; max-width: 34em; font-size: clamp(16px, 1.25vw, 19px); line-height: 1.5; color: var(--muted); }
+#placement .th-head { margin-bottom: clamp(32px, 4.5vw, 52px); }
 
 /* ---- the switch ---- */
-#two-homes .th-switch { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: min(100%, 460px); margin: 0 auto clamp(20px, 3vw, 32px); padding: 4px; border-radius: 16px; background: var(--line); background: color-mix(in srgb, var(--text) 8%, transparent); }
-#two-homes .th-pill { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--line), 0 2px 8px rgba(0,0,0,.12); transition: transform .34s var(--ease-open); }
-#two-homes .th-switch[data-home="bar"] .th-pill { transform: translateX(100%); }
-#two-homes .th-sbtn { position: relative; z-index: 1; min-height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: none; font: inherit; font-size: 15px; font-weight: 550; letter-spacing: -.005em; color: var(--muted); cursor: pointer; transition: color .2s ease; -webkit-tap-highlight-color: transparent; }
-#two-homes .th-sbtn[aria-pressed="true"] { color: var(--text); font-weight: 650; }
-#two-homes .th-sbtn:hover { color: var(--text); }
-#two-homes .th-sbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#placement .th-switch { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: min(100%, 460px); margin: 0 auto clamp(20px, 3vw, 32px); padding: 4px; border-radius: 16px; background: var(--line); background: color-mix(in srgb, var(--text) 8%, transparent); }
+#placement .th-pill { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--line), 0 2px 8px rgba(0,0,0,.12); transition: transform .34s var(--ease-open); }
+#placement .th-switch[data-home="bar"] .th-pill { transform: translateX(100%); }
+#placement .th-sbtn { position: relative; z-index: 1; min-height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: none; font: inherit; font-size: 15px; font-weight: 550; letter-spacing: -.005em; color: var(--muted); cursor: pointer; transition: color .2s ease; -webkit-tap-highlight-color: transparent; }
+#placement .th-sbtn[aria-pressed="true"] { color: var(--text); font-weight: 650; }
+#placement .th-sbtn:hover { color: var(--text); }
+#placement .th-sbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---- the laptop-screen mock: a fixed 1000-point world, scaled to fit ---- */
-#two-homes .th-fig { margin: 0 auto; max-width: 1040px; }
-#two-homes .th-sample { margin: 6px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
-#two-homes .th-device { position: relative; padding: 12px 12px 0; border-radius: 28px 28px 0 0; color-scheme: dark;
+#placement .th-fig { margin: 0 auto; max-width: 1040px; }
+#placement .th-sample { margin: 6px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+#placement .th-device { position: relative; padding: 12px 12px 0; border-radius: 28px 28px 0 0; color-scheme: dark;
   background: linear-gradient(180deg, #14161b 0%, #090a0d 18%, #050608 100%);
   box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.07), inset 0 2px 0 rgba(255,255,255,.2);
   -webkit-mask-image: linear-gradient(180deg, #000 0, #000 92%, transparent 100%); mask-image: linear-gradient(180deg, #000 0, #000 92%, transparent 100%); }
-#two-homes .th-view { position: relative; width: 100%; aspect-ratio: 1000 / 510; border-radius: 14px 14px 0 0; overflow: hidden; background: #000; isolation: isolate; }
-#two-homes .th-world { position: absolute; left: 0; top: 0; width: 1000px; height: 510px; transform-origin: 0 0; opacity: 0; transition: opacity .4s ease; -webkit-font-smoothing: antialiased; color: #f2f2f5;
+#placement .th-view { position: relative; width: 100%; aspect-ratio: 1000 / 510; border-radius: 14px 14px 0 0; overflow: hidden; background: #000; isolation: isolate; }
+#placement .th-world { position: absolute; left: 0; top: 0; width: 1000px; height: 510px; transform-origin: 0 0; opacity: 0; transition: opacity .4s ease; -webkit-font-smoothing: antialiased; color: #f2f2f5;
   font: 13px/1.25 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
-#two-homes.th-ready .th-world { opacity: 1; }
-#two-homes .th-wall { position: absolute; inset: 0;
+#placement.th-ready .th-world { opacity: 1; }
+#placement .th-wall { position: absolute; inset: 0;
   background:
     radial-gradient(600px 420px at 84% 2%, rgba(255,142,96,.7), rgba(255,142,96,0) 64%),
     radial-gradient(740px 500px at 12% 14%, rgba(92,118,255,.66), rgba(92,118,255,0) 64%),
@@ -706,191 +726,191 @@ section[id] { scroll-margin-top: 0; }
     radial-gradient(500px 340px at 42% 52%, rgba(52,190,210,.3), rgba(52,190,210,0) 66%),
     linear-gradient(165deg, #1a2160 0%, #321d6c 46%, #51236a 78%, #2f1d52 100%); }
 
-#two-homes .th-mbar { position: absolute; left: 0; right: 0; top: 0; height: 38px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+#placement .th-mbar { position: absolute; left: 0; right: 0; top: 0; height: 38px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
   font: 500 13.5px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: rgba(255,255,255,.94);
   background: linear-gradient(180deg, rgba(8,10,24,.5), rgba(8,10,24,.3)); }
-#two-homes .th-mbar .l, #two-homes .th-mbar .r { display: flex; align-items: center; white-space: nowrap; }
-#two-homes .th-mbar .l { gap: 19px; }
-#two-homes .th-mbar .r { gap: 16px; }
-#two-homes .th-mbar b { font-weight: 700; }
-#two-homes .th-mbar .logo { width: 14px; height: 16px; fill: #fff; margin-right: -2px; }
-#two-homes .th-mbar .r svg { height: 15px; width: auto; fill: none; stroke: #fff; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; display: block; }
-#two-homes .th-si { width: 176px; height: 24px; display: flex; align-items: center; justify-content: center; gap: 11px; border-radius: 6px; opacity: 0; font-weight: 600; font-size: 12.5px; }
-#two-homes .th-si.lit { background: rgba(255,255,255,.2); }
-#two-homes .th-rd { display: flex; align-items: center; gap: 6px; }
-#two-homes .th-tr { width: 3px; height: 14px; border-radius: 2px; background: rgba(255,255,255,.32); position: relative; overflow: hidden; }
-#two-homes .th-tr i, #two-homes .th-bar i { position: absolute; inset: 0; background: #fff; transform-origin: 50% 100%; border-radius: 2px; transform: scaleY(.3); }
-#two-homes .th-v { display: inline-block; text-align: left; min-width: 3.5ch; }
+#placement .th-mbar .l, #placement .th-mbar .r { display: flex; align-items: center; white-space: nowrap; }
+#placement .th-mbar .l { gap: 19px; }
+#placement .th-mbar .r { gap: 16px; }
+#placement .th-mbar b { font-weight: 700; }
+#placement .th-mbar .logo { width: 14px; height: 16px; fill: #fff; margin-right: -2px; }
+#placement .th-mbar .r svg { height: 15px; width: auto; fill: none; stroke: #fff; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; display: block; }
+#placement .th-si { width: 176px; height: 24px; display: flex; align-items: center; justify-content: center; gap: 11px; border-radius: 6px; opacity: 0; font-weight: 600; font-size: 12.5px; }
+#placement .th-si.lit { background: rgba(255,255,255,.2); }
+#placement .th-rd { display: flex; align-items: center; gap: 6px; }
+#placement .th-tr { width: 3px; height: 14px; border-radius: 2px; background: rgba(255,255,255,.32); position: relative; overflow: hidden; }
+#placement .th-tr i, #placement .th-bar i { position: absolute; inset: 0; background: #fff; transform-origin: 50% 100%; border-radius: 2px; transform: scaleY(.3); }
+#placement .th-v { display: inline-block; text-align: left; min-width: 3.5ch; }
 
 /* the island (notch home) and the popover (menu bar home) share one visual language */
-#two-homes .th-isl, #two-homes .th-pop { --sec: rgba(235,235,245,.62); --fill: rgba(255,255,255,.06); font: 13px/1.25 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #f2f2f5; }
-#two-homes .th-island { position: absolute; left: 205px; top: 0; width: 590px; height: 0; z-index: 8; }
-#two-homes .th-island svg.out { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
-#two-homes .th-shade { position: absolute; left: 6px; top: 38px; width: 578px; height: 560px; border-radius: 0 0 16px 16px; transform-origin: 0 0; transform: scaleY(0); opacity: 0; box-shadow: 0 26px 60px -8px rgba(0,0,0,.6), 0 8px 20px -6px rgba(0,0,0,.4); }
-#two-homes .th-ears { position: absolute; left: 0; top: 0; width: 590px; height: 38px; }
-#two-homes .th-ear { position: absolute; top: 8px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 11px; color: #fff; transform: translateX(var(--ex, 0px)); }
-#two-homes .th-ear.on { background: rgba(255,255,255,.22); }
-#two-homes .th-ear-sys { left: 126px; width: 67px; gap: 9px; }
-#two-homes .th-ear-ico { width: 22px; }
-#two-homes .th-ear-ico.s1 { left: 403px; } #two-homes .th-ear-ico.s2 { left: 427px; }
-#two-homes .th-ear .th-i { width: 15px; height: 15px; }
-#two-homes .th-bars { display: flex; align-items: center; gap: 9px; }
-#two-homes .th-bar { width: 3px; height: 17px; border-radius: 2px; background: rgba(255,255,255,.3); position: relative; overflow: hidden; }
-#two-homes .th-batt { width: 21px; height: 11px; overflow: visible; }
-#two-homes .th-batt .shell { fill: none; stroke: rgba(255,255,255,.82); stroke-width: 1; }
-#two-homes .th-batt .nub { fill: rgba(255,255,255,.6); }
-#two-homes .th-batt .lvl { fill: #fff; }
-#two-homes .th-batt .bolt { fill: #0a0a0b; stroke: rgba(255,255,255,.2); stroke-width: .4; }
-#two-homes .th-panel { position: absolute; left: 10px; top: 38px; width: 570px; height: 560px; }
-#two-homes .th-pg { position: absolute; left: 0; top: 0; width: 570px; padding: 8px 12px 12px; }
-#two-homes .th-i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-#two-homes .th-hdr { display: flex; align-items: center; justify-content: space-between; min-height: 22px; margin-bottom: 8px; }
-#two-homes .th-mtabs { display: flex; gap: 4px; }
-#two-homes .th-mtab { padding: 3px 10px; border-radius: 12px; color: var(--sec); line-height: 16px; }
-#two-homes .th-mtab.sel { background: rgba(255,255,255,.12); color: #fff; font-weight: 600; }
-#two-homes .th-ctl { display: flex; align-items: center; gap: 2px; }
-#two-homes .th-ibtn { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: var(--sec); }
-#two-homes .th-ibtn .th-i { width: 15px; height: 15px; }
-#two-homes .th-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-#two-homes .th-card { background: var(--fill); border-radius: 10px; padding: 10px; min-width: 0; }
-#two-homes .th-chead { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--sec); height: 13px; }
-#two-homes .th-chead .th-i { width: 11px; height: 11px; }
-#two-homes .th-ctitle { flex: 1; }
-#two-homes .th-cnote { font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
-#two-homes .th-cnote .th-bolt { width: 6px; height: 9px; color: var(--charge); }
-#two-homes .th-cval { font: 600 22px/27px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif; margin-top: 4px; letter-spacing: -.01em; white-space: nowrap; }
-#two-homes .th-cval.two { font-size: 15px; display: flex; align-items: baseline; gap: 8px; }
-#two-homes .th-cval .out { color: var(--out); } #two-homes .th-cval .chg { color: var(--charge); }
-#two-homes .th-cval .unit { font-size: 10px; font-weight: 400; color: var(--sec); }
-#two-homes .th-spark { height: 32px; margin-top: 4px; position: relative; }
-#two-homes .th-spark svg { display: block; overflow: hidden; }
-#two-homes .th-spark .l { fill: none; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
-#two-homes .th-spark .a { stroke: none; fill-opacity: .16; }
-#two-homes .th-spark .z { stroke: rgba(255,255,255,.28); stroke-width: .7; stroke-dasharray: 2 3; }
-#two-homes .th-apps { margin-top: 8px; }
-#two-homes .th-apps .t { font-weight: 600; font-size: 13px; margin-bottom: 5px; }
-#two-homes .th-arow { display: grid; grid-template-columns: 1fr 80px 80px; align-items: center; height: 20px; font-size: 12px; }
-#two-homes .th-arow span:nth-child(n+2) { text-align: right; }
-#two-homes .th-arow.h { color: var(--sec); font-size: 11px; height: 17px; }
-#two-homes .th-arow.h .cur { color: #fff; }
+#placement .th-isl, #placement .th-pop { --sec: rgba(235,235,245,.62); --fill: rgba(255,255,255,.06); font: 13px/1.25 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #f2f2f5; }
+#placement .th-island { position: absolute; left: 205px; top: 0; width: 590px; height: 0; z-index: 8; }
+#placement .th-island svg.out { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+#placement .th-shade { position: absolute; left: 6px; top: 38px; width: 578px; height: 560px; border-radius: 0 0 16px 16px; transform-origin: 0 0; transform: scaleY(0); opacity: 0; box-shadow: 0 26px 60px -8px rgba(0,0,0,.6), 0 8px 20px -6px rgba(0,0,0,.4); }
+#placement .th-ears { position: absolute; left: 0; top: 0; width: 590px; height: 38px; }
+#placement .th-ear { position: absolute; top: 8px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 11px; color: #fff; transform: translateX(var(--ex, 0px)); }
+#placement .th-ear.on { background: rgba(255,255,255,.22); }
+#placement .th-ear-sys { left: 126px; width: 67px; gap: 9px; }
+#placement .th-ear-ico { width: 22px; }
+#placement .th-ear-ico.s1 { left: 403px; } #placement .th-ear-ico.s2 { left: 427px; }
+#placement .th-ear .th-i { width: 15px; height: 15px; }
+#placement .th-bars { display: flex; align-items: center; gap: 9px; }
+#placement .th-bar { width: 3px; height: 17px; border-radius: 2px; background: rgba(255,255,255,.3); position: relative; overflow: hidden; }
+#placement .th-batt { width: 21px; height: 11px; overflow: visible; }
+#placement .th-batt .shell { fill: none; stroke: rgba(255,255,255,.82); stroke-width: 1; }
+#placement .th-batt .nub { fill: rgba(255,255,255,.6); }
+#placement .th-batt .lvl { fill: #fff; }
+#placement .th-batt .bolt { fill: #0a0a0b; stroke: rgba(255,255,255,.2); stroke-width: .4; }
+#placement .th-panel { position: absolute; left: 10px; top: 38px; width: 570px; height: 560px; }
+#placement .th-pg { position: absolute; left: 0; top: 0; width: 570px; padding: 8px 12px 12px; }
+#placement .th-i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+#placement .th-hdr { display: flex; align-items: center; justify-content: space-between; min-height: 22px; margin-bottom: 8px; }
+#placement .th-mtabs { display: flex; gap: 4px; }
+#placement .th-mtab { padding: 3px 10px; border-radius: 12px; color: var(--sec); line-height: 16px; }
+#placement .th-mtab.sel { background: rgba(255,255,255,.12); color: #fff; font-weight: 600; }
+#placement .th-ctl { display: flex; align-items: center; gap: 2px; }
+#placement .th-ibtn { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: var(--sec); }
+#placement .th-ibtn .th-i { width: 15px; height: 15px; }
+#placement .th-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#placement .th-card { background: var(--fill); border-radius: 10px; padding: 10px; min-width: 0; }
+#placement .th-chead { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--sec); height: 13px; }
+#placement .th-chead .th-i { width: 11px; height: 11px; }
+#placement .th-ctitle { flex: 1; }
+#placement .th-cnote { font-size: 10px; display: inline-flex; align-items: center; gap: 3px; }
+#placement .th-cnote .th-bolt { width: 6px; height: 9px; color: var(--charge); }
+#placement .th-cval { font: 600 22px/27px -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif; margin-top: 4px; letter-spacing: -.01em; white-space: nowrap; }
+#placement .th-cval.two { font-size: 15px; display: flex; align-items: baseline; gap: 8px; }
+#placement .th-cval .out { color: var(--out); } #placement .th-cval .chg { color: var(--charge); }
+#placement .th-cval .unit { font-size: 10px; font-weight: 400; color: var(--sec); }
+#placement .th-spark { height: 32px; margin-top: 4px; position: relative; }
+#placement .th-spark svg { display: block; overflow: hidden; }
+#placement .th-spark .l { fill: none; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+#placement .th-spark .a { stroke: none; fill-opacity: .16; }
+#placement .th-spark .z { stroke: rgba(255,255,255,.28); stroke-width: .7; stroke-dasharray: 2 3; }
+#placement .th-apps { margin-top: 8px; }
+#placement .th-apps .t { font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+#placement .th-arow { display: grid; grid-template-columns: 1fr 80px 80px; align-items: center; height: 20px; font-size: 12px; }
+#placement .th-arow span:nth-child(n+2) { text-align: right; }
+#placement .th-arow.h { color: var(--sec); font-size: 11px; height: 17px; }
+#placement .th-arow.h .cur { color: #fff; }
 
-#two-homes .th-pop { position: absolute; width: 340px; left: 548px; top: 46px; z-index: 6; opacity: 0; transform-origin: 170px 0; padding: 12px; border-radius: 12px; background: rgba(28,28,32,.97); visibility: hidden;
+#placement .th-pop { position: absolute; width: 340px; left: 548px; top: 46px; z-index: 6; opacity: 0; transform-origin: 170px 0; padding: 12px; border-radius: 12px; background: rgba(28,28,32,.97); visibility: hidden;
   box-shadow: 0 0 0 1px rgba(255,255,255,.1), 0 24px 60px rgba(0,0,0,.55), 0 4px 14px rgba(0,0,0,.35); }
-#two-homes .th-pop::before { content: ""; position: absolute; top: -6px; left: 163px; width: 14px; height: 14px; background: inherit; transform: rotate(45deg); border-radius: 3px 0 0 0; box-shadow: -1px -1px 0 rgba(255,255,255,.1); }
-#two-homes .th-pop .sbar { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
-#two-homes .th-pop .sbtn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 15px; color: var(--sec); }
-#two-homes .th-pop .sbtn.sel { background: rgba(255,255,255,.12); color: #fff; font-weight: 600; }
-#two-homes .th-pop .sbtn .th-i { width: 14px; height: 14px; }
-#two-homes .th-pop .sbar .gear { margin-left: auto; color: var(--sec); }
-#two-homes .th-pop .th-hdr { margin-bottom: 12px; }
-#two-homes .th-pop .th-cards { grid-template-columns: 1fr 1fr; }
-#two-homes .th-pop .th-apps { margin-top: 12px; }
-#two-homes .th-pop .th-arow { grid-template-columns: 1fr 64px 64px; }
+#placement .th-pop::before { content: ""; position: absolute; top: -6px; left: 163px; width: 14px; height: 14px; background: inherit; transform: rotate(45deg); border-radius: 3px 0 0 0; box-shadow: -1px -1px 0 rgba(255,255,255,.1); }
+#placement .th-pop .sbar { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+#placement .th-pop .sbtn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 15px; color: var(--sec); }
+#placement .th-pop .sbtn.sel { background: rgba(255,255,255,.12); color: #fff; font-weight: 600; }
+#placement .th-pop .sbtn .th-i { width: 14px; height: 14px; }
+#placement .th-pop .sbar .gear { margin-left: auto; color: var(--sec); }
+#placement .th-pop .th-hdr { margin-bottom: 12px; }
+#placement .th-pop .th-cards { grid-template-columns: 1fr 1fr; }
+#placement .th-pop .th-apps { margin-top: 12px; }
+#placement .th-pop .th-arow { grid-template-columns: 1fr 64px 64px; }
 
-/* ---- the two homes, as cards ---- */
-#two-homes .th-homes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: clamp(28px, 4vw, 48px); }
-@media (min-width: 1000px) { #two-homes .th-homes { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } }
-#two-homes .th-home { min-width: 0; padding: clamp(20px, 2.6vw, 32px); border: 1px solid var(--line); border-radius: 24px; background: var(--surface); transition: border-color .25s ease, box-shadow .25s ease; }
-#two-homes .th-home[data-on="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 24px 50px -32px rgba(0,0,0,.35); }
-#two-homes .th-home h3 { margin: 0 0 8px; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.15; letter-spacing: -.02em; font-weight: 700; }
-#two-homes .th-line { margin: 0; max-width: 38em; font-size: 16px; line-height: 1.55; color: var(--muted); }
-#two-homes .th-pts { list-style: none; margin: 24px 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px 20px; }
-@media (min-width: 640px) { #two-homes .th-pts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-#two-homes .th-pts li { display: grid; gap: 12px; align-content: start; min-width: 0; font-size: 15px; line-height: 1.55; }
-#two-homes .th-bul { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 12px; }
-#two-homes .th-bul li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 12px; font-size: 15px; line-height: 1.55; }
-#two-homes .th-bul .th-i { width: 18px; height: 18px; margin-top: 2px; color: var(--accent); stroke-width: 1.6; }
-#two-homes .th-close { margin: clamp(28px, 4vw, 44px) 0 0; text-align: center; font-size: clamp(19px, 2vw, 24px); font-weight: 600; letter-spacing: -.015em; }
+/* ---- the two places, as cards ---- */
+#placement .th-homes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: clamp(28px, 4vw, 48px); }
+@media (min-width: 1000px) { #placement .th-homes { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } }
+#placement .th-home { min-width: 0; padding: clamp(20px, 2.6vw, 32px); border: 1px solid var(--line); border-radius: 24px; background: var(--surface); transition: border-color .25s ease, box-shadow .25s ease; }
+#placement .th-home[data-on="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 24px 50px -32px rgba(0,0,0,.35); }
+#placement .th-home h3 { margin: 0 0 8px; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.15; letter-spacing: -.02em; font-weight: 700; }
+#placement .th-line { margin: 0; max-width: 38em; font-size: 16px; line-height: 1.55; color: var(--muted); }
+#placement .th-pts { list-style: none; margin: 24px 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px 20px; }
+@media (min-width: 640px) { #placement .th-pts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+#placement .th-pts li { display: grid; gap: 12px; align-content: start; min-width: 0; font-size: 15px; line-height: 1.55; }
+#placement .th-bul { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 12px; }
+#placement .th-bul li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 12px; font-size: 15px; line-height: 1.55; }
+#placement .th-bul .th-i { width: 18px; height: 18px; margin-top: 2px; color: var(--accent); stroke-width: 1.6; }
+#placement .th-close { margin: clamp(28px, 4vw, 44px) 0 0; text-align: center; font-size: clamp(19px, 2vw, 24px); font-weight: 600; letter-spacing: -.015em; }
 
 /* ---- vignettes: tiny dark scenes, drawn in CSS. The static state is the end frame; animation only plays on screen. ---- */
-#two-homes .th-vig { --vr: 6px; position: relative; height: 112px; border-radius: 14px; overflow: hidden; isolation: isolate; color-scheme: dark;
+#placement .th-vig { --vr: 6px; position: relative; height: 112px; border-radius: 14px; overflow: hidden; isolation: isolate; color-scheme: dark;
   background:
     radial-gradient(200px 120px at 85% 0%, rgba(255,142,96,.5), rgba(255,142,96,0) 70%),
     radial-gradient(240px 140px at 10% 10%, rgba(92,118,255,.55), rgba(92,118,255,0) 70%),
     linear-gradient(165deg, #1a2160 0%, #321d6c 55%, #51236a 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
-#two-homes .th-vbar { position: absolute; left: 0; right: 0; top: 0; height: 11px; background: rgba(8,10,24,.45); }
-#two-homes .th-vstrip { position: absolute; top: 0; left: 50%; width: 112px; margin-left: -56px; height: 17px; background: #000; border-radius: 0 0 6px 6px; display: flex; align-items: center; justify-content: space-between; padding: 0 7px; }
-#two-homes .th-vstrip em { display: flex; gap: 2.5px; align-items: center; font-style: normal; }
-#two-homes .th-vstrip em i { display: block; width: 1.6px; height: 7px; border-radius: 1px; background: rgba(255,255,255,.85); }
-#two-homes .th-vstrip em i:nth-child(2) { height: 4px; } #two-homes .th-vstrip em i:nth-child(3) { height: 6px; }
-#two-homes .th-vstrip b { display: block; width: 7px; height: 7px; border-radius: 2px; background: rgba(255,255,255,.55); border-radius: 2px; margin-left: 3px; }
-#two-homes .th-vstrip .rt { display: flex; align-items: center; }
-#two-homes .th-vear { position: absolute; top: 2px; left: 50%; margin-left: 38px; width: 15px; height: 13px; border-radius: 6px; background: rgba(255,255,255,.26); }
-#two-homes .th-vpanel { position: absolute; top: 17px; left: 50%; width: 144px; margin-left: -72px; height: 68px; background: #000; border-radius: 0 0 12px 12px; box-shadow: 0 10px 24px -6px rgba(0,0,0,.6); }
-#two-homes .th-vpanel::before, #two-homes .th-vpanel::after { content: ""; position: absolute; top: calc(var(--vr) * -1); width: var(--vr); height: var(--vr); }
-#two-homes .th-vpanel::before { left: 16px; background: radial-gradient(circle at 0 0, transparent var(--vr), #000 calc(var(--vr) + .5px)); }
-#two-homes .th-vpanel::after { right: 16px; background: radial-gradient(circle at 100% 0, transparent var(--vr), #000 calc(var(--vr) + .5px)); }
-#two-homes .th-vin { height: 100%; overflow: hidden; padding: 8px 8px 0; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 20px; gap: 4px; }
-#two-homes .th-vin i { display: block; border-radius: 5px; background: rgba(255,255,255,.1); }
-#two-homes .th-vin i:nth-child(n+4) { grid-column: span 3; height: 5px; align-self: center; border-radius: 3px; background: rgba(255,255,255,.14); }
-#two-homes .th-cur { position: absolute; left: 50%; top: 0; width: 13px; height: 18px; margin-left: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); transform: translate(44px, 9px); z-index: 3; }
-#two-homes .th-cur path { fill: #fff; stroke: #000; stroke-width: 1.2; stroke-linejoin: round; }
+#placement .th-vbar { position: absolute; left: 0; right: 0; top: 0; height: 11px; background: rgba(8,10,24,.45); }
+#placement .th-vstrip { position: absolute; top: 0; left: 50%; width: 112px; margin-left: -56px; height: 17px; background: #000; border-radius: 0 0 6px 6px; display: flex; align-items: center; justify-content: space-between; padding: 0 7px; }
+#placement .th-vstrip em { display: flex; gap: 2.5px; align-items: center; font-style: normal; }
+#placement .th-vstrip em i { display: block; width: 1.6px; height: 7px; border-radius: 1px; background: rgba(255,255,255,.85); }
+#placement .th-vstrip em i:nth-child(2) { height: 4px; } #placement .th-vstrip em i:nth-child(3) { height: 6px; }
+#placement .th-vstrip b { display: block; width: 7px; height: 7px; border-radius: 2px; background: rgba(255,255,255,.55); border-radius: 2px; margin-left: 3px; }
+#placement .th-vstrip .rt { display: flex; align-items: center; }
+#placement .th-vear { position: absolute; top: 2px; left: 50%; margin-left: 38px; width: 15px; height: 13px; border-radius: 6px; background: rgba(255,255,255,.26); }
+#placement .th-vpanel { position: absolute; top: 17px; left: 50%; width: 144px; margin-left: -72px; height: 68px; background: #000; border-radius: 0 0 12px 12px; box-shadow: 0 10px 24px -6px rgba(0,0,0,.6); }
+#placement .th-vpanel::before, #placement .th-vpanel::after { content: ""; position: absolute; top: calc(var(--vr) * -1); width: var(--vr); height: var(--vr); }
+#placement .th-vpanel::before { left: 16px; background: radial-gradient(circle at 0 0, transparent var(--vr), #000 calc(var(--vr) + .5px)); }
+#placement .th-vpanel::after { right: 16px; background: radial-gradient(circle at 100% 0, transparent var(--vr), #000 calc(var(--vr) + .5px)); }
+#placement .th-vin { height: 100%; overflow: hidden; padding: 8px 8px 0; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 20px; gap: 4px; }
+#placement .th-vin i { display: block; border-radius: 5px; background: rgba(255,255,255,.1); }
+#placement .th-vin i:nth-child(n+4) { grid-column: span 3; height: 5px; align-self: center; border-radius: 3px; background: rgba(255,255,255,.14); }
+#placement .th-cur { position: absolute; left: 50%; top: 0; width: 13px; height: 18px; margin-left: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); transform: translate(44px, 9px); z-index: 3; }
+#placement .th-cur path { fill: #fff; stroke: #000; stroke-width: 1.2; stroke-linejoin: round; }
 
 /* capsule on a display without a notch */
-#two-homes .th-vcap { position: absolute; top: 2px; left: 50%; width: 64px; margin-left: -32px; height: 12px; border-radius: 6px; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
+#placement .th-vcap { position: absolute; top: 2px; left: 50%; width: 64px; margin-left: -32px; height: 12px; border-radius: 6px; z-index: 2; display: flex; align-items: center; justify-content: center; gap: 6px;
   background: rgba(255,255,255,.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
-#two-homes .th-vcap i { display: block; width: 1.8px; height: 6px; border-radius: 1px; background: #fff; }
-#two-homes .th-vcap i:nth-child(2) { height: 4px; } #two-homes .th-vcap i:nth-child(3) { height: 5px; }
-#two-homes .th-vcard { position: absolute; top: 10px; left: 50%; width: 120px; margin-left: -60px; height: 62px; border-radius: 0 0 14px 14px; padding: 12px 8px 0; z-index: 1; overflow: hidden;
+#placement .th-vcap i { display: block; width: 1.8px; height: 6px; border-radius: 1px; background: #fff; }
+#placement .th-vcap i:nth-child(2) { height: 4px; } #placement .th-vcap i:nth-child(3) { height: 5px; }
+#placement .th-vcard { position: absolute; top: 10px; left: 50%; width: 120px; margin-left: -60px; height: 62px; border-radius: 0 0 14px 14px; padding: 12px 8px 0; z-index: 1; overflow: hidden;
   background: rgba(44,46,66,.78); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22), 0 10px 24px -6px rgba(0,0,0,.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-#two-homes .th-vcard .th-vin { padding: 0; height: auto; grid-auto-rows: 18px; }
+#placement .th-vcard .th-vin { padding: 0; height: auto; grid-auto-rows: 18px; }
 
 /* every display, or just one */
-#two-homes .th-vscr { position: absolute; top: 20px; height: 64px; border-radius: 6px 6px 2px 2px; overflow: hidden; background: linear-gradient(165deg, #2c3a9a, #6a2f8c); box-shadow: 0 0 0 2px #0b0c0f, 0 0 0 3px rgba(255,255,255,.14); }
-#two-homes .th-vscr.a { left: 8%; width: 46%; } #two-homes .th-vscr.b { right: 8%; width: 32%; }
-#two-homes .th-vscr .th-vbar { height: 6px; }
-#two-homes .th-vscr .th-vstrip { width: 44px; margin-left: -22px; height: 9px; padding: 0 4px; border-radius: 0 0 4px 4px; }
-#two-homes .th-vscr .th-vstrip em i { width: 1.2px; height: 4px; }
-#two-homes .th-vscr .th-vstrip em i:nth-child(2) { height: 2.5px; } #two-homes .th-vscr .th-vstrip em i:nth-child(3) { height: 3.5px; }
-#two-homes .th-vscr .th-vstrip b { width: 4px; height: 4px; margin-left: 2px; }
-#two-homes .th-vscr .th-vcap { top: 1px; width: 32px; margin-left: -16px; height: 5px; border-radius: 3px; gap: 3px; }
-#two-homes .th-vscr .th-vcap i { width: 1px; height: 2.5px; }
-#two-homes .th-vscr .th-vcap i:nth-child(2) { height: 1.8px; } #two-homes .th-vscr .th-vcap i:nth-child(3) { height: 2.2px; }
-#two-homes .th-vstand { position: absolute; bottom: 14px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.18); }
-#two-homes .th-vstand.a { left: 22%; width: 18%; } #two-homes .th-vstand.b { right: 17%; width: 14%; }
+#placement .th-vscr { position: absolute; top: 20px; height: 64px; border-radius: 6px 6px 2px 2px; overflow: hidden; background: linear-gradient(165deg, #2c3a9a, #6a2f8c); box-shadow: 0 0 0 2px #0b0c0f, 0 0 0 3px rgba(255,255,255,.14); }
+#placement .th-vscr.a { left: 8%; width: 46%; } #placement .th-vscr.b { right: 8%; width: 32%; }
+#placement .th-vscr .th-vbar { height: 6px; }
+#placement .th-vscr .th-vstrip { width: 44px; margin-left: -22px; height: 9px; padding: 0 4px; border-radius: 0 0 4px 4px; }
+#placement .th-vscr .th-vstrip em i { width: 1.2px; height: 4px; }
+#placement .th-vscr .th-vstrip em i:nth-child(2) { height: 2.5px; } #placement .th-vscr .th-vstrip em i:nth-child(3) { height: 3.5px; }
+#placement .th-vscr .th-vstrip b { width: 4px; height: 4px; margin-left: 2px; }
+#placement .th-vscr .th-vcap { top: 1px; width: 32px; margin-left: -16px; height: 5px; border-radius: 3px; gap: 3px; }
+#placement .th-vscr .th-vcap i { width: 1px; height: 2.5px; }
+#placement .th-vscr .th-vcap i:nth-child(2) { height: 1.8px; } #placement .th-vscr .th-vcap i:nth-child(3) { height: 2.2px; }
+#placement .th-vstand { position: absolute; bottom: 14px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.18); }
+#placement .th-vstand.a { left: 22%; width: 18%; } #placement .th-vstand.b { right: 17%; width: 14%; }
 
 /* full screen */
-#two-homes .th-vfull { background: linear-gradient(150deg, #101a3a 0%, #24307a 50%, #6a2f8c 100%); }
-#two-homes .th-vplay { position: absolute; left: 50%; top: 56%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: rgba(255,255,255,.16); display: grid; place-items: center; }
-#two-homes .th-vplay::after { content: ""; margin-left: 3px; border-left: 11px solid rgba(255,255,255,.8); border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
-#two-homes .th-vfull .th-vstrip { transform: none; }
-#two-homes .th-vfull .th-cur { transform: translate(24px, 3px); }
+#placement .th-vfull { background: linear-gradient(150deg, #101a3a 0%, #24307a 50%, #6a2f8c 100%); }
+#placement .th-vplay { position: absolute; left: 50%; top: 56%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: rgba(255,255,255,.16); display: grid; place-items: center; }
+#placement .th-vplay::after { content: ""; margin-left: 3px; border-left: 11px solid rgba(255,255,255,.8); border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+#placement .th-vfull .th-vstrip { transform: none; }
+#placement .th-vfull .th-cur { transform: translate(24px, 3px); }
 
 /* fixed-width numbers (menu bar home) */
-#two-homes .th-vsi { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 14px; padding: 9px 16px; border-radius: 10px; background: rgba(255,255,255,.16);
+#placement .th-vsi { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 14px; padding: 9px 16px; border-radius: 10px; background: rgba(255,255,255,.16);
   font: 600 19px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #fff; font-variant-numeric: tabular-nums; }
-#two-homes .th-slot { display: flex; align-items: center; gap: 7px; }
-#two-homes .th-slot > i { position: relative; width: 5px; height: 24px; border-radius: 3px; background: rgba(255,255,255,.3); overflow: hidden; }
-#two-homes .th-slot > i u { position: absolute; inset: 0; background: #fff; border-radius: 3px; transform-origin: 50% 100%; transform: scaleY(var(--l, 1)); }
-#two-homes .th-num { display: inline-grid; width: 4.2ch; text-align: left; }
-#two-homes .th-num b { grid-area: 1 / 1; font-weight: 600; }
-#two-homes .th-num b + b { opacity: 0; }
+#placement .th-slot { display: flex; align-items: center; gap: 7px; }
+#placement .th-slot > i { position: relative; width: 5px; height: 24px; border-radius: 3px; background: rgba(255,255,255,.3); overflow: hidden; }
+#placement .th-slot > i u { position: absolute; inset: 0; background: #fff; border-radius: 3px; transform-origin: 50% 100%; transform: scaleY(var(--l, 1)); }
+#placement .th-num { display: inline-grid; width: 4.2ch; text-align: left; }
+#placement .th-num b { grid-area: 1 / 1; font-weight: 600; }
+#placement .th-num b + b { opacity: 0; }
 
 /* bars and values, bars only, values only */
-#two-homes .th-vstyles { height: auto; padding: 14px 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
-#two-homes .th-sty { display: inline-flex; align-items: center; gap: 10px; padding: 7px 11px; border-radius: 8px; background: rgba(255,255,255,.16); font: 600 13px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #fff; font-variant-numeric: tabular-nums; }
-#two-homes .th-sty .rd { display: inline-flex; align-items: center; gap: 5px; }
-#two-homes .th-sb { position: relative; display: block; width: 3px; height: 14px; border-radius: 2px; background: rgba(255,255,255,.3); overflow: hidden; }
-#two-homes .th-sb u { position: absolute; inset: 0; background: #fff; border-radius: 2px; transform-origin: 50% 100%; transform: scaleY(var(--l, 1)); }
-#two-homes .th-bul li > div { display: grid; gap: 10px; min-width: 0; }
-#two-homes .th-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-#two-homes .th-chips span { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); font-size: 12.5px; font-weight: 550; line-height: 1.4; }
-#two-homes .th-chips span::before { content: ""; width: 6px; height: 10px; background: radial-gradient(circle, var(--muted) 1px, transparent 1.4px) 0 0 / 3px 3.4px; opacity: .8; }
+#placement .th-vstyles { height: auto; padding: 14px 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
+#placement .th-sty { display: inline-flex; align-items: center; gap: 10px; padding: 7px 11px; border-radius: 8px; background: rgba(255,255,255,.16); font: 600 13px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #fff; font-variant-numeric: tabular-nums; }
+#placement .th-sty .rd { display: inline-flex; align-items: center; gap: 5px; }
+#placement .th-sb { position: relative; display: block; width: 3px; height: 14px; border-radius: 2px; background: rgba(255,255,255,.3); overflow: hidden; }
+#placement .th-sb u { position: absolute; inset: 0; background: #fff; border-radius: 2px; transform-origin: 50% 100%; transform: scaleY(var(--l, 1)); }
+#placement .th-bul li > div { display: grid; gap: 10px; min-width: 0; }
+#placement .th-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+#placement .th-chips span { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); font-size: 12.5px; font-weight: 550; line-height: 1.4; }
+#placement .th-chips span::before { content: ""; width: 6px; height: 10px; background: radial-gradient(circle, var(--muted) 1px, transparent 1.4px) 0 0 / 3px 3.4px; opacity: .8; }
 
 /* ---- vignette animation: paused until the section is on screen ---- */
-#two-homes:not(.th-run) .th-vig *, #two-homes:not(.th-run) .th-vig *::before, #two-homes:not(.th-run) .th-vig *::after { animation-play-state: paused !important; }
+#placement:not(.th-run) .th-vig *, #placement:not(.th-run) .th-vig *::before, #placement:not(.th-run) .th-vig *::after { animation-play-state: paused !important; }
 @media (prefers-reduced-motion: no-preference) {
-  #two-homes .th-a-panel { animation: th-hover-panel 7s infinite; }
-  #two-homes .th-a-panel::before, #two-homes .th-a-panel::after { animation: th-fillet 7s infinite; }
-  #two-homes .th-a-cur { animation: th-hover-cur 7s infinite; }
-  #two-homes .th-a-ear { animation: th-hover-ear 7s infinite; }
-  #two-homes .th-a-card { animation: th-cap-card 7s infinite; }
-  #two-homes .th-a-capi { animation: th-cap-glow 7s infinite; }
-  #two-homes .th-a-b { animation: th-disp-b 7s infinite; }
-  #two-homes .th-a-island { animation: th-full-island 7s infinite; }
-  #two-homes .th-a-fcur { animation: th-full-cur 7s infinite; }
-  #two-homes .th-a-n1 { animation: th-num-a 5s infinite; } #two-homes .th-a-n2 { animation: th-num-b 5s infinite; }
-  #two-homes .th-a-lvl { animation: th-lvl 5s infinite; }
+  #placement .th-a-panel { animation: th-hover-panel 7s infinite; }
+  #placement .th-a-panel::before, #placement .th-a-panel::after { animation: th-fillet 7s infinite; }
+  #placement .th-a-cur { animation: th-hover-cur 7s infinite; }
+  #placement .th-a-ear { animation: th-hover-ear 7s infinite; }
+  #placement .th-a-card { animation: th-cap-card 7s infinite; }
+  #placement .th-a-capi { animation: th-cap-glow 7s infinite; }
+  #placement .th-a-b { animation: th-disp-b 7s infinite; }
+  #placement .th-a-island { animation: th-full-island 7s infinite; }
+  #placement .th-a-fcur { animation: th-full-cur 7s infinite; }
+  #placement .th-a-n1 { animation: th-num-a 5s infinite; } #placement .th-a-n2 { animation: th-num-b 5s infinite; }
+  #placement .th-a-lvl { animation: th-lvl 5s infinite; }
 }
 @keyframes th-hover-panel {
   0%, 30% { height: 0; opacity: 0; animation-timing-function: var(--ease-open); }
@@ -928,10 +948,10 @@ section[id] { scroll-margin-top: 0; }
 @keyframes th-lvl { 0%, 42% { transform: scaleY(1); } 50%, 92% { transform: scaleY(.04); } 100% { transform: scaleY(1); } }
 
 @media (max-width: 480px) {
-  #two-homes .th-sbtn { font-size: 14px; padding: 0 6px; }
+  #placement .th-sbtn { font-size: 14px; padding: 0 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #two-homes .th-pill, #two-homes .th-sbtn, #two-homes .th-home, #two-homes .th-world { transition: none; }
+  #placement .th-pill, #placement .th-sbtn, #placement .th-home, #placement .th-world { transition: none; }
 }
 </style>
 
@@ -956,9 +976,9 @@ section[id] { scroll-margin-top: 0; }
 
 <div class="th-wrap">
   <header class="th-head">
-    <p class="th-eyebrow rv">Two homes</p>
-    <h2 class="th-h2 rv" id="th-title" style="--rv-d:80ms">Two homes, <span class="th-u">one Sysbar.</span></h2>
-    <p class="th-sub rv" style="--rv-d:160ms">Sysbar starts in the menu bar. Move it around the notch whenever you like: Settings › Menu Bar › Appearance › Location.</p>
+    <p class="th-eyebrow rv">Where it lives</p>
+    <h2 class="th-h2 rv" id="th-title" style="--rv-d:80ms">In the menu bar, or <span class="th-u">around the notch.</span></h2>
+    <p class="th-sub rv" style="--rv-d:160ms">Sysbar starts in the menu bar. Move it around the notch whenever you like: Settings › General › Location.</p>
   </header>
 
   <div class="th-switch" id="th-switch" data-home="notch" role="group" aria-label="Where Sysbar lives">
@@ -1079,7 +1099,7 @@ section[id] { scroll-margin-top: 0; }
 <script>
 (() => {
 "use strict";
-const root = document.getElementById("two-homes");
+const root = document.getElementById("placement");
 if (!root) return;
 const $ = (s, r = root) => r.querySelector(s);
 const $$ = (s, r = root) => Array.from(r.querySelectorAll(s));
@@ -1414,7 +1434,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
 <section id="system" class="sy" aria-labelledby="sy-title">
 <style>
 /* ==========================================================================
-   System at a glance (copy.md section 3). Everything is scoped under #system.
+   System (copy.md section 3). Everything is scoped under #system.
    Page tokens (--bg --surface --text --muted --line --accent) come from the page;
    the product UI (.sy-ui, .sy-term) stays dark like the real app, in both schemes.
    ========================================================================== */
@@ -2059,7 +2079,6 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fo
    ========================================================================== */
 #features {
   --ft-ease: cubic-bezier(.2,.8,.2,1);
-  --ft-plank: #e6e6e2; --ft-plank-edge: rgba(0,0,0,.1);
   --ft-card-shadow: 0 1px 2px rgba(16,24,40,.05), 0 26px 44px -30px rgba(16,24,40,.4);
   /* the product's dark UI */
   --ft-ink: #f5f5f7; --ft-sec: rgba(235,235,245,.64); --ft-ter: rgba(235,235,245,.34);
@@ -2068,8 +2087,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fo
   line-height: 1.5; -webkit-text-size-adjust: 100%;
 }
 @media (prefers-color-scheme: dark) {
-  #features { --ft-plank: #26282c; --ft-plank-edge: rgba(255,255,255,.09);
-    --ft-card-shadow: 0 1px 2px rgba(0,0,0,.3), 0 26px 44px -30px rgba(0,0,0,.85); }
+  #features { --ft-card-shadow: 0 1px 2px rgba(0,0,0,.3), 0 26px 44px -30px rgba(0,0,0,.85); }
 }
 #features, #features *, #features *::before, #features *::after { box-sizing: border-box; }
 #features h2, #features h3, #features h4, #features p, #features ul { margin: 0; padding: 0; }
@@ -2094,11 +2112,9 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fo
 #features .ft-title { font-size: clamp(32px, 4.4vw, 56px); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; max-width: 15em; text-wrap: balance; }
 #features .ft-sub { margin-top: 16px; font-size: clamp(16px, 1.3vw, 19px); line-height: 1.55; color: var(--muted); max-width: 38em; text-wrap: pretty; }
 
-/* ---- the shelf: every module stands on a plank ---- */
-#features .ft-shelf { margin-top: 60px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 54px 28px; }
+/* ---- the shelf: the four modules, two by two ---- */
+#features .ft-shelf { margin-top: 60px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
 #features .ft-slot { position: relative; display: flex; min-width: 0; }
-#features .ft-slot::before { content: ""; position: absolute; z-index: 0; left: -10px; right: -10px; bottom: -13px; height: 30px; border-radius: 0 0 16px 16px;
-  background: var(--ft-plank); border: 1px solid var(--ft-plank-edge); box-shadow: 0 14px 22px -14px rgba(0,0,0,.3); }
 #features .ft-card { position: relative; z-index: 1; flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 22px; box-shadow: var(--ft-card-shadow); }
 #features .ft-chead { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; }
 #features .ft-glyph { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 11px; background: #0a0a0c; color: #f5f5f7; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 1px 2px rgba(0,0,0,.2); }
@@ -2335,7 +2351,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fo
 /* ---- responsive ---- */
 @media (max-width: 900px) {
   #features { padding: 80px 0 100px; }
-  #features .ft-shelf { grid-template-columns: minmax(0, 1fr); gap: 54px; margin-top: 48px; }
+  #features .ft-shelf { grid-template-columns: minmax(0, 1fr); gap: 20px; margin-top: 48px; }
   #features .ft-stage { max-width: 640px; margin-left: auto; margin-right: auto; }
 }
 @media (max-width: 560px) {
@@ -2379,7 +2395,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fo
   <header class="ft-head ft-rv">
     <p class="ft-eyebrow">Tools</p>
     <h2 class="ft-title" id="ft-title">Small tools that live in the island.</h2>
-    <p class="ft-sub">Sysbar began as a monitor. The island now holds a few small tools too, and the shelf is meant to grow. Each one is optional: Settings › Tools turns it on or off.</p>
+    <p class="ft-sub">Sysbar began as a monitor. The island now holds a few small tools too, and the shelf is meant to grow. Each one is optional: Settings › Features turns it on or off.</p>
   </header>
 
   <div class="ft-shelf">
@@ -3335,11 +3351,11 @@ if ("IntersectionObserver" in window) {
   <header class="cz-head">
     <p class="cz-eyebrow cz-r">Customize</p>
     <h2 class="cz-h2 cz-r" id="cz-title" style="--cz-d:80ms">Make it yours.</h2>
-    <p class="cz-sub cz-r" style="--cz-d:160ms">Settings › Menu Bar › Notch shows a true-to-scale preview of the top of your screen, closed or open, as you change things.</p>
+    <p class="cz-sub cz-r" style="--cz-d:160ms">Settings › Notch shows a true-to-scale preview of the top of your screen, closed or open, as you change things.</p>
   </header>
 
   <div class="cz-app cz-r" role="group" aria-label="Notch settings, a demo. Changes show in the preview with sample numbers." style="--cz-d:200ms">
-    <div class="cz-titlebar" aria-hidden="true"><span class="cz-lights"><i></i><i></i><i></i></span><span class="cz-wtitle">Settings › Menu Bar › Notch</span></div>
+    <div class="cz-titlebar" aria-hidden="true"><span class="cz-lights"><i></i><i></i><i></i></span><span class="cz-wtitle">Settings › Notch</span></div>
 
     <div class="cz-pv">
       <div class="cz-stage" id="cz-stage" role="group" aria-label="Notch preview" aria-describedby="cz-summary">
@@ -4037,6 +4053,7 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
 }
 #private a { color: inherit; text-decoration: none; }
+#private .pv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 #private .pv-wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
 #private .pv-i { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
@@ -4060,7 +4077,7 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
 #private .pv-link { display: inline-flex; margin-top: auto; align-items: center; gap: 6px; width: fit-content; font-weight: 600; font-size: 15px; color: var(--accent); }
 #private .pv-link .pv-i { width: 16px; height: 16px; transition: transform .2s ease; }
 #private .pv-link:hover .pv-i { transform: translateX(3px); }
-#private .pv-link:focus-visible, #private .pv-chip a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+#private .pv-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
 /* the pictures in a block: drawn in the page's own colors, never carrying a claim the text does not */
 #private .pv-vis { margin-top: auto; padding-top: 18px; }
@@ -4087,22 +4104,23 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
 #private .pv-meter i { display: block; height: 100%; width: 1%; min-width: 6px; border-radius: 4px; background: linear-gradient(90deg, var(--pv-low), var(--pv-mid)); transform-origin: 0 50%; }
 #private.pv-js .pv-meter i { transform: scaleX(0); }
 #private.pv-js .pv-in .pv-meter i { transform: none; transition: transform 1s cubic-bezier(.215,.61,.355,1) .35s; }
-/* the languages strip */
-#private .pv-chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 14px 0 0; padding: 0; }
-#private .pv-chip { padding: 8px 16px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); font-size: 16px; line-height: 1.3; color: var(--text); white-space: nowrap; }
-#private.pv-js .pv-chip { opacity: 0; transform: translateY(8px) scale(.96); }
-#private.pv-js .pv-chips.pv-in .pv-chip { opacity: 1; transform: none; transition: opacity .5s ease var(--pv-d, 0ms), transform .5s cubic-bezier(.215,.61,.355,1) var(--pv-d, 0ms); }
-@media (prefers-reduced-motion: reduce) { #private.pv-js .pv-chip { opacity: 1; transform: none; transition: none; } }
+/* the languages: the figure, with the languages' own names taking turns under it */
+#private .pv-say { position: relative; display: block; height: 1.35em; overflow: hidden; max-width: none; }
+#private .pv-say i { position: absolute; left: 0; top: 0; font-style: normal; white-space: nowrap; }
+#private .pv-say i.pv-say-in { animation: pv-say-in .6s cubic-bezier(.2,.7,.2,1) both; }
+#private .pv-say i.pv-say-out { animation: pv-say-out .45s cubic-bezier(.4,0,.6,1) both; }
+@keyframes pv-say-in { from { opacity: 0; transform: translateY(100%); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes pv-say-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-100%); filter: blur(3px); } }
+#private .pv-card:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
 
 @media (min-width: 720px) {
   #private .pv-grid { grid-template-columns: repeat(2, 1fr); }
-  #private .pv-wide, #private .pv-c-access { grid-column: 1 / -1; }
 }
 @media (min-width: 1020px) {
   #private .pv-grid { grid-template-columns: repeat(12, 1fr); gap: 16px; }
-  #private .pv-c-local { grid-column: 1 / span 4; grid-row: 1; } #private .pv-c-signed { grid-column: 5 / span 4; grid-row: 1; } #private .pv-c-access { grid-column: 9 / span 4; grid-row: 1; }
+  #private .pv-c-local { grid-column: 1 / span 3; grid-row: 1; } #private .pv-c-signed { grid-column: 4 / span 3; grid-row: 1; }
+  #private .pv-c-access { grid-column: 7 / span 3; grid-row: 1; } #private .pv-c-lang { grid-column: 10 / span 3; grid-row: 1; }
   #private .pv-c-quiet { grid-column: 1 / span 5; grid-row: 2; } #private .pv-c-light { grid-column: 6 / span 7; grid-row: 2; }
-  #private .pv-wide { grid-column: 1 / -1; grid-row: 3; }
 }
 </style>
 
@@ -4164,27 +4182,14 @@ new ResizeObserver(() => { const w = stage.clientWidth; if (w !== lastW) { lastW
       <a class="pv-link" href="https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md">Read the accessibility page<svg class="pv-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
     </article>
 
-    <article class="pv-card pv-wide pv-r">
+    <article class="pv-card pv-c-lang pv-r" style="--pv-d:240ms">
       <span class="pv-ico" aria-hidden="true"><svg class="pv-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2M12 3.4c2.6 2.4 3.8 5.3 3.8 8.6s-1.2 6.2-3.8 8.6c-2.6-2.4-3.8-5.3-3.8-8.6S9.4 5.8 12 3.4z"/></svg></span>
-      <h3>13 languages</h3>
-      <p>Follows your system language, or pick one in Settings.</p>
-      <!-- Names are the app's own (AppLanguage.nativeName), one per Resources/Localization/*.lproj folder. -->
-      <ul class="pv-chips" aria-label="Languages">
-        <li class="pv-chip" lang="en">English</li>
-        <li class="pv-chip" lang="tr">Türkçe</li>
-        <li class="pv-chip" lang="de">Deutsch</li>
-        <li class="pv-chip" lang="fr">Français</li>
-        <li class="pv-chip" lang="es">Español</li>
-        <li class="pv-chip" lang="it">Italiano</li>
-        <li class="pv-chip" lang="pt-BR">Português (Brasil)</li>
-        <li class="pv-chip" lang="nl">Nederlands</li>
-        <li class="pv-chip" lang="ru">Русский</li>
-        <li class="pv-chip" lang="ja">日本語</li>
-        <li class="pv-chip" lang="ko">한국어</li>
-        <li class="pv-chip" lang="zh-Hans">简体中文</li>
-        <li class="pv-chip" lang="ar" dir="rtl">العربية</li>
-      </ul>
+      <h3>Languages</h3>
+      <p>Sysbar follows your system language, or you choose one in Settings.</p>
+      <!-- The names cycled under the figure are the app's own (AppLanguage.nativeName), one per Resources/Localization/*.lproj folder. -->
+      <div class="pv-stats"><div class="pv-stat"><b>13</b><span class="pv-say">languages</span></div></div>
     </article>
+
   </div>
 </div>
 
@@ -4202,7 +4207,6 @@ const easeOut = x => 1 - Math.pow(1 - x, 3);
 /* Everything is visible until this script has run, and stays visible when motion is reduced. */
 if (!reduced() && "IntersectionObserver" in window) {
   root.classList.add("pv-js");
-  $$(".pv-chip").forEach((c, i) => c.style.setProperty("--pv-d", 120 + i * 45 + "ms"));
   const counters = $$("[data-pv-count]").map(el => ({ el, html: el.innerHTML, to: +el.dataset.pvCount, prefix: el.dataset.pvPrefix || "", suffix: el.dataset.pvSuffix || "" }));
   /* the figures count up once, when their block comes into view; the final text is restored exactly at the end */
   const run = c => {
@@ -4220,8 +4224,30 @@ if (!reduced() && "IntersectionObserver" in window) {
     counters.filter(c => e.target.contains(c.el)).forEach(run);
   }), { rootMargin: "0px 0px -8% 0px" });
   $$(".pv-r").forEach(el => io.observe(el));
-  const chipList = $(".pv-chips");
-  new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { chipList.classList.add("pv-in"); o.disconnect(); } }, { rootMargin: "0px 0px -10% 0px" }).observe(chipList);
+
+  /* the languages take turns under the figure, only while the block is on screen; the word "languages" stays
+     for assistive technology, the names are a picture */
+  const say = $(".pv-say");
+  if (say) {
+    const NAMES = ["English", "Türkçe", "Deutsch", "Français", "Español", "Italiano", "Português", "Nederlands", "Русский", "日本語", "한국어", "简体中文", "العربية"];
+    const label = document.createElement("span");
+    label.className = "pv-sr"; label.textContent = say.textContent;
+    say.textContent = ""; say.before(label); say.setAttribute("aria-hidden", "true");
+    let index = 0, timer = 0, word = document.createElement("i");
+    word.textContent = NAMES[0]; say.appendChild(word);
+    const next = () => {
+      const old = word;
+      old.classList.remove("pv-say-in"); old.classList.add("pv-say-out");
+      setTimeout(() => old.remove(), 500);
+      index = (index + 1) % NAMES.length;
+      word = document.createElement("i"); word.className = "pv-say-in"; word.textContent = NAMES[index];
+      say.appendChild(word);
+    };
+    new IntersectionObserver(es => es.forEach(e => {
+      clearInterval(timer);
+      if (e.isIntersecting) timer = setInterval(next, 1600);
+    })).observe(say);
+  }
 }
 })();
 </script>
@@ -4233,16 +4259,20 @@ if (!reduced() && "IntersectionObserver" in window) {
     <header class="cl-head">
       <p class="cl-eyebrow rv">Changelog</p>
       <h2 class="cl-h2 rv" id="cl-title" style="--rv-d:80ms">What's new</h2>
-      <p class="cl-sub rv" style="--rv-d:160ms">Every release, in plain words. Sysbar offers each one in the popover as it comes out.</p>
+      <p class="cl-sub rv" style="--rv-d:160ms">Every release, in plain words. Sysbar offers each one in the app as it comes out.</p>
     </header>
     <p class="cl-more rv" style="--rv-d:200ms"><a href="https://github.com/Atanur/sysbar/blob/main/CHANGELOG.md">Full history on GitHub<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></p>
   </div>
   <div class="cl-list rv" style="--rv-d:200ms">
 <!-- changelog:start -->
-<article class="release"><h3><span class="version">0.6.2</span> <time datetime="2026-11-28">Nov 28, 2026</time></h3><ul><li>Sysbar is lighter: in the menu bar it now uses under 1% of one core, and after the panel closes the memory it used is handed back to macOS.</li><li>The panel that opens under the notch has the same rounded corners at the bottom as at the top.</li></ul></article>
-<article class="release"><h3><span class="version">0.6.1</span> <time datetime="2026-11-27">Nov 27, 2026</time></h3><ul><li>Resting the pointer on the notch opens it again when it is set to open on hover, on the tab of the item under the pointer.</li><li>From the menu bar, the panel opens in place at its full size, and grows or shrinks with the page you switch to or the panel you unfold.</li><li>Keep awake has one menu: choose how long to start it, or Off to stop it. The separate switch and its &quot;When switched on&quot; setting are gone.</li><li>Fans set by hand show a fan beside the notch, like Keep awake does, and fans that are not turning say Stopped instead of 0 rpm.</li><li>Clipboard history keeps images of any size. Its rows are one line each, with the whole text in the tooltip, and lists end on a whole row.</li><li>The notch&#x27;s background is black, glass, or automatic; the transparent option is gone.</li><li>The Notch settings page shows a true-to-scale miniature of the top of your screen, closed or open.</li><li>General and About are at the top of the Settings sidebar.</li></ul></article>
-<article class="release"><h3><span class="version">0.6.0</span> <time datetime="2026-11-27">Nov 27, 2026</time></h3><ul><li>Sysbar can live <b>around the notch</b> instead of in the menu bar (Settings › Menu Bar › Appearance › Location). The readings sit beside the notch and the features as icons; click one and a panel grows down from under the notch, on that page. Displays without a notch get a small capsule in the middle of the menu bar that works the same way.</li><li>The notch is yours to arrange on the new <b>Notch</b> settings page: which items sit left or right of it and in what order, which show only once it is open, which displays show it, a black, glass or clear background, coloured or one-ink icons in three sizes, and whether it opens when the pointer rests on it or only on a click. In full screen it hides until the pointer reaches it, and it can hide like that all the time too.</li><li><b>Clipboard history</b>, a feature of its own: text, links, rich text, images and files you copy are kept on this Mac, searchable and filtered by kind, and put back with a click. A shortcut opens it beside the pointer. Copies that password managers mark as concealed are never kept, and you choose which apps to ignore, how long and how much to keep, and where.</li><li>The file shelf is now the <b>Stash</b>: named stashes such as Work or School, each with its colour, that keep their files (followed even when moved or renamed) and copied text and links. Drag files onto the notch and pick the stash they go in; drag them out and they stay.</li><li>Fans and Keep awake are buttons beside Settings in the System page again, and unfold right there. More of their details can be set: how long the switch keeps the Mac awake, when low battery ends it, how soon the mouse moves, and how early the heat warning comes.</li></ul></article>
-<details class="older"><summary>Earlier releases</summary><article class="release"><h3><span class="version">0.5.13</span> <time datetime="2026-11-08">Nov 8, 2026</time></h3><ul><li>File shelves hold files while you move them between apps: shake the pointer during a drag to open one, then drop files on it and take them out in any other app.</li></ul></article><article class="release"><h3><span class="version">0.5.12</span> <time datetime="2026-11-06">Nov 6, 2026</time></h3><ul><li>A remote Mac can show a <b>Power</b> card, built like this Mac&#x27;s: the watts it draws with a graph, and for a laptop the charge, time left, adapter and what goes into the battery. The tooltip splits the draw into CPU, GPU and Neural Engine. It needs passwordless <code>sudo</code> for <code>powermetrics</code> on that Mac, and shows the chip&#x27;s draw rather than the wall&#x27;s. Turn it on in the device&#x27;s page in Settings.</li></ul></article><article class="release"><h3><span class="version">0.5.11</span> <time datetime="2026-10-30">Oct 30, 2026</time></h3><ul><li>The add button beside Devices in Settings is grey in dark mode too, instead of black, and shows its round background.</li></ul></article><article class="release"><h3><span class="version">0.5.10</span> <time datetime="2026-10-30">Oct 30, 2026</time></h3><ul><li>The Settings sidebar is translucent, so the desktop shows through it as in System Settings.</li><li>Each sidebar group has a chevron that is always visible: click it or the group&#x27;s name to fold the group away. The add button beside Devices no longer moves when the pointer passes over it.</li><li>The bottom of the sidebar shows Quit and the version on one line.</li></ul></article><article class="release"><h3><span class="version">0.5.9</span> <time datetime="2026-10-30">Oct 30, 2026</time></h3><ul><li>The Top apps table has a <b>Net</b> column: each app&#x27;s network use, with download and upload split in the tooltip and read by VoiceOver. Click the heading to sort by it.</li><li>With three or more table columns shown, memory and power stay short: <code>0.7G</code> rather than <code>700M</code>, and <code>0.7W</code> rather than <code>743mW</code>. With fewer columns the longer values come back.</li><li>VoiceOver names every switch, menu and slider in Settings after its setting, and moves between pages and groups by their headings. Popover cards and each row of the apps table are read as one item, with rates in words, and the results of checking a device or copying a command are announced.</li><li>Reduce Motion now also stops the values counting up in the popover and the pulse of a live device&#x27;s dot. With Differentiate Without Color on, a device&#x27;s status dot draws a different symbol for each state.</li><li>Text fields in Settings take the usual ⌘C, ⌘V, ⌘A and ⌘Z, and ⌘W closes the window.</li><li><a href="https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md">ACCESSIBILITY.md</a> describes what works and what is still missing, and security problems can be reported privately on GitHub.</li></ul></article></details>
+<details class="release" open><summary><h3><span class="version">0.6.2</span> <time datetime="2026-11-28">Nov 28, 2026</time></h3><span class="count">2 changes</span></summary><ul><li>Sysbar is lighter: in the menu bar it now uses under 1% of one core, and after the panel closes the memory it used is handed back to macOS.</li><li>The panel that opens under the notch has the same rounded corners at the bottom as at the top.</li></ul></details>
+<details class="release"><summary><h3><span class="version">0.6.1</span> <time datetime="2026-11-27">Nov 27, 2026</time></h3><span class="count">8 changes</span></summary><ul><li>Resting the pointer on the notch opens it again when it is set to open on hover, on the tab of the item under the pointer.</li><li>From the menu bar, the panel opens in place at its full size, and grows or shrinks with the page you switch to or the panel you unfold.</li><li>Keep awake has one menu: choose how long to start it, or Off to stop it. The separate switch and its &quot;When switched on&quot; setting are gone.</li><li>Fans set by hand show a fan beside the notch, like Keep awake does, and fans that are not turning say Stopped instead of 0 rpm.</li><li>Clipboard history keeps images of any size. Its rows are one line each, with the whole text in the tooltip, and lists end on a whole row.</li><li>The notch&#x27;s background is black, glass, or automatic; the transparent option is gone.</li><li>The Notch settings page shows a true-to-scale miniature of the top of your screen, closed or open.</li><li>General and About are at the top of the Settings sidebar.</li></ul></details>
+<details class="release"><summary><h3><span class="version">0.6.0</span> <time datetime="2026-11-27">Nov 27, 2026</time></h3><span class="count">5 changes</span></summary><ul><li>Sysbar can live <b>around the notch</b> instead of in the menu bar (Settings › Menu Bar › Appearance › Location). The readings sit beside the notch and the features as icons; click one and a panel grows down from under the notch, on that page. Displays without a notch get a small capsule in the middle of the menu bar that works the same way.</li><li>The notch is yours to arrange on the new <b>Notch</b> settings page: which items sit left or right of it and in what order, which show only once it is open, which displays show it, a black, glass or clear background, coloured or one-ink icons in three sizes, and whether it opens when the pointer rests on it or only on a click. In full screen it hides until the pointer reaches it, and it can hide like that all the time too.</li><li><b>Clipboard history</b>, a feature of its own: text, links, rich text, images and files you copy are kept on this Mac, searchable and filtered by kind, and put back with a click. A shortcut opens it beside the pointer. Copies that password managers mark as concealed are never kept, and you choose which apps to ignore, how long and how much to keep, and where.</li><li>The file shelf is now the <b>Stash</b>: named stashes such as Work or School, each with its colour, that keep their files (followed even when moved or renamed) and copied text and links. Drag files onto the notch and pick the stash they go in; drag them out and they stay.</li><li>Fans and Keep awake are buttons beside Settings in the System page again, and unfold right there. More of their details can be set: how long the switch keeps the Mac awake, when low battery ends it, how soon the mouse moves, and how early the heat warning comes.</li></ul></details>
+<details class="release"><summary><h3><span class="version">0.5.13</span> <time datetime="2026-11-08">Nov 8, 2026</time></h3><span class="count">1 change</span></summary><ul><li>File shelves hold files while you move them between apps: shake the pointer during a drag to open one, then drop files on it and take them out in any other app.</li></ul></details>
+<details class="release"><summary><h3><span class="version">0.5.12</span> <time datetime="2026-11-06">Nov 6, 2026</time></h3><span class="count">1 change</span></summary><ul><li>A remote Mac can show a <b>Power</b> card, built like this Mac&#x27;s: the watts it draws with a graph, and for a laptop the charge, time left, adapter and what goes into the battery. The tooltip splits the draw into CPU, GPU and Neural Engine. It needs passwordless <code>sudo</code> for <code>powermetrics</code> on that Mac, and shows the chip&#x27;s draw rather than the wall&#x27;s. Turn it on in the device&#x27;s page in Settings.</li></ul></details>
+<details class="release"><summary><h3><span class="version">0.5.11</span> <time datetime="2026-10-30">Oct 30, 2026</time></h3><span class="count">1 change</span></summary><ul><li>The add button beside Devices in Settings is grey in dark mode too, instead of black, and shows its round background.</li></ul></details>
+<details class="release"><summary><h3><span class="version">0.5.10</span> <time datetime="2026-10-30">Oct 30, 2026</time></h3><span class="count">3 changes</span></summary><ul><li>The Settings sidebar is translucent, so the desktop shows through it as in System Settings.</li><li>Each sidebar group has a chevron that is always visible: click it or the group&#x27;s name to fold the group away. The add button beside Devices no longer moves when the pointer passes over it.</li><li>The bottom of the sidebar shows Quit and the version on one line.</li></ul></details>
+<details class="release"><summary><h3><span class="version">0.5.9</span> <time datetime="2026-10-30">Oct 30, 2026</time></h3><span class="count">6 changes</span></summary><ul><li>The Top apps table has a <b>Net</b> column: each app&#x27;s network use, with download and upload split in the tooltip and read by VoiceOver. Click the heading to sort by it.</li><li>With three or more table columns shown, memory and power stay short: <code>0.7G</code> rather than <code>700M</code>, and <code>0.7W</code> rather than <code>743mW</code>. With fewer columns the longer values come back.</li><li>VoiceOver names every switch, menu and slider in Settings after its setting, and moves between pages and groups by their headings. Popover cards and each row of the apps table are read as one item, with rates in words, and the results of checking a device or copying a command are announced.</li><li>Reduce Motion now also stops the values counting up in the popover and the pulse of a live device&#x27;s dot. With Differentiate Without Color on, a device&#x27;s status dot draws a different symbol for each state.</li><li>Text fields in Settings take the usual ⌘C, ⌘V, ⌘A and ⌘Z, and ⌘W closes the window.</li><li><a href="https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md">ACCESSIBILITY.md</a> describes what works and what is still missing, and security problems can be reported privately on GitHub.</li></ul></details>
 <!-- changelog:end -->
   </div>
 </div>
@@ -4323,7 +4353,7 @@ if (!reduced() && "IntersectionObserver" in window) {
 #install summary::-webkit-details-marker { display: none; }
 #install summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #install summary .in-i { color: var(--muted); transition: transform .25s ease; }
-#install details[open] summary .in-i { transform: rotate(180deg); }
+#install details[open]:not(.closing) summary .in-i { transform: rotate(180deg); }
 #install .in-body { padding: 0 22px 20px; }
 #install .in-body p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.55; max-width: 34em; }
 #install .in-src { margin: 0; padding: 14px 16px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); overflow-x: auto; font: 500 13px/1.7 ui-monospace, "SF Mono", Menlo, monospace; color: var(--text); }
@@ -4386,17 +4416,17 @@ if (!reduced() && "IntersectionObserver" in window) {
     <div class="in-r">
       <span class="in-ico" aria-hidden="true"><svg class="in-i" viewBox="0 0 18 16"><use href="#in-i-laptop"/></svg></span>
       <h3>Requirements</h3>
-      <p>macOS 14 Sonoma or later, on Apple silicon (M1 or later). Intel Macs aren't supported.</p>
+      <p>macOS 14 Sonoma or later, on a Mac with Apple silicon (M1 or newer). Intel Macs aren't supported.</p>
     </div>
     <div class="in-r" style="--in-d:80ms">
       <span class="in-ico" aria-hidden="true"><svg class="in-i" viewBox="0 0 18 16"><use href="#in-i-menubar"/></svg></span>
       <h3>First run</h3>
-      <p>Sysbar starts in the menu bar. To move it around the notch, open Settings › Menu Bar › Appearance › Location. Turn on Launch at login in Settings if you want it always there.</p>
+      <p>Sysbar starts in the menu bar. Settings › General moves it around the notch and turns on Launch at login.</p>
     </div>
     <div class="in-r" style="--in-d:160ms">
       <span class="in-ico" aria-hidden="true"><svg class="in-i" viewBox="0 0 16 16"><use href="#in-i-refresh"/></svg></span>
       <h3>Updates</h3>
-      <p>Updates happen in the app. Sysbar checks GitHub once a day, offers a new release in the popover and shows its notes before you install. It installs only if the download is signed by the same developer, then relaunches. You can turn the check off.</p>
+      <p>Sysbar checks GitHub once a day and offers new releases in the app. It installs only ones signed by the same developer.</p>
     </div>
   </div>
 
@@ -4469,32 +4499,63 @@ btn.addEventListener("click", async () => {
 
 <footer id="site-footer" aria-label="Site">
 <style>
-/* Footer (copy.md metadata). Scoped under #site-footer / .in-foot-*; page tokens only. */
+/* Footer (copy.md metadata): the app in a line, the page's sections and the project's links in two columns, and the
+   copyright on a row of its own, so every line starts on the same edge. Scoped under #site-footer; page tokens only. */
 #site-footer, #site-footer *, #site-footer *::before, #site-footer *::after { box-sizing: border-box; }
 #site-footer {
-  padding: 36px 0 calc(40px + env(safe-area-inset-bottom, 0px)); background: var(--bg); color: var(--muted); border-top: 1px solid var(--line); font-size: 14px; line-height: 1.6;
+  padding: clamp(40px, 6vw, 64px) 0 calc(28px + env(safe-area-inset-bottom, 0px)); background: var(--bg); color: var(--muted); border-top: 1px solid var(--line); font-size: 14px; line-height: 1.6;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
 }
 #site-footer a { color: inherit; text-decoration: none; }
-#site-footer .in-foot-wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 14px 40px; }
-#site-footer .in-foot-brand { display: flex; align-items: center; gap: 12px; margin: 0; min-width: 0; max-width: 40em; }
-#site-footer .in-foot-brand svg { width: 26px; height: 26px; flex: none; }
-#site-footer .in-foot-links { display: flex; flex-wrap: wrap; gap: 2px 0; list-style: none; margin: 0; padding: 0; }
-#site-footer .in-foot-links li:not(:last-child)::after { content: "·"; margin: 0 .6em; color: var(--muted); opacity: .6; }
-#site-footer .in-foot-links a { display: inline-block; padding: 4px 0; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color .2s ease, text-decoration-color .2s ease; }
-#site-footer .in-foot-links a:hover { color: var(--text); text-decoration-color: currentColor; }
-#site-footer .in-foot-links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; color: var(--text); }
-@media (prefers-reduced-motion: reduce) { #site-footer .in-foot-links a { transition: none; } }
+#site-footer .sf-wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
+#site-footer .sf-top { display: grid; grid-template-columns: 1fr; gap: 32px; }
+#site-footer .sf-brand { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--text); font-weight: 650; font-size: 16px; }
+#site-footer .sf-brand svg { width: 26px; height: 26px; flex: none; }
+#site-footer .sf-tag { margin: 10px 0 0; max-width: 24em; }
+#site-footer .sf-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+#site-footer h2 { margin: 0 0 10px; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text); }
+#site-footer ul { display: grid; gap: 2px; list-style: none; margin: 0; padding: 0; }
+#site-footer ul a { display: inline-block; padding: 3px 0; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color .2s ease, text-decoration-color .2s ease; }
+#site-footer ul a:hover { color: var(--text); text-decoration-color: currentColor; }
+#site-footer a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; color: var(--text); }
+#site-footer .sf-base { margin: 32px 0 0; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; }
+@media (min-width: 720px) {
+  #site-footer .sf-top { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  #site-footer .sf-nav { gap: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { #site-footer ul a { transition: none; } }
 </style>
-<div class="in-foot-wrap">
-  <p class="in-foot-brand"><svg viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" rx="6.5" fill="#131416"/><rect x="6" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="11.5" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="17" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="6" y="14" width="3" height="7" rx="1.5" fill="#f5f5f7"/><rect x="11.5" y="9" width="3" height="12" rx="1.5" fill="#e8874a"/><rect x="17" y="16" width="3" height="5" rx="1.5" fill="#f5f5f7"/></svg><span>Sysbar — a native system monitor for the Mac notch and menu bar.</span></p>
-  <ul class="in-foot-links">
-    <li><a href="https://github.com/Atanur/sysbar">Source on GitHub</a></li>
-    <li><a href="https://github.com/Atanur/sysbar/blob/main/CHANGELOG.md">Changelog</a></li>
-    <li><a href="https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md">Accessibility</a></li>
-    <li><a href="https://github.com/Atanur/sysbar/blob/main/LICENSE">MIT license</a></li>
-    <li>© 2026 Atanur</li>
-  </ul>
+<div class="sf-wrap">
+  <div class="sf-top">
+    <div>
+      <p class="sf-brand"><svg viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" rx="6.5" fill="#131416"/><rect x="6" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="11.5" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="17" y="5" width="3" height="16" rx="1.5" fill="#5a5a60"/><rect x="6" y="14" width="3" height="7" rx="1.5" fill="#f5f5f7"/><rect x="11.5" y="9" width="3" height="12" rx="1.5" fill="#e8874a"/><rect x="17" y="16" width="3" height="5" rx="1.5" fill="#f5f5f7"/></svg><span>Sysbar</span></p>
+      <p class="sf-tag">A native system monitor for the Mac notch and menu bar.</p>
+    </div>
+    <nav class="sf-nav" aria-label="Footer">
+      <div>
+        <h2>On this page</h2>
+        <ul>
+          <li><a href="#placement">Menu bar or notch</a></li>
+          <li><a href="#system">System</a></li>
+          <li><a href="#features">Tools</a></li>
+          <li><a href="#customize">Customize</a></li>
+          <li><a href="#private">Privacy</a></li>
+          <li><a href="#changelog">What's new</a></li>
+          <li><a href="#install">Install</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Project</h2>
+        <ul>
+          <li><a href="https://github.com/Atanur/sysbar">Source on GitHub</a></li>
+          <li><a href="https://github.com/Atanur/sysbar/blob/main/CHANGELOG.md">Changelog</a></li>
+          <li><a href="https://github.com/Atanur/sysbar/blob/main/ACCESSIBILITY.md">Accessibility</a></li>
+          <li><a href="https://github.com/Atanur/sysbar/blob/main/LICENSE">MIT license</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+  <p class="sf-base">© 2026 Atanur</p>
 </div>
 </footer>
 
@@ -5364,23 +5425,78 @@ const sync = () => { queued = false; const bottom = hero.getBoundingClientRect()
 const queue = () => { if (!queued) { queued = true; requestAnimationFrame(sync); } };
 addEventListener("scroll", queue, { passive: true }); addEventListener("resize", queue); sync();
 
-/* highlight the link of the section under the middle of the screen */
+/* highlight the link of the section under the middle of the screen; a link stands for its own section and any
+   it lists in data-also (Features covers every section that shows the app) */
+const covers = a => [a.getAttribute("href").slice(1)].concat((a.dataset.also || "").split(" ").filter(Boolean));
 if ("IntersectionObserver" in window) {
   let current = "";
   const mark = id => {
     if (id === current) return; current = id;
-    links.forEach(a => { const on = a.getAttribute("href") === "#" + id; a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current"); });
+    links.forEach(a => { const on = id !== "" && covers(a).includes(id); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current"); });
   };
   const seen = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) mark(e.target.id); else if (current === e.target.id) mark(""); }), { rootMargin: "-40% 0px -55% 0px" });
-  links.forEach(a => { const s = document.querySelector(a.getAttribute("href")); if (s) seen.observe(s); });
+  links.flatMap(covers).forEach(id => { const s = document.getElementById(id); if (s) seen.observe(s); });
 }
+
+const moves = !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* generic reveal (the sections that own a reveal keep their own) */
 const items = Array.from(document.querySelectorAll(".rv"));
-if (items.length && "IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+if (items.length && "IntersectionObserver" in window && moves) {
   document.documentElement.classList.add("rv-on");
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("rv-in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
   items.forEach(el => io.observe(el));
+}
+
+/* section titles rise word by word as they come into view. The words are wrapped in place, so spans that style
+   part of a title keep their look; the title keeps its full text as its name for assistive technology. */
+const titles = Array.from(document.querySelectorAll("main section[aria-labelledby]"))
+  .map(sec => document.getElementById(sec.getAttribute("aria-labelledby"))).filter(t => t && t.tagName === "H2");
+if (titles.length && "IntersectionObserver" in window && moves) {
+  const wrap = title => {
+    let i = 0;
+    const walk = node => Array.from(node.childNodes).forEach(child => {
+      if (child.nodeType === 3) {
+        const parts = child.textContent.split(/(\s+)/), frag = document.createDocumentFragment();
+        parts.forEach(part => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+          const w = document.createElement("span");
+          w.className = "hw-w"; w.textContent = part; w.style.setProperty("--hw-i", i++);
+          frag.appendChild(w);
+        });
+        child.replaceWith(frag);
+      } else if (child.nodeType === 1) walk(child);
+    });
+    title.setAttribute("aria-label", title.textContent.replace(/\s+/g, " ").trim());
+    walk(title);
+    title.querySelectorAll(".hw-w").forEach(w => w.setAttribute("aria-hidden", "true"));
+    title.classList.add("hw");
+  };
+  titles.forEach(wrap);
+  const tio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("hw-in"); tio.unobserve(e.target); } }), { rootMargin: "0px 0px -10% 0px" });
+  titles.forEach(t => tio.observe(t));
+}
+
+/* disclosures (the releases, the install notes) fold open and shut instead of jumping */
+if (moves && "animate" in Element.prototype) {
+  document.querySelectorAll("#changelog details, #install details").forEach(d => {
+    const summary = d.querySelector("summary"), body = summary.nextElementSibling;
+    let run = null;
+    const frame = () => d.offsetHeight - d.clientHeight;
+    summary.addEventListener("click", e => {
+      e.preventDefault();
+      const from = d.offsetHeight, closing = d.open && !d.classList.contains("closing");
+      if (run) run.cancel();
+      d.style.overflow = "hidden";
+      if (closing) d.classList.add("closing"); else { d.classList.remove("closing"); d.open = true; }
+      const to = closing ? summary.offsetHeight + frame() : d.scrollHeight + frame();
+      run = d.animate({ height: [from + "px", to + "px"] }, { duration: 340, easing: "cubic-bezier(.2,.7,.2,1)" });
+      if (body) body.animate(closing ? { opacity: [1, 0] } : { opacity: [0, 1], transform: ["translateY(-6px)", "none"] }, { duration: closing ? 180 : 340, easing: "ease-out" });
+      run.onfinish = () => { if (closing) d.open = false; d.classList.remove("closing"); d.style.overflow = ""; run = null; };
+      run.oncancel = () => { d.style.overflow = ""; };
+    });
+  });
 }
 })();
 </script>
