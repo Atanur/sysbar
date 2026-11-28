@@ -11,10 +11,9 @@ extension SettingsPage {
         case .device: L("Device")
         case .findDevices: L("Find devices")
         case .menuBarReadouts: L("Readouts")
-        case .menuBarAppearance: L("Appearance")
+        case .menuBarAppearance: L("Menu Bar")
         case .notch: L("Notch")
-        case .windowLayout: L("Layout")
-        case .appsTable: L("Apps table")
+        case .panel: L("Panel")
         case .fans: L("Temperature and fans")
         case .keepAwake: L("Keep awake")
         case .shelf: Stash.title
@@ -28,17 +27,16 @@ extension SettingsPage {
         switch self {
         case .thisMac, .device: ""
         case .findDevices: L("Macs on this network and machines in your Tailscale")
-        case .menuBarReadouts: L("Which metrics appear in the menu bar, and in what order")
+        case .menuBarReadouts: L("Which metrics Sysbar shows, in the menu bar or beside the notch, and in what order")
         case .menuBarAppearance: L("How the menu bar readout looks")
         case .notch: L("The island at the top of the screen: displays, background, ears and icons")
-        case .windowLayout: L("How cards are arranged in the popover")
-        case .appsTable: L("The busiest apps, under the cards in the popover")
-        case .fans: L("Temperature readings and fan control in the popover")
+        case .panel: L("How the cards and the busiest apps are laid out in the panel")
+        case .fans: L("Temperature readings and fan control, from the System page")
         case .keepAwake: L("Keeps the Mac from sleeping, from the System page")
         case .shelf: L("Keeps files and copies close at hand")
         case .clipboard: L("Keeps what you copy, on this Mac only")
-        case .general: L("Language, startup and reset")
-        case .about: L("Version, data sources and limits")
+        case .general: L("Where Sysbar lives, language, startup, updates and reset")
+        case .about: L("What's new, help, privacy and data sources")
         }
     }
 
@@ -47,11 +45,10 @@ extension SettingsPage {
         case .thisMac: "laptopcomputer"
         case .device: "server.rack"
         case .findDevices: "antenna.radiowaves.left.and.right"
-        case .menuBarReadouts: "menubar.rectangle"
-        case .menuBarAppearance: "paintpalette"
+        case .menuBarReadouts: "gauge.with.dots.needle.33percent"
+        case .menuBarAppearance: "menubar.rectangle"
         case .notch: "macbook"
-        case .windowLayout: "square.grid.2x2"
-        case .appsTable: "list.bullet.rectangle"
+        case .panel: "square.grid.2x2"
         case .fans: "fan"
         case .keepAwake: KeepAwakeController.hasLid ? "laptopcomputer" : "cup.and.saucer"
         case .shelf: Stash.symbol
@@ -63,14 +60,25 @@ extension SettingsPage {
 }
 
 extension SettingsSection {
+    /// The header's title; empty for a section without a header.
     var title: String {
         switch self {
+        case .features: L("Features")
         case .devices: L("Devices")
-        case .menuBar: L("Menu Bar")
-        case .window: L("Window")
-        case .tools: L("Tools")
-        case .app: L("App")
+        case .display, .about: ""
         }
+    }
+}
+
+/// Marks the Menu Bar or Notch page in the sidebar while Sysbar lives there.
+private struct InUseTag: View {
+    var body: some View {
+        Text(L("In use"))
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 1)
+            .background(Capsule().fill(Color.primary.opacity(0.08)))
     }
 }
 
@@ -88,6 +96,7 @@ struct SettingsView: View {
     @ObservedObject var preferences: Preferences
     let updater: UpdateChecker
     let helper: HelperConnection
+    let keepAwake: KeepAwakeController
     let shelf: ShelfController
     let clipboard: ClipboardController
     @ObservedObject var navigation: SettingsNavigation
@@ -111,9 +120,17 @@ struct SettingsView: View {
                     // Headers are plain rows rather than `Section` headers: the native ones show
                     // their chevron only on hover and push the add button aside to make room.
                     ForEach(SettingsSection.allCases, id: \.self) { section in
-                        sectionHeader(section)
-                            .selectionDisabled()
-                            .listRowSeparator(.hidden)
+                        if section.hasHeader {
+                            sectionHeader(section)
+                                .selectionDisabled()
+                                .listRowSeparator(.hidden)
+                        } else if section != SettingsSection.allCases.first {
+                            // A section without a header still stands apart from the one above.
+                            Color.clear.frame(height: 4)
+                                .selectionDisabled()
+                                .listRowSeparator(.hidden)
+                                .accessibilityHidden(true)
+                        }
                         if !collapsed.contains(section) {
                             ForEach(section.pages(deviceIDs: deviceIDs), id: \.self) { page in
                                 sidebarRow(page).tag(page)
@@ -186,7 +203,7 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             .accessibilityHidden(true)
         }
-        .padding(.top, section == SettingsSection.allCases.first ? 0 : 8)
+        .padding(.top, 8)
     }
 
     private func toggle(_ section: SettingsSection) {
@@ -230,6 +247,9 @@ struct SettingsView: View {
                 if case .device(let id) = page, let status = statuses.status(of: id) {
                     Spacer(minLength: 4)
                     StatusDot(status: status)
+                } else if let placement = page.placement, placement == preferences.sysbarPlacement {
+                    Spacer(minLength: 4)
+                    InUseTag()
                 }
             }
         } icon: {
@@ -292,10 +312,9 @@ struct SettingsView: View {
         case .menuBarReadouts: MenuBarReadoutsPage(preferences: preferences)
         case .menuBarAppearance: MenuBarAppearancePage(preferences: preferences)
         case .notch: NotchSettingsPage(preferences: preferences)
-        case .windowLayout: WindowLayoutPage(preferences: preferences) { navigation.selection = .thisMac }
-        case .appsTable: AppsTablePage(preferences: preferences)
+        case .panel: PanelPage(preferences: preferences) { navigation.selection = .thisMac }
         case .fans: FansPage(preferences: preferences, helper: helper)
-        case .keepAwake: KeepAwakePage(preferences: preferences, helper: helper)
+        case .keepAwake: KeepAwakePage(preferences: preferences, keepAwake: keepAwake, helper: helper)
         case .shelf: ShelfPage(preferences: preferences, shelf: shelf)
         case .clipboard: ClipboardSettingsPage(preferences: preferences, clipboard: clipboard)
         case .general: GeneralSettingsPage(preferences: preferences, updater: updater)

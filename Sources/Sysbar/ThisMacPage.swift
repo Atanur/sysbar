@@ -2,8 +2,8 @@ import AppKit
 import SysbarCore
 import SwiftUI
 
-/// This Mac's page, first in the devices section: welcome (first run only), what the Mac is, which
-/// cards its tab shows and how often it is sampled. It can be renamed but not removed.
+/// This Mac's page, first in the devices section: which cards its tab shows and how often it is
+/// sampled, then what the Mac is. It can be renamed but not removed.
 struct ThisMacPage: View {
     @ObservedObject var preferences: Preferences
     @StateObject private var details = ThisMacDetails()
@@ -16,23 +16,16 @@ struct ThisMacPage: View {
 
     var body: some View {
         SettingsPageScaffold(
-            symbol: SettingsPage.thisMac.symbol, title: preferences.thisMacTitle, subtitle: subtitle,
-            animating: AnyHashable(preferences.setupCompleted)
+            symbol: SettingsPage.thisMac.symbol, title: preferences.thisMacTitle, subtitle: subtitle
         ) {
             Button { renaming = true } label: {
                 Label(L("Rename"), systemImage: "pencil")
             }
             .help(L("Its name is shown on its tab in the popover."))
         } content: {
-            if !preferences.setupCompleted { welcome }
-            aboutGroups
             cardsGroup
             samplingGroup
-            SettingsGroup {
-                SettingsRow(symbol: "doc.on.doc", title: L("Copy as text"), subtitle: L("The details of this Mac")) {
-                    Button(copied ? L("Copied") : L("Copy"), action: copySummary)
-                }
-            }
+            aboutGroups
         }
         .sheet(isPresented: $renaming) {
             ThisMacNameEditor(
@@ -53,16 +46,14 @@ struct ThisMacPage: View {
 
     @ViewBuilder
     private var aboutGroups: some View {
-        SettingsGroup(title: L("System")) {
+        SettingsGroup(title: L("About this Mac")) {
             infoRow("cpu", L("Chip"), info.chip)
             RowDivider()
             infoRow("laptopcomputer", L("Model"), model)
                 .help(info.modelIdentifier)
             RowDivider()
             infoRow("apple.logo", L("System"), info.osVersion)
-        }
-
-        SettingsGroup(title: L("Hardware")) {
+            RowDivider()
             infoRow("memorychip", L("Memory"), Format.gigabytes(info.memoryBytes))
             RowDivider()
             infoRow("square.grid.3x3", L("Cores"), coresText)
@@ -72,6 +63,10 @@ struct ThisMacPage: View {
             }
             RowDivider()
             infoRow("clock", L("Uptime"), Format.uptime(info.uptime))
+            RowDivider()
+            SettingsRow(symbol: "doc.on.doc", title: L("Copy as text"), subtitle: L("The details of this Mac")) {
+                Button(copied ? L("Copied") : L("Copy"), action: copySummary)
+            }
         }
 
         if let battery {
@@ -94,7 +89,7 @@ struct ThisMacPage: View {
             title: L("Cards"),
             footer: L("Drag a row to change the order. Clicking a card opens Activity Monitor, or Battery settings for power.")
         ) {
-            ArrangedMetricRows(
+            ArrangedRows(
                 order: preferences.cardArrangement.order,
                 move: preferences.moveCard(_:to:), step: preferences.moveCard(_:by:)
             ) { metric in
@@ -174,22 +169,6 @@ struct ThisMacPage: View {
         }
     }
 
-    private var welcome: some View {
-        HStack(alignment: .top, spacing: 14) {
-            IconTile(symbol: "hand.wave.fill", size: 36)
-            VStack(alignment: .leading, spacing: 6) {
-                Text(L("Welcome to Sysbar")).font(.headline)
-                Text(L("Sysbar runs in the menu bar and uses very few resources. Click the bar to open the detailed window. Choose what appears where on the pages at the left."))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button(L("Get started")) { preferences.setupCompleted = true }
-                    .buttonStyle(.borderedProminent)
-                    .padding(.top, 4)
-            }
-        }
-        .padding(16)
-        .settingsCard()
-    }
 }
 
 /// What the page shows about this Mac, read once when the page opens rather than each time a

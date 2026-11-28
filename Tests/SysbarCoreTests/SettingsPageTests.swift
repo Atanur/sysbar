@@ -28,15 +28,20 @@ import Testing
         let pages = SettingsPage.all(deviceIDs: [first])
         #expect(Set(pages).count == pages.count)
         let expected: [SettingsPage] = [
-            .thisMac, .device(first), .findDevices, .menuBarReadouts, .menuBarAppearance, .notch,
-            .windowLayout, .appsTable, .fans, .keepAwake, .shelf, .clipboard, .general, .about,
+            .thisMac, .device(first), .findDevices, .general, .menuBarReadouts, .menuBarAppearance, .notch,
+            .panel, .fans, .keepAwake, .shelf, .clipboard, .about,
         ]
         #expect(Set(pages) == Set(expected))
     }
 
-    @Test func theSidebarStartsWithTheAppsOwnPages() {
-        #expect(SettingsSection.allCases == [.app, .devices, .menuBar, .window, .tools])
-        #expect(SettingsSection.allCases.first?.pages(deviceIDs: []) == [.general, .about])
+    @Test func theSidebarStartsWithHowSysbarShowsItselfAndEndsWithAbout() {
+        #expect(SettingsSection.allCases == [.display, .features, .devices, .about])
+        #expect(SettingsSection.display.pages(deviceIDs: []) == [.general, .menuBarReadouts, .menuBarAppearance, .notch, .panel])
+        #expect(SettingsSection.allCases.last?.pages(deviceIDs: [first]) == [.about])
+    }
+
+    @Test func onlyTheFeaturesAndTheDevicesHaveAHeader() {
+        #expect(SettingsSection.allCases.filter(\.hasHeader) == [.features, .devices])
     }
 
     @Test func findingDevicesIsReachedFromTheAddButtonNotTheSidebar() {
@@ -45,12 +50,19 @@ import Testing
     }
 
     @Test func theClipboardHasItsOwnPageNextToTheStash() {
-        let tools = SettingsSection.tools.pages(deviceIDs: [])
-        #expect(tools == [.fans, .keepAwake, .shelf, .clipboard])
+        let features = SettingsSection.features.pages(deviceIDs: [])
+        #expect(features == [.fans, .keepAwake, .shelf, .clipboard])
     }
 
-    @Test func theWindowOpensOnThisMac() {
-        #expect(SettingsPage.start == .thisMac)
+    @Test func onlyTheMenuBarAndNotchPagesBelongToAPlacement() {
+        #expect(SettingsPage.menuBarAppearance.placement == .menuBar)
+        #expect(SettingsPage.notch.placement == .notch)
+        let others = SettingsPage.all(deviceIDs: [first]).filter { $0 != .menuBarAppearance && $0 != .notch }
+        #expect(others.allSatisfy { $0.placement == nil })
+    }
+
+    @Test func theWindowOpensOnTheFirstPageOfTheSidebar() {
+        #expect(SettingsPage.start == SettingsSection.allCases.first?.pages(deviceIDs: []).first)
     }
 }
 

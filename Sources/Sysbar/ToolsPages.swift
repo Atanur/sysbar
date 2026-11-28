@@ -8,12 +8,12 @@ struct FansPage: View {
 
     var body: some View {
         SettingsPageScaffold(page: .fans) {
-            SettingsGroup(
-                title: L("Top bar buttons"),
-                footer: L("Hiding the button also gives the fans back to macOS.")
-            ) {
+            SettingsGroup(footer: L("Turning it off also gives the fans back to macOS.")) {
                 // The temperature button shows on any Mac that can read its sensors, fans or not.
-                SettingsRow(symbol: "fan", title: L("Temperature and fans")) {
+                SettingsRow(
+                    symbol: "fan", title: L("Temperature and fans"),
+                    subtitle: L("A button on the System page shows the temperatures and sets the fans.")
+                ) {
                     RowToggle(isOn: $preferences.showsFanButton)
                 }
             }
@@ -56,51 +56,85 @@ struct FansPage: View {
 /// lid closed.
 struct KeepAwakePage: View {
     @ObservedObject var preferences: Preferences
+    @ObservedObject var keepAwake: KeepAwakeController
     @ObservedObject var helper: HelperConnection
 
     var body: some View {
         SettingsPageScaffold(page: .keepAwake) {
-            SettingsGroup(
-                title: L("Top bar buttons"),
-                footer: L("Hiding the button also lets the Mac sleep again.")
-            ) {
-                SettingsRow(symbol: SettingsPage.keepAwake.symbol, title: KeepAwakeController.title) {
+            SettingsGroup(footer: L("Turning it off also lets the Mac sleep again.")) {
+                SettingsRow(
+                    symbol: SettingsPage.keepAwake.symbol, title: KeepAwakeController.title,
+                    subtitle: L("A button on the System page keeps the Mac awake for as long as you choose.")
+                ) {
                     RowToggle(isOn: $preferences.showsKeepAwakeButton)
                 }
             }
 
-            SettingsGroup(
-                title: L("Defaults"),
-                footer: L("On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it.")
-            ) {
-                SettingsRow(symbol: "battery.25percent", title: L("End on low battery")) {
-                    Picker(L("End on low battery"), selection: $preferences.keepAwakeLowBattery) {
-                        ForEach(KeepAwakePolicy.lowBatteryChoices, id: \.self) {
-                            Text(L("At %@ or less", Format.percent(Double($0) / 100))).tag($0)
+            Group {
+                SettingsGroup(
+                    title: L("Battery"),
+                    footer: L("On battery power, keeping awake always ends when the battery runs low, so a closed lid in a bag cannot drain it.")
+                ) {
+                    SettingsRow(symbol: "battery.25percent", title: L("End on low battery")) {
+                        Picker(L("End on low battery"), selection: $preferences.keepAwakeLowBattery) {
+                            ForEach(KeepAwakePolicy.lowBatteryChoices, id: \.self) {
+                                Text(L("At %@ or less", Format.percent(Double($0) / 100))).tag($0)
+                            }
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                        .fixedSize()
+                    }
+                }
+
+                SettingsGroup(
+                    title: L("Mouse"),
+                    footer: L("While you are away, the cursor moves a little, so apps see you as active.")
+                ) {
+                    SettingsRow(symbol: "cursorarrow.motionlines", title: L("Move the mouse when idle")) {
+                        Picker(L("Move the mouse when idle"), selection: mouseIdle) {
+                            Text(L("Off")).tag(Self.mouseOff)
+                            ForEach(MouseWander.idleChoices, id: \.self) { Text(L("After %@", Self.idleTitle($0))).tag($0) }
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                        .fixedSize()
+                    }
+                    if keepAwake.movesMouse, !keepAwake.hasMouseAccess {
+                        RowDivider()
+                        SettingsRow(
+                            symbol: "exclamationmark.triangle",
+                            title: L("Moving the mouse needs Sysbar to be allowed in System Settings → Privacy & Security → Accessibility.")
+                        ) {
+                            Button(L("Open System Settings")) { keepAwake.openMouseAccessSettings() }
                         }
                     }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .fixedSize()
                 }
             }
-
-            SettingsGroup(
-                title: L("Mouse"),
-                footer: L("Used while Move the mouse when idle is on in the Keep awake panel.")
-            ) {
-                SettingsRow(symbol: "cursorarrow.motionlines", title: L("Move the mouse after")) {
-                    Picker(L("Move the mouse after"), selection: $preferences.keepAwakeMouseIdle) {
-                        ForEach(MouseWander.idleChoices, id: \.self) { Text(Self.idleTitle($0)).tag($0) }
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .fixedSize()
-                }
-            }
+            .disabled(!preferences.showsKeepAwakeButton)
 
             if KeepAwakeController.hasLid { HelperGroup(helper: helper) }
         }
+        .onAppear { keepAwake.refreshMouseAccess() }
+    }
+
+    /// The tag of Off in the mouse menu; every other entry is how long the Mac waits, in seconds.
+    private static let mouseOff: Double = 0
+
+    /// Off, or how long the Mac is idle before the mouse moves: one menu for the switch of the Keep
+    /// awake panel and the wait set here.
+    private var mouseIdle: Binding<Double> {
+        Binding(
+            get: { keepAwake.movesMouse ? preferences.keepAwakeMouseIdle : Self.mouseOff },
+            set: { seconds in
+                if seconds == Self.mouseOff {
+                    keepAwake.movesMouse = false
+                } else {
+                    preferences.keepAwakeMouseIdle = seconds
+                    keepAwake.movesMouse = true
+                }
+            }
+        )
     }
 }
 
@@ -124,45 +158,34 @@ struct ShelfPage: View {
 
     var body: some View {
         SettingsPageScaffold(page: .shelf) {
-            SettingsGroup(
-                title: L("Top bar buttons"),
-                footer: L("Stashes are kept until you delete them. A file in a stash is only remembered by where it is; nothing is copied. Hiding the button also turns the stash off.")
-            ) {
-                SettingsRow(symbol: Stash.symbol, title: Stash.title, subtitle: L("Keeps files and copies close at hand")) {
+            SettingsGroup(footer: L("Stashes are kept until you delete them, also while this is off. A file in a stash is only remembered by where it is; nothing is copied.")) {
+                SettingsRow(symbol: Stash.symbol, title: Stash.title) {
                     RowToggle(isOn: $preferences.shelfEnabled)
                 }
             }
 
             Group {
-                SettingsGroup {
+                SettingsGroup(title: L("While dragging files")) {
                     SettingsRow(symbol: "cursorarrow.motionlines", title: L("Activate with shake gesture"), subtitle: L("Shake the cursor while dragging to choose a stash.")) {
                         RowToggle(isOn: $preferences.shelfShake)
                     }
-                    RowDivider(inset: 12)
+                    RowDivider()
                     SettingsRow(title: L("Sensitivity")) {
                         choice(L("Sensitivity"), $preferences.shelfSensitivity) { $0.title }
                     }
+                    .padding(.leading, Self.dependentIndent)
                     .disabled(!preferences.shelfShake)
-                }
-
-                SettingsGroup {
+                    RowDivider()
                     SettingsRow(symbol: "shift", title: L("Activate with modifier key"), subtitle: L("Hold a modifier key while dragging.")) {
                         RowToggle(isOn: $preferences.shelfModifierEnabled)
                     }
-                    RowDivider(inset: 12)
+                    RowDivider()
                     SettingsRow(title: L("Modifier key")) {
                         choice(L("Modifier key"), $preferences.shelfModifier) { $0.title }
                     }
+                    .padding(.leading, Self.dependentIndent)
                     .disabled(!preferences.shelfModifierEnabled)
-                }
-
-                SettingsGroup {
-                    SettingsRow(symbol: "keyboard", title: L("Keyboard shortcuts")) {
-                        Button(L("Edit…")) { editingShortcuts = true }
-                    }
-                }
-
-                SettingsGroup {
+                    RowDivider()
                     SettingsRow(
                         symbol: "macbook", title: L("Drop to notch"),
                         subtitle: preferences.sysbarPlacement == .notch
@@ -172,10 +195,11 @@ struct ShelfPage: View {
                         RowToggle(isOn: $preferences.shelfNotchEnabled)
                     }
                     .disabled(preferences.sysbarPlacement != .notch)
-                }
-
-                SettingsGroup {
-                    SettingsRow(symbol: "nosign", title: L("Ignored applications")) {
+                    RowDivider()
+                    SettingsRow(
+                        symbol: "nosign", title: L("Ignored applications"),
+                        subtitle: L("Dragging files from these apps does not bring up a stash.")
+                    ) {
                         Button(L("Edit…")) { editingIgnored = true }
                     }
                 }
@@ -184,6 +208,10 @@ struct ShelfPage: View {
                     title: L("Stashes"),
                     footer: L("The shortcut adds to this stash; files dropped on a stash always go to that one. Deleting never touches the files themselves.")
                 ) {
+                    SettingsRow(symbol: "keyboard", title: L("Keyboard shortcuts")) {
+                        Button(L("Edit…")) { editingShortcuts = true }
+                    }
+                    RowDivider()
                     SettingsRow(symbol: "doc.on.clipboard", title: L("Add Clipboard to Stash goes to")) {
                         Picker(L("Add Clipboard to Stash goes to"), selection: defaultStash) {
                             Text(L("Last used stash")).tag("")
@@ -193,7 +221,7 @@ struct ShelfPage: View {
                         .pickerStyle(.menu)
                         .fixedSize()
                     }
-                    RowDivider(inset: 12)
+                    RowDivider()
                     SettingsRow(symbol: "trash", title: L("When a stash is deleted")) {
                         Picker(L("When a stash is deleted"), selection: $preferences.shelfDeleteMovesItems) {
                             Text(L("Move its items to Main")).tag(true)
@@ -229,6 +257,9 @@ struct ShelfPage: View {
             ) { editingIgnored = false }
         }
     }
+
+    /// Lines up the title of a row that depends on the switch above it with that switch's title.
+    private static let dependentIndent: CGFloat = 34
 
     /// The stash id the shortcut uses, or empty for the last used; a stash that is gone shows as the last used.
     private var defaultStash: Binding<String> {

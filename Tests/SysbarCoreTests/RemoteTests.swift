@@ -307,10 +307,31 @@ proc=1.0 3000 ps
         #expect(OrderedSelection.toggling(RemoteCard.cpu, in: [.cpu], minimum: 0) == [])
     }
 
-    @Test func visibleCardsAreChosenAndAvailableInDeclaredOrder() {
+    @Test func visibleCardsAreChosenAndAvailableInTheChosenOrder() {
         let visible = RemoteCard.visible(chosen: [.gpu, .disk, .cpu], available: [.cpu, .memory, .gpu])
 
-        #expect(visible == [.cpu, .gpu])
+        #expect(visible == [.gpu, .cpu])
+    }
+
+    @Test func aRearrangedOrderSurvivesEncodingAndDecoding() throws {
+        let device = RemoteDevice(
+            name: "VPS", host: "vps", user: "", port: nil, identityFile: "",
+            cards: [.cpu, .network], cardOrder: [.network, .memory, .cpu]
+        )
+
+        let decoded = try JSONDecoder().decode(RemoteDevice.self, from: JSONEncoder().encode(device))
+
+        #expect(decoded.cards == [.network, .cpu])
+        #expect(decoded.cardArrangement.order.prefix(3) == [.network, .memory, .cpu])
+    }
+
+    @Test func devicesStoredBeforeCardsCouldBeReorderedKeepTheDeclaredOrder() throws {
+        let json = #"{"id":"6F9619FF-8B86-D011-B42D-00C04FC964FF","name":"VPS","host":"vps","user":"","identityFile":"","cards":["network","cpu"]}"#
+
+        let device = try JSONDecoder().decode(RemoteDevice.self, from: Data(json.utf8))
+
+        #expect(device.cards == [.cpu, .network])
+        #expect(device.cardArrangement.order == RemoteCard.allCases)
     }
 
     @Test func diskAndGpuAreAvailableOnlyWhenTheServerReportsThem() throws {

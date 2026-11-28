@@ -11,6 +11,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private let preferences: Preferences
     private let updater: UpdateChecker
     private let helper: HelperConnection
+    private let keepAwake: KeepAwakeController
     private let shelf: ShelfController
     private let clipboard: ClipboardController
     private let navigation = SettingsNavigation()
@@ -18,11 +19,12 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
 
     init(
         preferences: Preferences, updater: UpdateChecker, helper: HelperConnection,
-        shelf: ShelfController, clipboard: ClipboardController
+        keepAwake: KeepAwakeController, shelf: ShelfController, clipboard: ClipboardController
     ) {
         self.preferences = preferences
         self.updater = updater
         self.helper = helper
+        self.keepAwake = keepAwake
         self.shelf = shelf
         self.clipboard = clipboard
     }
@@ -43,7 +45,8 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         }
 
         let controller = NSHostingController(rootView: SettingsView(
-            preferences: preferences, updater: updater, helper: helper, shelf: shelf, clipboard: clipboard, navigation: navigation
+            preferences: preferences, updater: updater, helper: helper, keepAwake: keepAwake, shelf: shelf, clipboard: clipboard,
+            navigation: navigation
         ))
         let window = NSWindow(contentViewController: controller)
         window.title = "Sysbar"

@@ -68,8 +68,10 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
     public var user: String
     public var port: Int?
     public var identityFile: String
+    /// Every card in the user's order, with the ones shown for this device switched on. All may be off.
+    public var cardArrangement: Arrangement<RemoteCard>
     /// Cards shown for this device, in display order. May be empty.
-    public var cards: [RemoteCard]
+    public var cards: [RemoteCard] { cardArrangement.selected }
     /// Seconds between samples while this device is shown, within `SamplingInterval.remoteRange`.
     public var interval: TimeInterval
     public var keepMonitoring: KeepMonitoring
@@ -77,7 +79,8 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
 
     public init(
         id: UUID = UUID(), name: String, host: String, user: String, port: Int?, identityFile: String,
-        cards: [RemoteCard] = RemoteCard.allCases, interval: TimeInterval = SamplingInterval.remoteDefaultSeconds,
+        cards: [RemoteCard] = RemoteCard.allCases, cardOrder: [RemoteCard]? = nil,
+        interval: TimeInterval = SamplingInterval.remoteDefaultSeconds,
         keepMonitoring: KeepMonitoring = .default, icon: DeviceIcon = .server
     ) {
         self.keepMonitoring = keepMonitoring
@@ -88,16 +91,17 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
         self.user = user
         self.port = port
         self.identityFile = identityFile
-        self.cards = cards
+        cardArrangement = Arrangement(order: cardOrder ?? cards, selected: cards)
         self.interval = SamplingInterval.normalizedRemote(interval)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, host, user, port, identityFile, cards, interval, keepMonitoring, icon
+        case id, name, host, user, port, identityFile, cards, cardOrder, interval, keepMonitoring, icon
     }
 
-    /// Devices saved before cards could be chosen have no `cards` entry and show all of them. Cards
-    /// are stored as plain strings, so an unknown one is dropped instead of failing the whole device.
+    /// Devices saved before cards could be chosen have no `cards` entry and show all of them, and
+    /// those saved before cards could be reordered have no `cardOrder` and keep the declared order.
+    /// Cards are stored as plain strings, so an unknown one is dropped instead of failing the whole device.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
@@ -107,7 +111,11 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
         port = try container.decodeIfPresent(Int.self, forKey: .port)
         identityFile = try container.decode(String.self, forKey: .identityFile)
         let stored = try container.decodeIfPresent([String].self, forKey: .cards)
-        cards = OrderedSelection.ordered(fromStored: stored) ?? RemoteCard.allCases
+        let storedOrder = try container.decodeIfPresent([String].self, forKey: .cardOrder)
+        cardArrangement = Arrangement(
+            order: storedOrder?.compactMap(RemoteCard.init(rawValue:)) ?? RemoteCard.allCases,
+            selected: OrderedSelection.ordered(fromStored: stored) ?? RemoteCard.allCases
+        )
         // Older devices have no interval; stored values are clamped so an edited file cannot make
         // Sysbar poll a server faster than allowed.
         interval = SamplingInterval.normalizedRemote(try container.decodeIfPresent(Double.self, forKey: .interval) ?? 0)
@@ -124,7 +132,8 @@ public struct RemoteDevice: Codable, Equatable, Identifiable, Sendable {
         try container.encode(user, forKey: .user)
         try container.encodeIfPresent(port, forKey: .port)
         try container.encode(identityFile, forKey: .identityFile)
-        try container.encode(OrderedSelection.storedValue(of: cards), forKey: .cards)
+        try container.encode(cardArrangement.storedSelection, forKey: .cards)
+        try container.encode(cardArrangement.storedOrder, forKey: .cardOrder)
         try container.encode(interval, forKey: .interval)
         try container.encode(keepMonitoring.storedValue, forKey: .keepMonitoring)
         try container.encode(icon.rawValue, forKey: .icon)

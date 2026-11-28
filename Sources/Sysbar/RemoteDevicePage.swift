@@ -113,18 +113,24 @@ struct RemoteDevicePage: View {
     private var cardsGroup: some View {
         SettingsGroup(
             title: L("Cards"),
-            footer: L("Disk and GPU cards appear only if the server reports that data. The process table is always shown.")
+            footer: L("Drag a row to change the order. Disk and GPU cards appear only if the server reports that data. The process table is always shown.")
         ) {
-            ForEach(Array(RemoteCard.allCases.enumerated()), id: \.element) { index, card in
-                if index > 0 { RowDivider() }
-                SettingsRow(symbol: card.symbol, title: card.displayName) {
-                    RowToggle(isOn: Binding(
-                        get: { device.cards.contains(card) },
-                        set: { _ in save(cards: OrderedSelection.toggling(card, in: device.cards, minimum: 0)) }
-                    ))
-                }
+            ArrangedRows(
+                order: device.cardArrangement.order,
+                move: { save(cards: arrangement.moving($0, to: $1)) },
+                step: { save(cards: arrangement.moving($0, by: $1)) }
+            ) { card in
+                RowToggle(isOn: Binding(
+                    get: { device.cardArrangement.contains(card) },
+                    set: { _ in save(cards: arrangement.toggling(card, minimum: 0)) }
+                ))
             }
         }
+    }
+
+    /// The stored arrangement, so a quick second change builds on the first.
+    private var arrangement: Arrangement<RemoteCard> {
+        preferences.device(id: device.id)?.cardArrangement ?? device.cardArrangement
     }
 
     private var samplingGroup: some View {
@@ -189,12 +195,13 @@ struct RemoteDevicePage: View {
     /// Starts from the stored device, not the one this view was drawn with, so a late write (the
     /// slider's, after its pause) does not undo a change made in the meantime.
     private func save(
-        cards: [RemoteCard]? = nil, interval: TimeInterval? = nil, keepMonitoring: KeepMonitoring? = nil
+        cards: Arrangement<RemoteCard>? = nil, interval: TimeInterval? = nil, keepMonitoring: KeepMonitoring? = nil
     ) {
         guard let current = preferences.device(id: device.id) else { return }
+        let arrangement = cards ?? current.cardArrangement
         preferences.saveDevice(RemoteDevice(
             id: current.id, name: current.name, host: current.host, user: current.user, port: current.port,
-            identityFile: current.identityFile, cards: cards ?? current.cards,
+            identityFile: current.identityFile, cards: arrangement.selected, cardOrder: arrangement.order,
             interval: interval ?? current.interval, keepMonitoring: keepMonitoring ?? current.keepMonitoring,
             icon: current.icon
         ))

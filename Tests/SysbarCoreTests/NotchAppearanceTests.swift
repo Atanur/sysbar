@@ -114,12 +114,6 @@ import Testing
         #expect(NotchGeometry.earReadouts([cpu, gpu, .battery], limit: 2) == [0, 2])
     }
 
-    @Test func aHiddenReadoutIsLeftOutAndTheNextTakesItsPlace() {
-        #expect(NotchGeometry.earReadouts([cpu, gpu, memory], hidden: [cpu.id], limit: 2) == [1, 2])
-        #expect(NotchGeometry.earReadouts([cpu, .battery], hidden: ["battery"], limit: 3) == [0])
-        #expect(NotchGeometry.earReadouts([cpu], hidden: [cpu.id]) == [])
-    }
-
     @Test func readoutsThatWouldOverflowTheEarStayInThePanel() {
         let room = NotchGeometry.maxEarWidth - NotchGeometry.earPadding
         let slots = [cpu, gpu, memory, power]

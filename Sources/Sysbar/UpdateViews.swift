@@ -80,7 +80,7 @@ struct UpdateBanner: View {
     }
 }
 
-/// The About page's update controls: the automatic check and a manual one with its result.
+/// The General page's update controls: the automatic check and a manual one with its result.
 struct UpdateSettingsGroup: View {
     @ObservedObject var updater: UpdateChecker
 

@@ -222,13 +222,22 @@ extension View {
     }
 }
 
-/// One row per metric in the given order. A row is dragged by its handle onto another to take its
+/// Something the settings list in an order the user can change: a readout, a card.
+protocol ArrangedItem: Hashable, RawRepresentable where RawValue == String {
+    var symbol: String { get }
+    var displayName: String { get }
+}
+
+extension MenuBarMetric: ArrangedItem {}
+extension RemoteCard: ArrangedItem {}
+
+/// One row per item in the given order. A row is dragged by its handle onto another to take its
 /// place; the context menu and the accessibility actions move it one step instead.
-struct ArrangedMetricRows<Accessory: View>: View {
-    let order: [MenuBarMetric]
-    let move: (MenuBarMetric, MenuBarMetric) -> Void
-    let step: (MenuBarMetric, Int) -> Void
-    @ViewBuilder let accessory: (MenuBarMetric) -> Accessory
+struct ArrangedRows<Item: ArrangedItem, Accessory: View>: View {
+    let order: [Item]
+    let move: (Item, Item) -> Void
+    let step: (Item, Int) -> Void
+    @ViewBuilder let accessory: (Item) -> Accessory
 
     var body: some View {
         ForEach(Array(order.enumerated()), id: \.element) { index, metric in
@@ -246,7 +255,7 @@ struct ArrangedMetricRows<Accessory: View>: View {
                 Text(metric.displayName).padding(.horizontal, 10).padding(.vertical, 6)
             }
             .dropDestination(for: String.self) { items, _ in
-                guard let dropped = items.first.flatMap(MenuBarMetric.init(rawValue:)) else { return false }
+                guard let dropped = items.first.flatMap(Item.init(rawValue:)) else { return false }
                 withAnimation(.snappy) { move(dropped, metric) }
                 return true
             }

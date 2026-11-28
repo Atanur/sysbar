@@ -251,7 +251,7 @@ public struct RemoteSnapshot: Equatable, Sendable {
     }
 }
 
-/// The cards a remote machine can show, in display order. Each device keeps its own choice.
+/// The cards a remote machine can show, in their default order. Each device keeps its own choice and order.
 public enum RemoteCard: String, CaseIterable, Sendable {
     case cpu, memory, load, network, disk, gpu, power
 
@@ -268,9 +268,9 @@ public enum RemoteCard: String, CaseIterable, Sendable {
         }
     }
 
-    /// The chosen cards that can actually be shown, in display order.
+    /// The chosen cards that can actually be shown, in the chosen order.
     public static func visible(chosen: [RemoteCard], available: [RemoteCard]) -> [RemoteCard] {
-        allCases.filter { chosen.contains($0) && available.contains($0) }
+        chosen.filter(available.contains)
     }
 }
 

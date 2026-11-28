@@ -66,7 +66,7 @@ struct DeviceEditor: View {
             id: original.id, name: name.trimmingCharacters(in: .whitespaces),
             host: host.trimmingCharacters(in: .whitespaces), user: user.trimmingCharacters(in: .whitespaces),
             port: Int(trimmedPort), identityFile: identity.trimmingCharacters(in: .whitespaces),
-            cards: original.cards, interval: original.interval, keepMonitoring: original.keepMonitoring,
+            cards: original.cards, cardOrder: original.cardArrangement.order, interval: original.interval, keepMonitoring: original.keepMonitoring,
             icon: icon
         )
     }

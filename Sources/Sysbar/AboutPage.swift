@@ -22,8 +22,6 @@ struct AboutPage: View {
                 }
             }
 
-            UpdateSettingsGroup(updater: updater)
-
             SettingsGroup(title: L("Help and feedback")) {
                 linkRow("globe", L("Website"), "sysbar.atanur.dev", ProjectLinks.website)
                 RowDivider()

@@ -34,7 +34,6 @@ final class Preferences: ObservableObject {
         static let notchOpening = "notchOpening"
         static let notchVisibility = "notchVisibility"
         static let notchLeftCount = "notchLeftCount"
-        static let notchLeftHidden = "notchLeftHidden"
         /// The icons the right ear used to leave out; only read, once, to migrate to `notchEars`.
         static let notchRightHidden = "notchRightHidden"
         static let notchEars = "notchEars"
@@ -155,8 +154,8 @@ final class Preferences: ObservableObject {
     @Published var notchVisibility: NotchIslandVisibility {
         didSet { defaults.set(notchVisibility.rawValue, forKey: Key.notchVisibility) }
     }
-    /// How many readouts the island's left ear shows at most, 0 for none, and which readouts (by
-    /// `MenuBarSlot.id`) it leaves out. What each ear holds, in what order, and which items show only
+    /// How many readouts the island's left ear shows at most, 0 for none; which ones, and in what
+    /// order, the Readouts page decides. What each ear holds, in what order, and which items show only
     /// while the island is open.
     @Published var notchLeftCount: Int {
         didSet {
@@ -164,20 +163,12 @@ final class Preferences: ObservableObject {
             defaults.set(notchLeftCount, forKey: Key.notchLeftCount)
         }
     }
-    @Published var notchLeftHidden: [String] {
-        didSet { defaults.set(notchLeftHidden, forKey: Key.notchLeftHidden) }
-    }
     @Published var notchEars: NotchEarLayout {
         didSet { if let data = try? JSONEncoder().encode(notchEars) { defaults.set(data, forKey: Key.notchEars) } }
     }
 
     static let earCountRange = 0...4
     static func clampedEarCount(_ count: Int) -> Int { min(max(count, earCountRange.lowerBound), earCountRange.upperBound) }
-
-    /// Adds `id` to a list of hidden ids or takes it out.
-    static func toggled(_ id: String, in hidden: [String]) -> [String] {
-        hidden.contains(id) ? hidden.filter { $0 != id } : hidden + [id]
-    }
 
     /// The stash: named collections of files and text, with a picker that opens while files are dragged,
     /// and its tab in the popover. Off until the user turns it on.
@@ -346,7 +337,6 @@ final class Preferences: ObservableObject {
         notchOpening = defaults.string(forKey: Key.notchOpening).flatMap(NotchOpening.init(rawValue:)) ?? .hover
         notchVisibility = defaults.string(forKey: Key.notchVisibility).flatMap(NotchIslandVisibility.init(rawValue:)) ?? .always
         notchLeftCount = Self.clampedEarCount(defaults.object(forKey: Key.notchLeftCount) as? Int ?? NotchGeometry.leftEarReadouts)
-        notchLeftHidden = defaults.stringArray(forKey: Key.notchLeftHidden) ?? []
         // Icons hidden under the old right-ear switches were hidden on the closed island only.
         notchEars = defaults.data(forKey: Key.notchEars).flatMap { try? JSONDecoder().decode(NotchEarLayout.self, from: $0) }
             ?? .migrated(hiddenFeatures: defaults.stringArray(forKey: Key.notchRightHidden) ?? [])
@@ -463,7 +453,6 @@ final class Preferences: ObservableObject {
         notchOpening = .hover
         notchVisibility = .always
         notchLeftCount = NotchGeometry.leftEarReadouts
-        notchLeftHidden = []
         notchEars = .standard
         shelfEnabled = false
         shelfShake = true

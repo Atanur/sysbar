@@ -14,7 +14,7 @@ struct MenuBarReadoutsPage: View {
                 title: L("Shown readouts"),
                 footer: L("At least one readout must stay selected. Drag a row to change the order.")
             ) {
-                ArrangedMetricRows(
+                ArrangedRows(
                     order: preferences.menuBarArrangement.order,
                     move: preferences.movePin(_:to:), step: preferences.movePin(_:by:)
                 ) { metric in
@@ -59,19 +59,7 @@ struct MenuBarAppearancePage: View {
 
     var body: some View {
         SettingsPageScaffold(page: .menuBarAppearance) {
-            SettingsGroup(title: L("Preview")) { MenuBarPreview(preferences: preferences) }
-
-            SettingsGroup(title: L("Location"), footer: Self.placementFooter) {
-                SettingsRow(symbol: Self.hasNotch ? "macbook" : "menubar.rectangle", title: L("Show Sysbar in")) {
-                    Picker(L("Show Sysbar in"), selection: $preferences.sysbarPlacement) {
-                        Text(L("Menu bar")).tag(SysbarPlacement.menuBar)
-                        Text(Self.hasNotch ? L("Notch") : L("Top of screen")).tag(SysbarPlacement.notch)
-                    }
-                    .labelsHidden()
-                    .pickerStyle(.segmented)
-                    .fixedSize()
-                }
-            }
+            SettingsGroup(title: L("Preview"), footer: previewFooter) { MenuBarPreview(preferences: preferences) }
 
             SettingsGroup {
                 SettingsRow(symbol: "rectangle.split.3x1", title: L("Style")) {
@@ -93,12 +81,8 @@ struct MenuBarAppearancePage: View {
         }
     }
 
-    private static var hasNotch: Bool { NSScreen.screens.contains { $0.safeAreaInsets.top > 0 } }
-
-    private static var placementFooter: String {
-        hasNotch
-            ? L("Around the notch, the readouts sit either side of it and the panel opens when the pointer rests there. Sysbar then leaves the menu bar. On a display without a notch it shows as a small capsule at the top.")
-            : L("At the top of the screen, Sysbar is a small capsule in the middle of the menu bar that opens when the pointer rests on it. Sysbar then leaves the menu bar.")
+    private var previewFooter: String? {
+        preferences.sysbarPlacement == .menuBar ? nil : L("Takes effect once Sysbar is shown in the menu bar, under General.")
     }
 }
 

@@ -26,7 +26,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
     /// Sysbar at the top of the screen, when Settings puts it there instead of in the menu bar.
     private let notch = NotchDisplays()
     private lazy var settingsWindow = SettingsWindowController(
-        preferences: preferences, updater: updater, helper: helper, shelf: shelf, clipboard: clipboard
+        preferences: preferences, updater: updater, helper: helper, keepAwake: keepAwake, shelf: shelf, clipboard: clipboard
     )
     private var service: MonitorService?
     private var processMonitor: ProcessMonitor?
@@ -234,7 +234,7 @@ final class StatusController: NSObject, NSPopoverDelegate {
         let features = notchFeatures()
         let statuses = notchStatuses()
         let shown = NotchGeometry.earReadouts(
-            readouts.map(\.slot), hidden: Set(preferences.notchLeftHidden), limit: preferences.notchLeftCount,
+            readouts.map(\.slot), limit: preferences.notchLeftCount,
             widths: widths, gap: MenuBarImage.readoutGap(for: style) * scale,
             room: readoutRoom(features: features, statuses: statuses, scale: scale)
         ).map { readouts[$0] }
@@ -621,9 +621,9 @@ final class StatusController: NSObject, NSPopoverDelegate {
 
     @objc private func openAboutFromMenu() { openSettings(page: .about) }
 
-    /// The About page shows what the check finds.
+    /// The General page shows what the check finds.
     @objc private func checkForUpdatesFromMenu() {
-        openSettings(page: .about)
+        openSettings(page: .general)
         Task { await updater.check(userInitiated: true) }
     }
 

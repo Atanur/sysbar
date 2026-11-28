@@ -1,15 +1,19 @@
 import SysbarCore
 import SwiftUI
 
-/// How the popover arranges its cards. Which cards appear is chosen per device, on its page.
-struct WindowLayoutPage: View {
+/// The panel's layout: how its cards are arranged, and the table of the busiest apps under them.
+/// Which cards appear is chosen per device, on its page.
+struct PanelPage: View {
     @ObservedObject var preferences: Preferences
     /// Opens this Mac's page, where its cards are chosen.
     let showThisMac: () -> Void
 
     var body: some View {
-        SettingsPageScaffold(page: .windowLayout) {
-            SettingsGroup {
+        SettingsPageScaffold(page: .panel, animating: AnyHashable(preferences.showsApps)) {
+            SettingsGroup(
+                title: L("Cards"),
+                footer: L("Each device's page, under Devices, sets which cards its tab shows and in what order.")
+            ) {
                 SettingsRow(symbol: "square.grid.2x2", title: L("Card layout"), subtitle: layoutDetail) {
                     Picker(L("Card layout"), selection: $preferences.cardLayout) {
                         ForEach(CardLayoutMode.allCases, id: \.self) { Text($0.title).tag($0) }
@@ -18,31 +22,12 @@ struct WindowLayoutPage: View {
                     .pickerStyle(.menu)
                     .fixedSize()
                 }
-            }
-
-            SettingsGroup(footer: L("Each device's page, under Devices, sets which cards its tab shows and in what order.")) {
+                RowDivider()
                 SettingsRow(symbol: "rectangle.stack", title: L("Cards"), subtitle: L("Chosen for each device")) {
                     Button(L("Show this Mac's cards"), action: showThisMac)
                 }
             }
-        }
-    }
 
-    private var layoutDetail: String {
-        switch preferences.cardLayout {
-        case .automatic: L("Two columns for an even number of cards, one for an odd number")
-        case .oneColumn: L("Cards stack in a single list")
-        case .twoColumns: L("Always side by side")
-        }
-    }
-}
-
-/// The table of the busiest apps under the cards, and its columns.
-struct AppsTablePage: View {
-    @ObservedObject var preferences: Preferences
-
-    var body: some View {
-        SettingsPageScaffold(page: .appsTable, animating: AnyHashable(preferences.showsApps)) {
             SettingsGroup(title: L("Top apps")) {
                 SettingsRow(symbol: "list.bullet", title: L("Show table")) {
                     RowToggle(isOn: $preferences.showsApps)
@@ -70,6 +55,14 @@ struct AppsTablePage: View {
                     }
                 }
             }
+        }
+    }
+
+    private var layoutDetail: String {
+        switch preferences.cardLayout {
+        case .automatic: L("Two columns for an even number of cards, one for an odd number")
+        case .oneColumn: L("Cards stack in a single list")
+        case .twoColumns: L("Always side by side")
         }
     }
 }

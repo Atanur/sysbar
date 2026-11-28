@@ -339,7 +339,7 @@ struct NotchPreview: View {
         let style = preferences.menuBarStyle
         let widths = MenuBarImage.slotWidths(readouts, style: style).map { $0 * size }
         let shown = NotchGeometry.earReadouts(
-            readouts.map(\.slot), hidden: Set(preferences.notchLeftHidden), limit: preferences.notchLeftCount,
+            readouts.map(\.slot), limit: preferences.notchLeftCount,
             widths: widths, gap: MenuBarImage.readoutGap(for: style) * size, room: room
         ).map { readouts[$0] }
         guard !shown.isEmpty else { return nil }

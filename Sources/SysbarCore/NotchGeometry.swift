@@ -120,16 +120,14 @@ public struct NotchGeometry: Equatable, Sendable {
     }
 
     /// Which readouts go in the left ear, by index and in their menu bar order: at most `limit`, the
-    /// battery first when it is shown, then the system's readouts as they come, skipping the `hidden`
-    /// slots (by `MenuBarSlot.id`). With `widths` (each readout's own, `gap` between two) a readout
+    /// battery first when it is shown, then the system's readouts as they come. With `widths` (each readout's own, `gap` between two) a readout
     /// that would not fit the `room` the ear has for them (what icons sharing it leave) ends the list,
     /// so the ear never grows past `maxEarWidth`.
     public static func earReadouts(
-        _ slots: [MenuBarSlot], hidden: Set<String> = [], limit: Int = leftEarReadouts,
+        _ slots: [MenuBarSlot], limit: Int = leftEarReadouts,
         widths: [CGFloat]? = nil, gap: CGFloat = readoutGap, room: CGFloat = earRoom
     ) -> [Int] {
-        let shown = slots.indices.filter { !hidden.contains(slots[$0].id) }
-        let priority = shown.filter { slots[$0] == .battery } + shown.filter { slots[$0] != .battery }
+        let priority = slots.indices.filter { slots[$0] == .battery } + slots.indices.filter { slots[$0] != .battery }
         var taken: [Int] = []
         var used: CGFloat = 0
         for index in priority {
